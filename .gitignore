@@ -1,3 +1,4 @@
 *.swp
 */output/*
-/research/*.p(df|s)
+*/research/*.[^t][^x][^t]?
+
