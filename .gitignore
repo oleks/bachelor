@@ -1,4 +1,3 @@
 *\.swp
 */output/*
-*/research/*\.[^t][^x][^t]?
-
+*/research/*\.p(df|s)
