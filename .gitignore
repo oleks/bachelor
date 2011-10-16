@@ -1,4 +1,4 @@
-*.swp
+*\.swp
 */output/*
-*/research/*.[^t][^x][^t]?
+*/research/*\.[^t][^x][^t]?
 
