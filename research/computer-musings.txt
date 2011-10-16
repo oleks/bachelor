@@ -1,0 +1,63 @@
+Classes (as well as many other procedural concepts) are in divergence from 
+GPGPU programming, since the good design in this paradigm is one that reduces 
+copies, while the functional paradigm conversely encourages it.
+
+oleks.google@gmail.com
+
+MUST-READS:
+an-axiomatic-basis-for-computer-programming.pdf
+proof-of-a-program.pdf
+automatic-program-verification-*.pdf
+
+Ensuring total correctness in higher-order programs and automatically deriving their complexity.
+
+termination-analysis
+complexity-analysis
+verification
+
+sound, complete
+
+synopsis, udkast i morgen
+
+
+sound and complete method for verifying total correctness of higher-order functional programs
+
+size-change termination
+
+Bayern Cook - Cambridge
+Adnreas Podelski - 
+J\:urgen Giesl
+
+Windows device drivers
+
+teorembeviser out <- bulletlist
+
+
+M =
+input X
+P := Q(X)
+R := K(P)
+output R
+
+N =
+input X
+Z := M(X)
+output not Z
+
+N(N)
+
+N' =
+input X
+P := Q'(X)
+Z := K'(P)
+return not Z
+
+M' is constructed because M is originally a compiler function
+
+M' =
+input X
+P := Q'(X)
+R := K'(P)
+output R
+
+

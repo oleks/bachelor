@@ -1,0 +1,34 @@
+\section{Motivation}
+
+While the halting problem is unsolvable in general, it remains an active area
+of research to what extent automated termination analysis can be performed in 
+computing environments constrained in various ways.
+
+Interesting results have been achieved by constraining one-self to first-order 
+programs, well-founded data types and axiomatic program construction. Some have 
+extended these ideas to higher-order programs. Some methods are sound, but most 
+are incomplete, as e.g.  the size-change termination 
+principle\cite{size-change-2}. Termination in and of itself is interesting for 
+various reasons:
+
+\begin{itemize}
+
+\item Proving total correctness of programs demands a proof of the program 
+termination aside from the proof of the program adhering to a given 
+specification.  Total correctness is thus more interesting than partial 
+correctness(where the termination proof is left out), since a program that does 
+not terminate may conceptually adhere to any 
+specification.\cite{axiomatic-total-correctness}.
+
+\item Some program manipulation systems, e.g. wrt. operating systems, would 
+often rather avoid making use of programs that do not terminate\cite{windows}.
+
+\item Automated complexity analysis can't be performed in a sound and complete 
+manner we can't decide the halting property of the 
+program\cite{automatic-complexity-analysis}. 
+
+\end{itemize}
+
+It is interesting to see if the restrictions imposed by some of the presently 
+known methods for automatic termination analysis are permissive enough to allow 
+for some of these more practical problems to be solved.
