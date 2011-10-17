@@ -1,16 +1,47 @@
 \chapter{On the general uncomputability of the halting problem}
 
 A computable problem is a problem that can be solved by an effective procedure.
+
 A problem can be solved by an effective procedure iff the effective procedure
 is well-defined for the entire problem domain, and iff passing a value from the
 domain as input to the procedure eventually yields a correct result (to the
 problem) as output of the procedure. Invalid inputs are, in this instance,
 irrelevant. That is, an effective procedure solves a problem if it computes a
-partial function which associates the problem input domain with the problem
-output range.
+partial function which associates the problem input values with it's output
+values.
+
+An effective procedure itself, is an algorithm, a finite sequence of
+instructions. As indicated, it takes an input value and produces an output
+value.
+
+
+
+
+
+Instructions that the computer can execute may have no effect, but such
+instructions are seldom of any particular interest. More amusing instructions
+alter some sort of state that the computer withkeeps across instructions.
+
+Such changes should be discrete and deterministic, that is, such that continous
+and stochastic processes are not involved.
+
+An instruction
+commands a machine to perform a discrete and deterministic alternation of the
+it's own state. For the simplest of purposes, the machine state can comprise of
+the index of the currently executing instruction, known as the program counter,
+the current state of the machine memory (tape), and the finite sequence of
+instructions that the machine is using as it's program.
+
+The machine state comprises of the state of the tape, the current position on
+tape and the program
+
+
 
 Procedures themselves are algorithms, comprised of text, or more specifically,
-a finite sequence of instructions. Each instruction is a finite, discrete and deterministic operation, theoretically equivalent to a procedure.. so procedures consist of procedures, but some procedures must be implemented in underlying hardware.. meh Turing machines.
+a finite sequence of instructions. Each instruction is a finite, discrete and
+deterministic operation, theoretically equivalent to a procedure.. so
+procedures consist of procedures, but some procedures must be implemented in
+underlying hardware.. meh Turing machines.
 
 finite, discrete and deterministic instructions, that is,
 without infinite, continous or stochastic processes. Procedures hence consume a
@@ -46,7 +77,9 @@ In this model, a ``loop'' is constructable by having a special \emph{jump}
 instruction that changes the program counter to some value less than the
 current program counter.
 
-A ``loop'' can be constructed by a sequence of such instructions, due it's sequential nature being enumerable, and with the existance of a special \emph{jump} instruction, that changes the 
+A ``loop'' can be constructed by a sequence of such instructions, due it's
+sequential nature being enumerable, and with the existance of a special
+\emph{jump} instruction, that changes the 
 
 Clearly, a procedure that eventually halts and returns the correct output for
 every input in the problem domain, solves the problem.
@@ -90,3 +123,5 @@ Co-recursively enumerable
 % 54
 % 163
 % 115
+
+
