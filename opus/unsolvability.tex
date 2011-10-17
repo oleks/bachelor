@@ -1,16 +1,36 @@
-\chapter{On the general unsolvability of the halting problem}
+\chapter{On the general uncomputability of the halting problem}
 
 A computable problem is a problem that can be solved by an effective procedure.
 A problem can be solved by an effective procedure iff the effective procedure
 is well-defined for the entire problem domain, and iff passing a value from the
 domain as input to the procedure eventually yields a correct result (to the
 problem) as output of the procedure. Invalid inputs are, in this instance,
-irrelevant. That is, an effective procedure computes a partial function which
-associates the problem input domain to it's output range.
+irrelevant. That is, an effective procedure solves a problem if it computes a
+partial function which associates the problem input domain with the problem
+output range.
 
 Procedures themselves are algorithms, comprised of text, or more specifically,
-a finite sequence of finite, discrete and deterministic instructions, that is,
-without infinite, continous or stochastic processes. They operate on finite
+a finite sequence of instructions. Each instruction is a finite, discrete and deterministic operation, theoretically equivalent to a procedure.. so procedures consist of procedures, but some procedures must be implemented in underlying hardware.. meh Turing machines.
+
+finite, discrete and deterministic instructions, that is,
+without infinite, continous or stochastic processes. Procedures hence consume a
+value as \emph{input} and produce a value as \emph{output}. These values are
+finite in the sense that they can be represented as a finite sequence of bits.
+No input or output values can in this sense be represented by empty sequences.
+If conversely, multiple values are to serve as either input or output, a simple
+value composition scheme can be devised:
+
+Instructions themselves are procedures...
+
+Suppose a binary digit representation of all values. Then the longest possible
+value in the value composition will be of some finite length. All other values
+can be padded from the left with $0$'s to fit that length, and the sequence can
+begin with an additional number (of same width) indicating the number of
+elements in the composite.
+
+How do we know how wide the first number is?
+
+They operate on finite
 values, and the finiteness of values, individual instructions and the
 instruction sequence means that the effective procedure eventually halts or
 goes into an infinite loop for any given input. 
