@@ -1,0 +1,55 @@
+\chapter{Extended-BNF}
+
+This report makes use of extended version of the Backus-Naur form, where the
+extensions borrow some syntactical sugar from regular expressions. This is done
+because there is seemingly no universally acknowledged extension, like there is a
+universally acknowledged Backus-Naur form, namely the one used in the ALGOL 60
+Reference Manual\cite{algol-bnf}.
+
+The following parts are in-common with the original Backus-Naur form:
+
+\makeTable{bnf}{Constructs in common with the original BNF}
+{|c|p{0.5\textwidth}|}
+{\textbf{Construct} & \textbf{Description}}
+{
+$<\ldots>$ & A metalinguistic variable, aka. a nonterminal.\\
+$::=$ & Definition symbol\\
+$|$ & Alternation symbol
+}
+
+Everything else in regular BNF form represents itself, aka. a terminal. This
+extension has it in common with many other extensions that it encapsulates
+terminals in single-quotes.
+
+This allows us to give characters such as $($, $)$, $]$, $]$, $*$, $+$, and
+${}^*$ special meaning, namely:
+
+\makeTable{ebnf}{Constructs borrowed from regular expressions.}
+{|c|l|}
+{\textbf{Construct}&\textbf{Meaning}}
+{
+$(\ldots)$ & Entity group\\
+$[\ldots]$ & Character group\\
+$\text{-}$ & Character range\\
+$*$ & $0\text{-}\infty$ repetition\\
+$+$ & $1\text{-}\infty$ repetition\\
+$?$ & $0\text{-}1$ repetition
+}
+
+An entity group is a shorthand for an auxiliary nonterminal declaration. This
+means, for instance, that using the alternation symbol within it would mean an
+alternation of entity sequences within the entity group rather than the entire
+declaration that contains the entity group.
+
+A character group may only contain single character terminals and an
+alternation of the terminals is implied from their mere sequence. It is
+identical to an auxiliary single character nonterminal declaration. A character
+range binary operator can be used to shorten a given character group, e.g.
+$[\term{a}\mathmono{-}\term{z}]$ implies the list of characters from $\term{a}$
+to $\term{z}$ in the ASCII table.  Moreover, a character range is the only
+operator allowed in a character group.
+
+Applying the repetition operators to either the closing brace of an entity
+group or the closing bracket of a character group has the same effect as
+applying the repetition operator to their respective hypothetical auxiliary
+declarations.

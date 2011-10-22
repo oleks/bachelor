@@ -17,8 +17,6 @@ verification
 
 sound, complete
 
-synopsis, udkast i morgen
-
 
 sound and complete method for verifying total correctness of higher-order functional programs
 
@@ -61,3 +59,25 @@ R := K'(P)
 output R
 
 
+mangler rice's sætning
+
+imperative
+algebraic datatypes
+list comprehensions
+  nil, cons, hd, tl
+
+higher order
+
+læs torben's kapitel
+læs size-change termination principle færdig
+
+begge to er first-order
+
+analysis of higher -- har et sprog med højere orden
+
+jeg vil prøve at se 
+
+
+eager
+
+nordic journal of computing

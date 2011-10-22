@@ -1,0 +1,63 @@
+\chapter{Language}
+
+\section{The language \mono{D}}
+
+The language \mono{D} is defined in the simplest possible terms.
+
+That is,
+extraneous syntactical sugar is left out of the language definition and
+initially defined by functions. If it should prove practical to extend the
+syntax for various purposes later on in the text, this will be done.
+
+\newcommand{\mathmono}[1]{\ensuremath{\text{\mono{#1}}}}
+\newcommand{\nonterm}[1]{\ensuremath{\text{\mono{<#1>}}}}
+\newcommand{\term}[1]{\ensuremath{\text{\mono{`#1'}}}}
+
+Programs are defined as follows:
+
+\begin{align}
+\nonterm{program}\ &::=\ \nonterm{type}^*\ \nonterm{function}^*
+\ \nonterm{expression}\\
+\end{align}
+
+That is, a program is a possibly empty set of type declarations followed by a
+possibly empty set of function declarations followed by a single expression.
+
+The non-terminal \mono{<type>} designates an infinite algebraic data-type
+defined as follows:
+
+\begin{align}
+\nonterm{type}\ &::=\ \term{type}\ \nonterm{type-name}
+\ \term{:=}\ \nonterm{constructor}\ (\term{|}
+\ \nonterm{constructor})^*\\
+\nonterm{type-name}\ &::=\ \nonterm{literal}\\
+\nonterm{literal}\ &::=\ \nonterm{char}
+\ \left (\ \left (\term{-}\ |\ \nonterm{char}\right )^*
+\ \nonterm{char}\ \right )?\\
+\nonterm{char}\ &::=\ [\term{a}\mathmono{-}\term{z}]\\
+\nonterm{constructor}\ &::=\ \nonterm{constructor-name}
+\ [\ \term{of}\ \nonterm{type-name}\ ]\\
+\nonterm{constructor-name}\ &::=\ \nonterm{literal}\ \text{s.t.}
+\ \nonterm{constructor-name}\notin \nonterm{type-name}
+\end{align}
+
+
+
+Functions are defined as follows:
+
+\begin{align}
+\nonterm{function}\ &::=\ \nonterm{function-name}
+\ \nonterm{argument}^*\ \term{:=}\ \nonterm{expression}\\
+\nonterm{function-name}\ &::=\ \nonterm{literal}\ \text{s.t.} 
+\nonterm{argument}\ &::=\ \nonterm{literal}\ \text{, s.t.}\nonterm{argument}\notin{\nonterm{type-name}\cup\nonterm{function-name}}
+\end{align}
+
+The infinite algebraic datatype.
+
+
+In addition to these simple features, we define a set of functions $B$
+containing the function $if-then-else$..
+
+If this definition should prove impractical in further affairs, such as lack of
+basic types of basic functions, these will be introduced as needed instead of
+being included in the core grammar.

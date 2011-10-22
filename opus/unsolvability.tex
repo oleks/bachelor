@@ -8,15 +8,18 @@ domain as input to the procedure eventually yields a correct result (to the
 problem) as output of the procedure. Invalid inputs are, in this instance,
 irrelevant. That is, an effective procedure solves a problem if it computes a
 partial function which associates the problem input values with it's output
-values.
+values s.t. it solves the problem.
 
-An effective procedure itself, is an algorithm, a finite sequence of
-instructions. As indicated, it takes an input value and produces an output
-value.
+An effective procedure itself, is a finite sequence of discrete and
+deterministic instructions, that is, without any continuous or stochastic
+processes. Each instruction 
 
+As indicated, it takes an input value and produces an output
+value. If no values serve as input or no values serve as output, the
 
-
-
+The procedure input is a continuous machine state, the output is a discrete
+change of the continuous state. And yet, the values that a procedure may use to
+produce it's result are all discrete.
 
 Instructions that the computer can execute may have no effect, but such
 instructions are seldom of any particular interest. More amusing instructions
@@ -33,9 +36,7 @@ the current state of the machine memory (tape), and the finite sequence of
 instructions that the machine is using as it's program.
 
 The machine state comprises of the state of the tape, the current position on
-tape and the program
-
-
+tape and the program.
 
 Procedures themselves are algorithms, comprised of text, or more specifically,
 a finite sequence of instructions. Each instruction is a finite, discrete and
