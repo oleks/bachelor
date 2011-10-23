@@ -1,10 +1,13 @@
-\chapter{Extended-BNF}
+\chapter{Extended-BNF}\label{appendix:ebnf}
 
-This report makes use of extended version of the Backus-Naur form, where the
-extensions borrow some syntactical sugar from regular expressions. This is done
-because there is seemingly no universally acknowledged extension, like there is a
-universally acknowledged Backus-Naur form, namely the one used in the ALGOL 60
-Reference Manual\cite{algol-bnf}.
+This report makes use of an extended version of the Backus-Naur form (BNF).
+This appendix is provided to cover the extensions employed in the report. This
+is done instead of using some universal extension since no universally
+acknowledged extension seemingly exists, like there is a universally
+acknowledged Backus-Naur form, namely the one used in the ALGOL 60 Reference
+Manual\cite{algol-bnf}.
+
+\section{What's in common with the original BNF}
 
 The following parts are in-common with the original Backus-Naur form:
 
@@ -17,8 +20,11 @@ $::=$ & Definition symbol\\
 $|$ & Alternation symbol
 }
 
-Everything else in regular BNF form represents itself, aka. a terminal. This
-extension has it in common with many other extensions that it encapsulates
+In the original BNF, everything else represents itself, aka. a terminal.
+
+\section{Constructs borrowed from regular expressions.}
+
+This extension has it in common with many other extensions that it encapsulates
 terminals in single-quotes.
 
 This allows us to give characters such as $($, $)$, $]$, $]$, $*$, $+$, and
@@ -53,3 +59,5 @@ Applying the repetition operators to either the closing brace of an entity
 group or the closing bracket of a character group has the same effect as
 applying the repetition operator to their respective hypothetical auxiliary
 declarations.
+
+\section{Nonterminals as sets}
