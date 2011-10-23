@@ -2,79 +2,86 @@
 
 \section{The language \mono{D}}
 
-In the following section the language \mono{D} is described in terms of an
-extended Backus-Naur form\footnotemark\ in the simplest possible terms. That
-is, extraneous syntactical sugar and basic terms are left out of the core
-language definition.  Instead, they are defined as necessary in the latter
-sections.
+In the following chapter the language \mono{D}\footnote{The choice of the
+letter \mono{D} bares no special meaning.}\ is described in terms of an
+extended Backus-Naur form\footnotemark. It is described in the simplest
+possible terms, that is, extraneous syntactical sugar and basic terms are left
+out of the core language definition.  Instead, these are defined as necessary
+in the latter chapters.
 
 \footnotetext{The extension lends some constructs from regular expressions to
 achieve a more concise dialect. The extension is described in further detail in
 Appendix \ref{appendix:ebnf}.}
 
+The language \mono{D} is \emph{initially} a purely functional, first-order,
+explicitly typed, call-by-value language.
+
 Programs are defined as follows:
 
 \begin{align}
 \nonterm{program}\ &::=\ \nonterm{type}^*\ \nonterm{function}^*
-\ \nonterm{expression}\\
+\ \nonterm{expression}
 \end{align}
 
-That is, a program is a possibly empty set of type declarations followed by a
-possibly empty set of function declarations followed by a single expression.
-
-Types are declared by means of infinite algebraic data-types:
+Types are declared by means of infinite algebraic datatypes:
 
 \begin{align}
-\nonterm{type}\ &::=\ \term{type}\ \nonterm{type-name}
+\nonterm{type}\ ::=&\ \nonterm{type-name}
 \ \term{:=}\ \nonterm{constructor}\ (\term{|}
 \ \nonterm{constructor})^*\\
-\nonterm{type-name}\ &::=\ \nonterm{literal}\\
-\nonterm{constructor}\ &::=\ \nonterm{constructor-name}
+\nonterm{type-name}\ ::=&\ \nonterm{literal}\\
+\nonterm{constructor}\ ::=&\ \nonterm{constructor-name}
 \ (\term{of}\ \nonterm{type-name})?\\
+\nonterm{constructor-name}\ ::=&\ \nonterm{literal}
 \end{align}
 
-Next, we would like to declare the $\nonterm{constructor-name}$ nonterminal to
-be a $\nonterm{literaL}$. However, such a na\"ive declaration would imply
-that $\nonterm{constructor-name}$'s can be used interchangeably with
-$\nonterm{type-name}$'s, which is not the intention.
-
-To solve this, we note that each nonterminal can be referred to as the set of
-character sequences that have been associated with the nonterminal for any
-given program, and hence provide the following conditional declaration:
+Functions (and their arguments) are explicitly typed, consume at least one
+argument and always yield a value as output:
 
 \begin{align}
-\nonterm{constructor-name}\ &::=\ \nonterm{literal}\ \text{s.t.}
-\ \nonterm{constructor-name}\cap \nonterm{type-name} = \emptyset
+\nonterm{function}\ ::=&\ \nonterm{type-name}\ \nonterm{function-name}
+\ \nonterm{argument}^+\ \term{:=}\ \nonterm{expression}\\
+\nonterm{function-name}\ ::=&\ \nonterm{literal}\\
+\nonterm{argument}\ ::=&\ \nonterm{type-name}\
+\nonterm{argument-name}\\
+\nonterm{argument-name}\ ::=&\ \nonterm{literal}
 \end{align}
 
-Note, that given that all nonterminals are sets, we can apply the constraint to
-the $\nonterm{constructor-name}$ that it's intersection with the set
-$\nonterm{type-name}$ is the empty set, that is, there's no overlapping
-constructor names and type names.
-
-
-Functions are defined as follows:
-
-\begin{align}
-\nonterm{function}\ &::=\ \nonterm{function-name}
-\ \nonterm{argument}^*\ \term{:=}\ \nonterm{expression}\\
-\nonterm{function-name}\ &::=\ \nonterm{literal}\ \text{s.t.} 
-\nonterm{argument}\ &::=\ \nonterm{literal}\ \text{, s.t.}
-\nonterm{argument}\notin\nonterm{type-name}\cup\nonterm{function-name}
-\end{align}
-
-The infinite algebraic datatype.
+All of the $\mathmono{<}x\mathmono{-name>}$ declarations above make use of the
+$\nonterm{literal}$ nonterminal. For simplicity we'll let this be a lowercased
+dash-separated sequence of a-z characters:
 
 \begin{align}
 \nonterm{literal}\ &::=\ [\term{a}\mathmono{-}\term{z}]
 \ \left (\ [\term{-}\ \term{a}\mathmono{-}\term{z}]^*
-\ [\term{a}\mathmono{-}\term{z}]\ \right )?\\
+\ [\term{a}\mathmono{-}\term{z}]\ \right )?
 \end{align}
 
+It is important that the above $\mathmono{<}x\mathmono{-name>}$s are distinct
+from one another. We'll avoid cluttering up the grammar and simply state the
+following:
 
-In addition to these simple features, we define a set of functions $B$
-containing the function $if-then-else$..
+$$\nonterm{type-name}\cap\nonterm{constructor-name}\cap\nonterm{function-name}
+\cap\nonterm{argument-name}\equiv\emptyset$$
 
-If this definition should prove impractical in further affairs, such as lack of
-basic types of basic functions, these will be introduced as needed instead of
-being included in the core grammar.
+Last but not least, the $\nonterm{expression}$ itself:
+
+\begin{align}
+\nonterm{expression}\ ::=&\ \nonterm{function-call}\ |\ \nonterm{constructor-call}\\
+\nonterm{function-call}\ ::=&\ \nonterm{function-name}\ \term{(}
+\ \nonterm{expression}^+\ \term{)}\\
+\nonterm{constructor-call}\ ::=&\ \nonterm{constructor-name}
+\ (\term{(}\ \nonterm{constructor-call}\ \term{)})?
+\end{align}
+
+Since this is an eager language, the number of expressions that a function call
+takes must be the exact number of arguments defined for that function, and due
+to it being typed, their types must correspond.
+
+The $\nonterm{constructor-call}$ nonterminal is defined in terms of itself.
+This would be absurd without a set of basic types. Such basic types will be
+defined when they are appropriate.
+
+If this definition should otherwise prove impractical in further affairs, such
+as lack of some other basic types or basic functions, these will be introduced
+as needed instead of them being included in the core grammar.

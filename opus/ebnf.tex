@@ -2,16 +2,15 @@
 
 This report makes use of an extended version of the Backus-Naur form (BNF).
 This appendix is provided to cover the extensions employed in the report. This
-is done instead of using some universal extension since no universally
-acknowledged extension seemingly exists, like there is a universally
-acknowledged Backus-Naur form, namely the one used in the ALGOL 60 Reference
-Manual\cite{algol-bnf}.
+is done because there is seemingly no universally acknowledged extension,
+unlike there is a universally acknowledged Backus-Naur form, namely the one
+used in the ALGOL 60 Reference Manual\cite{algol-bnf}.
 
 \section{What's in common with the original BNF}
 
 The following parts are in-common with the original Backus-Naur form:
 
-\makeTable{bnf}{Constructs in common with the original BNF}
+\makeTable{bnf}{Constructs in common with the original BNF.}
 {|c|p{0.5\textwidth}|}
 {\textbf{Construct} & \textbf{Description}}
 {
@@ -20,15 +19,14 @@ $::=$ & Definition symbol\\
 $|$ & Alternation symbol
 }
 
-In the original BNF, everything else represents itself, aka. a terminal.
+In the original BNF, everything else represents itself, aka. a terminal. This
+is not preserved in this extension, and all terminals are surrounded by single
+quotes.
 
 \section{Constructs borrowed from regular expressions.}
 
-This extension has it in common with many other extensions that it encapsulates
-terminals in single-quotes.
-
-This allows us to give characters such as $($, $)$, $]$, $]$, $*$, $+$, and
-${}^*$ special meaning, namely:
+The use of single quotes around all terminals allows us to give characters such
+as $($, $)$, $]$, $]$, $*$, $+$, and ${}^*$ special meaning, namely:
 
 \makeTable{ebnf}{Constructs borrowed from regular expressions.}
 {|c|l|}
@@ -60,4 +58,20 @@ group or the closing bracket of a character group has the same effect as
 applying the repetition operator to their respective hypothetical auxiliary
 declarations.
 
-\section{Nonterminals as sets}
+\section{Nonterminals as sets and conditional declarations}
+
+Another extension to the original BNF is the ability to use nonterminals as
+sets in declaration conditions. For example, if the two nonterminals,
+$\nonterm{type-name}$ and $\nonterm{constructor-name}$, are both declared in
+terms of the $\nonterm{literal}$ nonterminal, but type names and constructor
+names should not intersect in a given program, then we can append the following
+condition to one or both declarations:
+
+$$\text{s.t.}\
+\nonterm{type-name}\cap\nonterm{constructor-name}\equiv\emptyset$$
+
+Where the shorthand s.t. stands for ``such that''. This implies that the
+nonterminals $\nonterm{type-name}$ and $\nonterm{constructor-name}$ represent
+the sets of character sequences that end up associated with the respective
+nonterminals for any given program, and can be used in conjunction with regular
+set notation.

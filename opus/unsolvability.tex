@@ -3,12 +3,39 @@
 A computable problem is a problem that can be solved by an effective procedure.
 
 A problem can be solved by an effective procedure iff the effective procedure
-is well-defined for the entire problem domain, and iff passing a value from the
-domain as input to the procedure eventually yields a correct result (to the
-problem) as output of the procedure. Invalid inputs are, in this instance,
-irrelevant. That is, an effective procedure solves a problem if it computes a
-partial function which associates the problem input values with it's output
-values s.t. it solves the problem.
+is well-defined for the entire problem domain\footnote{Invalid inputs are, in
+this instance, irrelevant.}, and iff passing a value from the domain as input
+to the procedure \emph{eventually} yields a correct result (to the problem) as
+output of the procedure. That is, an effective procedure can solve a problem if
+it computes an injective partial function that associates the problem domain
+with the range of solutions to the problem.
+
+An effective procedure is discrete, in the sense that computing the said
+function cannot take an infinite amount of time. To do this, an effective
+procedure makes use of a finite sequence of steps that themselves are discrete.
+This has a few inevitable consequences for the input and output values, namely
+that they themselves must be discrete that there must be a discrete number of
+them.
+
+\begin{proof} An infinite value cannot be processed nor produced by a finite
+sequence of discrete steps.\end{proof}
+
+An effective procedure is also deterministic, in the sense that passing the
+same input value always yields the same output value. This means that all of
+the steps of the procedure that are relevant to it's output are themselves
+deterministic\footnote{All other steps can be omitted without loss of
+generality.}. Together with the discreteness property, this property has the
+ironic consequence that a computable function cannot produce a random value,
+but only pass one on\cite{knuth-random}.
+
+In effect, a procedure can be said to comprise of a finite sequence of other
+procedures that it executes in order to produce an output value. Here, some
+procedures are basic, and others are composite.
+
+Bah this is not enough.. write about scope
+
+
+\section{Blaaaaah}
 
 An effective procedure itself, is a finite sequence of discrete and
 deterministic instructions, that is, without any continuous or stochastic
@@ -125,4 +152,6 @@ Co-recursively enumerable
 % 163
 % 115
 
+\section{The halting problem}
 
+\section{Rice's statement}
