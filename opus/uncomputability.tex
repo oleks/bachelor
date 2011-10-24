@@ -1,5 +1,7 @@
 \chapter{On the general uncomputability of the halting problem}
 
+\section{Computable problems and effective procedures}
+
 A computable problem is a problem that can be solved by an effective procedure.
 
 A problem can be solved by an effective procedure iff the effective procedure
@@ -15,8 +17,8 @@ function cannot take an infinite amount of time. To do this, an effective
 procedure makes use of a finite sequence of steps that themselves are discrete.
 This has a few inevitable consequences for the input and output values, namely
 that they themselves must be discrete and that there must be a discrete number
-of them\footnote{Multiple discrete values can be trivially encoded as a single
-discrete value.}.
+of them\footnote{A discrete number of discrete values can be trivially encoded
+as a single discrete value.}.
 
 \begin{proof} An infinite value cannot be processed nor produced by a finite
 sequence of discrete steps.\end{proof}
@@ -26,102 +28,83 @@ same input value always yields the same output value. This means that all of
 the steps of the procedure that are relevant to it's output\footnote{All other
 steps can be omitted without loss of generality.} are themselves deterministic.
 
+\begin{proof} If a procedure made use of a stochastic process to yield a
+result, that stochastic process would have to yield the output for the same
+input if the global deterministic property of the procedure is to be withheld.
+This is clearly absurd.\end{proof}
+
 In effect, a procedure can be said to comprise of a finite sequence of other
-procedures, some basic, others composite, which it executes in some order in
-order to produce an output value.
+procedures, which themselves may comprise of other procedures, however, all
+procedures eventually bottom out, in that a finite sequence of composite
+procedures can always be replaced by a finite sequence of basic procedures that
+are implemented in underlying hardware.
 
-Such a definition has no sense of ``scope'', which is unnecessary for a purely
-functional definition as relevant variables can be passed down the chain as
-necessary. This ``passing down'' however, is impractical
+%The procedure input is a continuous machine state, the output is a discrete
+%change of the continuous state. And yet, the values that a procedure may use to
+%produce it's result are all discrete.
 
+%Instructions that the computer can execute may have no effect, but such
+%instructions are seldom of any particular interest. More amusing instructions
+%alter some sort of state that the computer withkeeps across instructions.
 
+%An instruction
+%commands a machine to perform a discrete and deterministic alternation of the
+%it's own state. For the simplest of purposes, the machine state can comprise of
+%the index of the currently executing instruction, known as the program counter,
+%the current state of the machine memory (tape), and the finite sequence of
+%instructions that the machine is using as it's program.
 
-The procedure input is a continuous machine state, the output is a discrete
-change of the continuous state. And yet, the values that a procedure may use to
-produce it's result are all discrete.
+%The machine state comprises of the state of the tape, the current position on
+%tape and the program.
 
-Instructions that the computer can execute may have no effect, but such
-instructions are seldom of any particular interest. More amusing instructions
-alter some sort of state that the computer withkeeps across instructions.
+%The instruction sequence, is by it's sequential nature enumerable. Initial
+%program execution would be to iterate through the sequence in a particular
+%direction, e.g. top-down. In this process we implicitly make use of a ``program
+%counter'', which is a value that points to the index of the next instruction to
+%execute. When the program counter moves past the end of the instruction
+%sequence, the procedure halts.
 
-An instruction
-commands a machine to perform a discrete and deterministic alternation of the
-it's own state. For the simplest of purposes, the machine state can comprise of
-the index of the currently executing instruction, known as the program counter,
-the current state of the machine memory (tape), and the finite sequence of
-instructions that the machine is using as it's program.
+%In this model, a ``loop'' is constructable by having a special \emph{jump}
+%instruction that changes the program counter to some value less than the
+%current program counter.
 
-The machine state comprises of the state of the tape, the current position on
-tape and the program.
+%A ``loop'' can be constructed by a sequence of such instructions, due it's
+%sequential nature being enumerable, and with the existance of a special
+%\emph{jump} instruction, that changes the 
 
-finite, discrete and deterministic instructions, that is,
-without infinite, continous or stochastic processes. Procedures hence consume a
-value as \emph{input} and produce a value as \emph{output}. These values are
-finite in the sense that they can be represented as a finite sequence of bits.
-No input or output values can in this sense be represented by empty sequences.
-If conversely, multiple values are to serve as either input or output, a simple
-value composition scheme can be devised:
-
-Suppose a binary digit representation of all values. Then the longest possible
-value in the value composition will be of some finite length. All other values
-can be padded from the left with $0$'s to fit that length, and the sequence can
-begin with an additional number (of same width) indicating the number of
-elements in the composite.
-
-How do we know how wide the first number is?
-
-They operate on finite
-values, and the finiteness of values, individual instructions and the
-instruction sequence means that the effective procedure eventually halts or
-goes into an infinite loop for any given input. 
-
-The instruction sequence, is by it's sequential nature enumerable. Initial
-program execution would be to iterate through the sequence in a particular
-direction, e.g. top-down. In this process we implicitly make use of a ``program
-counter'', which is a value that points to the index of the next instruction to
-execute. When the program counter moves past the end of the instruction
-sequence, the procedure halts.
-
-In this model, a ``loop'' is constructable by having a special \emph{jump}
-instruction that changes the program counter to some value less than the
-current program counter.
-
-A ``loop'' can be constructed by a sequence of such instructions, due it's
-sequential nature being enumerable, and with the existance of a special
-\emph{jump} instruction, that changes the 
-
-Clearly, a procedure that eventually halts and returns the correct output for
-every input in the problem domain, solves the problem.
+%Clearly, a procedure that eventually halts and returns the correct output for
+%every input in the problem domain, solves the problem.
 
 
-Procedures take in an input value and produce an output value. Multiple values
-can be represented as a single value via. a pairing function.
+%Procedures take in an input value and produce an output value. Multiple values
+%can be represented as a single value via. a pairing function.
+
+\begin{itemize}
+
+\item effective procedure
+
+\item effectively decidable
+
+\item effectively enumerable
+
+\end{itemize}
 
 
+\section{Enumerability}
 
-\section{Computation environment}
+\subsection{Enumerable sets}
 
-Finitely many different instructions
+Enumerable sets, or equivalently countable sets are sets that can be put into a
+one-to-one correspondence to the set of natural numbers $\mathbb{N}$.
 
-A procedure is a finite length sequence of instructions, i.e. a countable set
-that can be enumerated.
 
-Every instruction is discrete, as in there are no continuous processes.
+\begin{itemize}
 
-Every instruction is deterministic, as in there are no stochastic processes.
+\item Recursively enumerable -- countable sets
 
-\section{Effectiveness}
+\item Co-recursively enumerable
 
-Effective procedure
-
-Effectively enumerable
-
-Effectively decidable
-
-Recursively enumerable -- countable sets
-
-Co-recursively enumerable
-
+\end{itemize}
 
 % 155
 % 22
@@ -132,6 +115,8 @@ Co-recursively enumerable
 % 54
 % 163
 % 115
+
+\section{Cantor's diagonalization}
 
 \section{The halting problem}
 
