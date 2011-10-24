@@ -14,35 +14,27 @@ An effective procedure is discrete, in the sense that computing the said
 function cannot take an infinite amount of time. To do this, an effective
 procedure makes use of a finite sequence of steps that themselves are discrete.
 This has a few inevitable consequences for the input and output values, namely
-that they themselves must be discrete that there must be a discrete number of
-them.
+that they themselves must be discrete and that there must be a discrete number
+of them\footnote{Multiple discrete values can be trivially encoded as a single
+discrete value.}.
 
 \begin{proof} An infinite value cannot be processed nor produced by a finite
 sequence of discrete steps.\end{proof}
 
 An effective procedure is also deterministic, in the sense that passing the
 same input value always yields the same output value. This means that all of
-the steps of the procedure that are relevant to it's output are themselves
-deterministic\footnote{All other steps can be omitted without loss of
-generality.}. Together with the discreteness property, this property has the
-ironic consequence that a computable function cannot produce a random value,
-but only pass one on\cite{knuth-random}.
+the steps of the procedure that are relevant to it's output\footnote{All other
+steps can be omitted without loss of generality.} are themselves deterministic.
 
 In effect, a procedure can be said to comprise of a finite sequence of other
-procedures, some basic, others composite, which it executes in order to produce
-an output value.
+procedures, some basic, others composite, which it executes in some order in
+order to produce an output value.
 
-Bah this is not enough.. write about scope
+Such a definition has no sense of ``scope'', which is unnecessary for a purely
+functional definition as relevant variables can be passed down the chain as
+necessary. This ``passing down'' however, is impractical
 
 
-\section{Blaaaaah}
-
-An effective procedure itself, is a finite sequence of discrete and
-deterministic instructions, that is, without any continuous or stochastic
-processes. Each instruction 
-
-As indicated, it takes an input value and produces an output
-value. If no values serve as input or no values serve as output, the
 
 The procedure input is a continuous machine state, the output is a discrete
 change of the continuous state. And yet, the values that a procedure may use to
@@ -51,9 +43,6 @@ produce it's result are all discrete.
 Instructions that the computer can execute may have no effect, but such
 instructions are seldom of any particular interest. More amusing instructions
 alter some sort of state that the computer withkeeps across instructions.
-
-Such changes should be discrete and deterministic, that is, such that continous
-and stochastic processes are not involved.
 
 An instruction
 commands a machine to perform a discrete and deterministic alternation of the
@@ -65,12 +54,6 @@ instructions that the machine is using as it's program.
 The machine state comprises of the state of the tape, the current position on
 tape and the program.
 
-Procedures themselves are algorithms, comprised of text, or more specifically,
-a finite sequence of instructions. Each instruction is a finite, discrete and
-deterministic operation, theoretically equivalent to a procedure.. so
-procedures consist of procedures, but some procedures must be implemented in
-underlying hardware.. meh Turing machines.
-
 finite, discrete and deterministic instructions, that is,
 without infinite, continous or stochastic processes. Procedures hence consume a
 value as \emph{input} and produce a value as \emph{output}. These values are
@@ -78,8 +61,6 @@ finite in the sense that they can be represented as a finite sequence of bits.
 No input or output values can in this sense be represented by empty sequences.
 If conversely, multiple values are to serve as either input or output, a simple
 value composition scheme can be devised:
-
-Instructions themselves are procedures...
 
 Suppose a binary digit representation of all values. Then the longest possible
 value in the value composition will be of some finite length. All other values
