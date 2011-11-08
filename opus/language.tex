@@ -95,7 +95,10 @@ recursion, namely:
 \nonterm{program}\ ::=&\ \nonterm{function}^*\ \nonterm{expression}
 \end{align}
 
-The order of the function definitions does matter wrt. pattern matching in so far as those defined higher up are attempted first, if the match fails, the next function with the
+The order of the function definitions does matter wrt. pattern matching in so
+far as those defined before are attempted first, if the match fails, the next
+function with the same signature\footnote{In this case comprising of the name
+of the function and it's arity.} is attempted.
 
 Note, that we let the number of function definitions be zero as an
 $\nonterm{expression}$ is a valid program as well. More generally, the program
