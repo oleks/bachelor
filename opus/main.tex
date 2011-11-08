@@ -2,6 +2,8 @@
 
 \usepackage[fancy]{oleks}
 
+\usepackage{synttree}
+
 %\setup{location={University of Copenhagen},subject={\ }}
 %\setupAuthor[addendum=\ ]{Oleksandr Shturmov}
 
@@ -21,11 +23,15 @@
 \newcommand{\nonterm}[1]{\ensuremath{\text{\mono{<#1>}}}}
 \newcommand{\term}[1]{\ensuremath{\text{\mono{`#1'}}}}
 
+\newcounter{definitionCounter}
+\newtheorem{definition}{Definition}[definitionCounter]
+
 \begin{document}
 
 %\thispagestyle{first}
 %\maketitle
 
+\input{preface}
 \input{uncomputability}
 \input{language}
 

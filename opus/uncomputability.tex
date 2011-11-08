@@ -17,7 +17,7 @@ function cannot take an infinite amount of time. To do this, an effective
 procedure makes use of a finite sequence of steps that themselves are discrete.
 This has a few inevitable consequences for the input and output values, namely
 that they themselves must be discrete and that there must be a discrete number
-of them\footnote{A discrete number of discrete values can be trivially encoded
+of them\footnote{A finite sequence of discrete values can be trivially encoded
 as a single discrete value.}.
 
 \begin{proof} An infinite value cannot be processed nor produced by a finite
@@ -94,9 +94,18 @@ are implemented in underlying hardware.
 
 \subsection{Enumerable sets}
 
-Enumerable sets, or equivalently countable sets are sets that can be put into a
-one-to-one correspondence to the set of natural numbers $\mathbb{N}$.
+Enumerable sets, or equivalently countable or recursively enumerable sets, are
+sets that can be put into a one-to-one correspondence to the set of natural
+numbers $\mathbb{N}$, more specifically:
 
+\begin{definition} An enumerable set is either the empty set or a set who's
+elements can placed in a sequence s.t. each element gets a consecutive number
+from the set of natural numbers $\mathbb{N}$.\end{definition}
+
+\subsection{Decidability}
+
+\begin{definition} A problems is decidable if there exists an algorithm that for any input event
+\end{definition}
 
 \begin{itemize}
 
@@ -117,6 +126,26 @@ one-to-one correspondence to the set of natural numbers $\mathbb{N}$.
 % 115
 
 \section{Cantor's diagonalization}
+
+Cantor's diagonalization argument is a useful argument for proving
+unenumerability of a set and hence it's uncomputability.
+
+The original proof shows that the set of infinite bit-sequences is not
+enumerable.
+
+\begin{proof} Assume that sequence $S$ is an infinite sequence of infinite
+sequences of bits. The claim is that regardless of the number of bit-sequences
+in $S$ it is always possible to construct a bit-sequence not contained in $S$.
+
+Such a sequence can be represented as a table:
+
+
+Such a sequence is constructable by taking the complements of the elements along the diagonal of all 
+
+
+
+\end{proof}
+
 
 \section{The halting problem}
 

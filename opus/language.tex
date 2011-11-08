@@ -13,71 +13,202 @@ in the latter chapters.
 achieve a more concise dialect. The extension is described in further detail in
 Appendix \ref{appendix:ebnf}.}
 
-The language \mono{D} is \emph{initially} a purely functional, first-order,
-explicitly typed, call-by-value language.
+\subsection{General properties}
 
-Programs are defined as follows:
+The intent of the language is for it be used to explain concepts such as
+size-change termination. One of the fundamental concepts required of the
+language of application is that it's datatypes are well-founded. That is, any
+subset $S$ of the range of values of some well-defined type has a value $s$
+s.t. $\forall {s'\in S}\ s\leq s$. This makes it ideal to chose some
+oversimplistic data type structure rather than an army of basic types. Besides,
+an apropriately defined basic data type should be able to represent arbitrarily
+complex data values.
+
+The language is initially first-order since the size-change termination
+principle is first described for first-order programs later on in this work.
+However, the language is designed so that it is easy to turn it into a
+high-level language without much effort. This may prove necessary as we try to
+expand size-change termination to higher-order programs.
+
+The language is a call-by-value and purely functional to avoid any problems
+that could arise from regarding lazy programs or where the notion of a global
+state of the machine is relevant. Simply put, this is done to ensure elegance
+of further proof with the help of the language.
+
+
+
+\subsection{Data \& Functions}
+
+As Turing had mentioned in his novel analysis of
+computation\cite{turing-machine}, having values with inifinite precision yields
+values that differ to an infinite extent. This yields a requirement of
+inifinitely many discrete operations to tell such values apart, for which there
+cannot exist an effective procedure by it's mere definition. To remedy this
+issue, Turing made use of a representation of data where the values were mere
+finite sequences of atoms from a basic alphabet.
+
+The language \mono{D} has an even simpler data representation -- it has an
+alphabet consisting of a single atom -- \mono{0}. All other data is
+represented via binary trees thereof. The advantage of this representation is
+that proofs should be much simpler as there aren't as many different basic
+data-types.
+
+Given a language that is at least powerful enough to write primitive recursive
+functions, operating on such values requires only the ability to construct and
+destruct binary branches. For the former we'll use an infix right-associative
+construction operator $\term{.}$ and for the latter we'll use the same operator
+applied in pattern-matching context:
 
 \begin{align}
-\nonterm{program}\ &::=\ \nonterm{type}^*\ \nonterm{function}^*
-\ \nonterm{expression}
+\nonterm{expression}\ ::=&\ \nonterm{value}\ (\ \term{.}\ \nonterm{expression}
+\ )\ ?\\
+\nonterm{value}\ ::=&\ \term{0}\ |\ \term{(}\ \nonterm{braces}\ \term{)}\\
+\nonterm{braces}\ ::=&\ \nonterm{expression}\ |
+\ \nonterm{function-application}\\
+\nonterm{function-application}\ ::=&\ \nonterm{function-name}
+\ \nonterm{expression}^+\\
+\nonterm{function}\ ::=&\ \nonterm{function-name}\ \nonterm{pattern}^+
+\ \term{:=}\ \nonterm{expression}\\
+\nonterm{pattern}\ ::=&\ \nonterm{pattern}\ (\ \term{.}
+\ \nonterm{pattern}\ )\ ?\\
+\nonterm{pattern-value}\ ::=&\ \term{0}\ |\ \term{(}
+\ \nonterm{pattern}\ \term{)}\ |\ \nonterm{variable-name}
 \end{align}
 
-Types are declared by means of infinite algebraic datatypes:
+It is worth noting that the sets $\nonterm{function-name}$ and
+$\nonterm{variable-name}$ are disjoint, but are commonly defined as follows:
 
 \begin{align}
-\nonterm{type}\ ::=&\ \nonterm{type-name}
-\ \term{:=}\ \nonterm{constructor}\ (\term{|}
-\ \nonterm{constructor})^*\\
-\nonterm{type-name}\ ::=&\ \nonterm{literal}\\
-\nonterm{constructor}\ ::=&\ \nonterm{constructor-name}
-\ (\term{of}\ \nonterm{type-name})?\\
-\nonterm{constructor-name}\ ::=&\ \nonterm{literal}
-\end{align}
-
-Functions (and their arguments) are explicitly typed, consume at least one
-argument and always yield a value as output:
-
-\begin{align}
-\nonterm{function}\ ::=&\ \nonterm{type-name}\ \nonterm{function-name}
-\ \nonterm{argument}^+\ \term{:=}\ \nonterm{expression}\\
-\nonterm{function-name}\ ::=&\ \nonterm{literal}\\
-\nonterm{argument}\ ::=&\ \nonterm{type-name}\
-\nonterm{argument-name}\\
-\nonterm{argument-name}\ ::=&\ \nonterm{literal}
-\end{align}
-
-All of the $\mathmono{<}x\mathmono{-name>}$ declarations above make use of the
-$\nonterm{literal}$ nonterminal. For simplicity we'll let this be a lowercased
-dash-separated sequence of a-z characters:
-
-\begin{align}
-\nonterm{literal}\ &::=\ [\term{a}\mathmono{-}\term{z}]
+\nonterm{function-name}\ ::=&\ \nonterm{name}\\
+\nonterm{variable-name}\ ::=&\ \nonterm{name}\\
+\nonterm{name}\ ::=&\ [\term{a}\mathmono{-}\term{z}]
 \ \left (\ [\term{-}\ \term{a}\mathmono{-}\term{z}]^*
 \ [\term{a}\mathmono{-}\term{z}]\ \right )?
 \end{align}
 
-It is important that the above $\mathmono{<}x\mathmono{-name>}$s are distinct
-from one another. We'll avoid cluttering up the grammar and simply state the
-following:
+\subsection{Programs}
 
-$$\nonterm{type-name}\cap\nonterm{constructor-name}\cap\nonterm{function-name}
-\cap\nonterm{argument-name}\equiv\emptyset$$
-
-Last but not least, the $\nonterm{expression}$ itself:
+Programs are defined in a conventional functional context and without mutual
+recursion, namely:
 
 \begin{align}
-\nonterm{expression}\ ::=&\ \nonterm{function-call}\ |\ \nonterm{constructor-call}\\
-\nonterm{function-call}\ ::=&\ \nonterm{function-name}\ \term{(}
-\ \nonterm{expression}^+\ \term{)}\\
-\nonterm{constructor-call}\ ::=&\ \nonterm{constructor-name}
-\ (\term{(}\ \nonterm{constructor-call}\ \term{)})?
+\nonterm{program}\ ::=&\ \nonterm{function}^*\ \nonterm{expression}
 \end{align}
 
-Since this is an eager language, the number of expressions that a function call
-takes must be the exact number of arguments defined for that function, and due
-to it being typed, their types must correspond.
+The order of the function definitions does matter wrt. pattern matching in so far as those defined higher up are attempted first, if the match fails, the next function with the
 
-If this definition should otherwise prove impractical in further affairs, such
-as lack of basic types or basic functions, these will be introduced as needed
-instead of them being included in the core grammar.
+Note, that we let the number of function definitions be zero as an
+$\nonterm{expression}$ is a valid program as well. More generally, the program
+can be thought of as a constant function, where the actual
+$\nonterm{expression}$ simply has access to some predefined functions defined
+by the function definitions in the program.
+
+\subsection{Sample programs}
+
+As an illustration of the language syntax, the following program reverses a tree:
+
+\begin{verbatim}
+reverse 0 := 0
+reverse left.right := (reverse right).(reverse left)
+\end{verbatim}
+
+The following program computes the Fibonacci number \mono{n}:
+
+\begin{verbatim}
+fibonacci 0 x y := 0
+fibonacci 1 x y := y
+fibonacci n x y := fibonacci (minus n 1) y (add x y)
+\end{verbatim}
+
+The definition of \mono{add}, \mono{minus} and indeed \mono{1}, depend heavily
+on the definition of the notion of a size of a data value. If we let the size
+of the data value simply be the number of dangling leafs then the definiitions: 
+
+
+%The language \mono{D} is \emph{initially} a purely functional, first-order,
+%call-by-value language.
+
+%Programs are defined as follows:
+
+%\begin{align}
+%\nonterm{program}\ &::=\ \nonterm{type}^*\ \nonterm{function}^*
+%\ \nonterm{expression}
+%\end{align}
+
+%Types are declared by means of infinite algebraic datatypes:
+
+%\begin{align}
+%\nonterm{type}\ ::=&\ \nonterm{type-name}
+%\ \term{:=}\ \nonterm{constructor}\ (\term{|}
+%\ \nonterm{constructor})^*\\
+%\nonterm{type-name}\ ::=&\ \nonterm{literal}\\
+%\nonterm{constructor}\ ::=&\ \nonterm{constructor-name}
+%\ (\term{of}\ \nonterm{type-name}^+)?\\
+%\nonterm{constructor-name}\ ::=&\ \nonterm{literal}
+%\end{align}
+
+%Functions (and their arguments) are explicitly typed, consume at least one
+%argument and always yield a value as output:
+
+%\begin{align}
+%\nonterm{function}\ ::=&\ \nonterm{type-name}\ \nonterm{function-name}
+%\ \nonterm{argument}^+\ \term{:=}\ \nonterm{expression}\\
+%\nonterm{function-name}\ ::=&\ \nonterm{literal}\\
+%\nonterm{argument}\ ::=&\ \nonterm{type-name}\
+%\nonterm{argument-name}\\
+%\nonterm{argument-name}\ ::=&\ \nonterm{literal}
+%\end{align}
+
+%All of the $\mathmono{<}x\mathmono{-name>}$ declarations above make use of the
+%$\nonterm{literal}$ nonterminal. For simplicity we'll let this be a lowercased
+%dash-separated sequence of a-z characters:
+
+%\begin{align}
+%\nonterm{literal}\ &::=\ [\term{a}\mathmono{-}\term{z}]
+%\ \left (\ [\term{-}\ \term{a}\mathmono{-}\term{z}]^*
+%\ [\term{a}\mathmono{-}\term{z}]\ \right )?
+%\end{align}
+
+%It is important that the above $\mathmono{<}x\mathmono{-name>}$s are distinct
+%from one another. We'll avoid cluttering up the grammar and simply state they
+%must be mutually pairwise disjoint.
+
+%Last but not least, the $\nonterm{expression}$ itself:
+
+%\begin{align}
+%\nonterm{expression}\ ::=&\ \nonterm{function-call}\ |\ \nonterm{constructor-call}\\
+%\nonterm{function-call}\ ::=&\ \nonterm{function-name}\ \term{(}
+%\ \nonterm{expression}^+\ \term{)}\\
+%\nonterm{constructor-call}\ ::=&\ \nonterm{constructor-name}
+%\ (\term{(}\ \nonterm{constructor-call}\ \term{)})?
+%\end{align}
+
+%Since this is an eager language, the number of expressions that a function call
+%takes must be the exact number of arguments defined for that function, and due
+%to it being typed, their types must correspond.
+
+%If this definition should otherwise prove impractical in further affairs, such
+%as lack of basic types or basic functions, these will be introduced as needed
+%instead of them being included in the core grammar.
+
+%\section{Sample programs in \mono{D}}
+
+%To further your understanding of the grammar, the following sample programs are provided.
+
+%\subsection{Fibonacci number $n$}
+
+%\begin{verbatim}
+
+%int fibonacci n = tailedFibonacci n 0 0
+
+%int tailedFibonacci
+%  0 t s = s
+%| n 0 0 = tailedFibonacci (- n 1)
+
+%\end{verbatim}
+
+%\subsection{Ackermann-P\'eter function}
+
+%\begin{verbatim}
+
+%\end{verbatim}
