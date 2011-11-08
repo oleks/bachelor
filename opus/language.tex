@@ -19,7 +19,7 @@ The intent of the language is for it be used to explain concepts such as
 size-change termination. One of the fundamental concepts required of the
 language of application is that it's datatypes are well-founded. That is, any
 subset $S$ of the range of values of some well-defined type has a value $s$
-s.t. $\forall {s'\in S}\ s\leq s$. This makes it ideal to chose some
+s.t. $\forall {s'\in S}\ s\leq s'$. This makes it ideal to chose some
 oversimplistic data type structure rather than an army of basic types. Besides,
 an apropriately defined basic data type should be able to represent arbitrarily
 complex data values.
@@ -62,7 +62,8 @@ applied in pattern-matching context:
 \begin{align}
 \nonterm{expression}\ ::=&\ \nonterm{value}\ (\ \term{.}\ \nonterm{expression}
 \ )\ ?\\
-\nonterm{value}\ ::=&\ \term{0}\ |\ \term{(}\ \nonterm{braces}\ \term{)}\\
+\nonterm{value}\ ::=&\ \term{0}\ |\ \term{(}\ \nonterm{braces}\ \term{)}\ |
+\ \nonterm{variable-name}\\
 \nonterm{braces}\ ::=&\ \nonterm{expression}\ |
 \ \nonterm{application}\\
 \nonterm{application}\ ::=&\ \nonterm{function-name}
