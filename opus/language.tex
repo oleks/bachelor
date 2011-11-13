@@ -35,29 +35,26 @@ that could arise from regarding lazy programs or where the notion of a global
 state of the machine is relevant. Simply put, this is done to ensure elegance
 of further proof with the help of the language.
 
-
-
 \subsection{Data \& Functions}
 
-As Turing had mentioned in his novel analysis of
-computation\cite{turing-machine}, having values with inifinite precision yields
-values that differ to an infinite extent. This yields a requirement of
-inifinitely many discrete operations to tell such values apart, for which there
-cannot exist an effective procedure by it's mere definition. To remedy this
-issue, Turing made use of a representation of data where the values were mere
-finite sequences of atoms from a basic alphabet.
+%As Turing had mentioned in his novel analysis of
+%computation\cite{turing-machine}, having values with inifinite precision yields
+%values that differ to an infinite extent. This yields a requirement of
+%inifinitely many discrete operations to tell such values apart, for which there
+%cannot exist an effective procedure by it's mere definition. To remedy this
+%issue, Turing made use of a representation of data where the values were mere
+%finite sequences of atoms from a basic alphabet.
 
-The language \mono{D} has an even simpler data representation -- it has an
-alphabet consisting of a single atom -- \mono{0}. All other data is
-represented via binary trees thereof. The advantage of this representation is
-that proofs should be much simpler as there aren't as many different basic
-data-types.
+The language \mono{D} is untyped, and represents all data in terms of
+\emph{unlabeled ordered binary trees}. Such a tree is recursively defined as
+a finite set of nodes which is either empty or consists of a single node with
+two trees as it's right and left child, respectively.
 
-Given a language that is at least powerful enough to write primitive recursive
-functions, operating on such values requires only the ability to construct and
-destruct binary branches. For the former we'll use an infix right-associative
-construction operator $\term{.}$ and for the latter we'll use the same operator
-applied in pattern-matching context:
+\mono{D} represents an empty tree with the atom \mono{0}. Node constrution is
+done with the right-associative binary operator $\term{.}$, within expressions.
+Node destruction is done with the same kind of operator, except that it can
+only be done while pattern matching. Conventional braces can be used to
+override the right-associativity of the $\term{.}$ operator.
 
 \begin{align}
 \nonterm{expression}\ ::=&\ \nonterm{value}\ (\ \term{.}\ \nonterm{expression}
@@ -70,22 +67,73 @@ applied in pattern-matching context:
 \ \nonterm{expression}^+\\
 \nonterm{function}\ ::=&\ \nonterm{function-name}\ \nonterm{pattern}^+
 \ \term{:=}\ \nonterm{expression}\\
-\nonterm{pattern}\ ::=&\ \nonterm{pattern}\ (\ \term{.}
+\nonterm{pattern}\ ::=&\ \nonterm{pattern-value}\ (\ \term{.}
 \ \nonterm{pattern}\ )\ ?\\
-\nonterm{pattern-value}\ ::=&\ \term{0}\ |\ \term{(}
+\nonterm{pattern-value}\ ::=&\ \term{0}\ |\ \term{\_}\ |\ \term{(}
 \ \nonterm{pattern}\ \term{)}\ |\ \nonterm{variable-name}
 \end{align}
 
+The term $\term{\_}$ in $\nonterm{pattern-value}$ is the conventional wildcard
+operator -- it indicates an argument that is irrelevant to the function
+declaration, and multiple wildcards in the argument specification indicate
+different variables. On the other hand, using the same name for multiple
+variables in pattern sequence is disallowed.
+
 It is worth noting that the sets $\nonterm{function-name}$ and
-$\nonterm{variable-name}$ are disjoint, but are commonly defined as follows:
+$\nonterm{variable-name}$ are disjoint, but are otherwise both defined by the
+nonterminal $\nonterm{name}$:
 
 \begin{align}
-\nonterm{function-name}\ ::=&\ \nonterm{name}\\
-\nonterm{variable-name}\ ::=&\ \nonterm{name}\\
 \nonterm{name}\ ::=&\ [\term{a}\mathmono{-}\term{z}]
 \ \left (\ [\term{-}\ \term{a}\mathmono{-}\term{z}]^*
 \ [\term{a}\mathmono{-}\term{z}]\ \right )?
 \end{align}
+
+\subsection{Size}
+
+Althought the language is already complete, it would prove useful for further
+analysis to define the notion of size, and hence the equality and order of
+values.
+
+\emph{We define the size of a value to be the number of nodes in the tree that
+represents that value.}
+
+Hence, the tree \mono{0} has the value $0$, the tree \mono{0.0} has the value
+$1$, and the tree \mono{0.0.0} has the value $2$ as does it's symmetrically
+equivalent tree \mono{(0.0).0}.
+
+This allows us to define the otherwise built-in function \mono{less} in a
+primitive recursive fashion as follows:
+
+\begin{verbatim}
+less 0 0 = 0
+less _._ 0 = 0
+less 0 _._ = 0.0
+less _.X _.Y = less X Y
+\end{verbatim}
+
+Since the values begin at $0$ and grow at the rate of $1$ ... we can define it
+as syntactic sugar and use nonnegative integers where ...
+
+In addition to defining the actual data type we need to specify how we're going
+to reason about it. Specifically, the questions of equality and order of values
+constructed in this manner have to be answered.
+
+For all intents and purposes, we can let the \emph{absolute value} of such a
+tree-structured value be equal to $n-1$, where $n$ is the number of leafs in
+the tree. Hence, the tree \mono{0} denotes $0$, \mono{0.0} denotes 1,
+\mono{0.0.0} denotes 2 and so on.
+
+The choice of this data representation yields the following properties for the
+construction and destruction operators:
+
+\begin{lemma} Construction of value yields a value strictly greater than either
+of it's constituents. Specifically, the absolute value of the new value is the
+sum of the absolute values of the constituents.\end{lemma}
+
+\begin{lemma} Destruction of a value yields a pair of values who's absolute
+values are strictly less than the absolute value of the original
+value.\end{lemma}
 
 \subsection{Programs}
 
@@ -107,6 +155,30 @@ can be thought of as a constant function, where the actual
 $\nonterm{expression}$ simply has access to some predefined functions defined
 by the function definitions in the program.
 
+\subsection{Built-in high-order functions}
+
+Although \mono{D} is initially a first-order language, we will ignore that
+limitation for a bit and define a few higher-order functions to provide some
+syntactical sugar to the language. Beyond the discussion in this section, these
+higher-order functions should be regarded as \mono{D} built-ins.
+
+\subsubsection{Branching}
+
+In the following definition, the variable names \mono{true} and \mono{false}
+refer to expressions to be executed in either case.
+
+\begin{verbatim}
+if 0 _ false := false
+if _._ _ true := true
+\end{verbatim}
+
+As you can see, we employ the C convention that any value other than $0$ is a
+``truthy'' value, and the expression \mono{true} is returned.
+
+Although the call-by-value nature of the language does not allow for
+short-circuiting the if-statements defined in such a way, this shouldn't be any
+impediment to further analysis.
+
 \subsection{Sample programs}
 
 As an illustration of the language syntax, the following program reverses a tree:
@@ -126,93 +198,15 @@ fibonacci n x y := fibonacci (minus n 1) y (add x y)
 
 The definition of \mono{add}, \mono{minus} and indeed \mono{1}, depend heavily
 on the definition of the notion of a size of a data value. If we let the size
-of the data value simply be the number of dangling leafs then the definiitions: 
+of the data value simply be the number of dangling leafs then the definiitions:
 
+Data is represented as unlabeled binary trees. The size of the data value is
+simply the number of nodes in the tree, or equivalently the number of leaf
+nodes minus 1. Leaf nodes suck as they are terribly inefficient. 
 
-%The language \mono{D} is \emph{initially} a purely functional, first-order,
-%call-by-value language.
+\section{Semantics}
 
-%Programs are defined as follows:
+In the following section, the operational semantics of the language \mono{D}
+are defined in terms of structured operaitonal semantics\cite{sos}.
 
-%\begin{align}
-%\nonterm{program}\ &::=\ \nonterm{type}^*\ \nonterm{function}^*
-%\ \nonterm{expression}
-%\end{align}
-
-%Types are declared by means of infinite algebraic datatypes:
-
-%\begin{align}
-%\nonterm{type}\ ::=&\ \nonterm{type-name}
-%\ \term{:=}\ \nonterm{constructor}\ (\term{|}
-%\ \nonterm{constructor})^*\\
-%\nonterm{type-name}\ ::=&\ \nonterm{literal}\\
-%\nonterm{constructor}\ ::=&\ \nonterm{constructor-name}
-%\ (\term{of}\ \nonterm{type-name}^+)?\\
-%\nonterm{constructor-name}\ ::=&\ \nonterm{literal}
-%\end{align}
-
-%Functions (and their arguments) are explicitly typed, consume at least one
-%argument and always yield a value as output:
-
-%\begin{align}
-%\nonterm{function}\ ::=&\ \nonterm{type-name}\ \nonterm{function-name}
-%\ \nonterm{argument}^+\ \term{:=}\ \nonterm{expression}\\
-%\nonterm{function-name}\ ::=&\ \nonterm{literal}\\
-%\nonterm{argument}\ ::=&\ \nonterm{type-name}\
-%\nonterm{argument-name}\\
-%\nonterm{argument-name}\ ::=&\ \nonterm{literal}
-%\end{align}
-
-%All of the $\mathmono{<}x\mathmono{-name>}$ declarations above make use of the
-%$\nonterm{literal}$ nonterminal. For simplicity we'll let this be a lowercased
-%dash-separated sequence of a-z characters:
-
-%\begin{align}
-%\nonterm{literal}\ &::=\ [\term{a}\mathmono{-}\term{z}]
-%\ \left (\ [\term{-}\ \term{a}\mathmono{-}\term{z}]^*
-%\ [\term{a}\mathmono{-}\term{z}]\ \right )?
-%\end{align}
-
-%It is important that the above $\mathmono{<}x\mathmono{-name>}$s are distinct
-%from one another. We'll avoid cluttering up the grammar and simply state they
-%must be mutually pairwise disjoint.
-
-%Last but not least, the $\nonterm{expression}$ itself:
-
-%\begin{align}
-%\nonterm{expression}\ ::=&\ \nonterm{function-call}\ |\ \nonterm{constructor-call}\\
-%\nonterm{function-call}\ ::=&\ \nonterm{function-name}\ \term{(}
-%\ \nonterm{expression}^+\ \term{)}\\
-%\nonterm{constructor-call}\ ::=&\ \nonterm{constructor-name}
-%\ (\term{(}\ \nonterm{constructor-call}\ \term{)})?
-%\end{align}
-
-%Since this is an eager language, the number of expressions that a function call
-%takes must be the exact number of arguments defined for that function, and due
-%to it being typed, their types must correspond.
-
-%If this definition should otherwise prove impractical in further affairs, such
-%as lack of basic types or basic functions, these will be introduced as needed
-%instead of them being included in the core grammar.
-
-%\section{Sample programs in \mono{D}}
-
-%To further your understanding of the grammar, the following sample programs are provided.
-
-%\subsection{Fibonacci number $n$}
-
-%\begin{verbatim}
-
-%int fibonacci n = tailedFibonacci n 0 0
-
-%int tailedFibonacci
-%  0 t s = s
-%| n 0 0 = tailedFibonacci (- n 1)
-
-%\end{verbatim}
-
-%\subsection{Ackermann-P\'eter function}
-
-%\begin{verbatim}
-
-%\end{verbatim}
+$$\langle E, s\rangle$$
