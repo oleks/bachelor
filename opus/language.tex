@@ -48,13 +48,17 @@ of further proof with the help of the language.
 The language \mono{D} is untyped, and represents all data in terms of
 \emph{unlabeled ordered binary trees}. Such a tree is recursively defined as
 a finite set of nodes which is either empty or consists of a single node with
-two trees as it's right and left child, respectively.
+two trees as it's left and right child, respectively.
 
 \mono{D} represents an empty tree with the atom \mono{0}. Node constrution is
-done with the right-associative binary operator $\term{.}$, within expressions.
-Node destruction is done with the same kind of operator, except that it can
-only be done while pattern matching. Conventional braces can be used to
-override the right-associativity of the $\term{.}$ operator.
+done with the right-associative infix binary operator $\term{.}$, within
+expressions. Node destruction is done with the exact same operator, except that
+it is done while pattern matching an argument list to a parameter list of a
+function declaration. Conventional braces can be used to override the
+right-associativity of the $\term{.}$ operator in both cases.
+
+Hence, the grammar for expressions and function declarations is defined as
+follows:
 
 \begin{align}
 \nonterm{expression}\ ::=&\ \nonterm{value}\ (\ \term{.}\ \nonterm{expression}
@@ -74,10 +78,10 @@ override the right-associativity of the $\term{.}$ operator.
 \end{align}
 
 The term $\term{\_}$ in $\nonterm{pattern-value}$ is the conventional wildcard
-operator -- it indicates an argument that is irrelevant to the function
-declaration, and multiple wildcards in the argument specification indicate
-different variables. On the other hand, using the same name for multiple
-variables in pattern sequence is disallowed.
+operator -- it indicates a value that is irrelevant to the function
+declaration. Multiple wildcards in the parameter list indicate possibly
+different value arguments, while multiple occurances of the same variable name
+in the parameter list are disallowed.
 
 It is worth noting that the sets $\nonterm{function-name}$ and
 $\nonterm{variable-name}$ are disjoint, but are otherwise both defined by the
@@ -99,18 +103,25 @@ values.
 represents that value.}
 
 Hence, the tree \mono{0} has the value $0$, the tree \mono{0.0} has the value
-$1$, and the tree \mono{0.0.0} has the value $2$ as does it's symmetrically
-equivalent tree \mono{(0.0).0}.
+$1$, and the tree \mono{0.0.0} has the value $2$ as does it's symmetrical
+equivalent, \mono{(0.0).0}.
 
-This allows us to define the otherwise built-in function \mono{less} in a
+This allows us to define the, otherwise built-in, function \mono{less} in a
 primitive recursive fashion as follows:
 
 \begin{verbatim}
 less 0 0 = 0
 less _._ 0 = 0
 less 0 _._ = 0.0
-less _.X _.Y = less X Y
+less AR.AL BR.BL = or (and (less AR BR) (less AL BL))
 \end{verbatim}
+
+This definition indicates that we choose for the empty tree to represent the
+value \emph{false}, and for the tree \mono{0.0} to represent the value
+\emph{true}. We'll keep the definition even more generic, and let the
+\emph{nonempty} tree represent the value \emph{true}, as shall become useful
+when we define the higher-order function \mono{if}
+(\referToSection{language-higher-order-built-ins}).
 
 Since the values begin at $0$ and grow at the rate of $1$ ... we can define it
 as syntactic sugar and use nonnegative integers where ...
@@ -155,7 +166,8 @@ can be thought of as a constant function, where the actual
 $\nonterm{expression}$ simply has access to some predefined functions defined
 by the function definitions in the program.
 
-\subsection{Built-in high-order functions}
+\subsection{Built-in high-order
+functions}\label{section:language-higher-order-built-ins}
 
 Although \mono{D} is initially a first-order language, we will ignore that
 limitation for a bit and define a few higher-order functions to provide some
