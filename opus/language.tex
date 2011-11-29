@@ -1,19 +1,10 @@
-\chapter{Language}
+\chapter{\mono{D}}
 
-\section{The language \mono{D}}
+For the purposes of describing size-change termination we'll consider a language
+\mono{D}. The following chapter describes the syntax and semantics of the
+language.
 
-In the following chapter the language \mono{D}\footnote{The choice of the
-letter \mono{D} bares no special meaning.}\ is described in terms of an
-extended Backus-Naur form\footnotemark. It is described in the simplest
-possible terms, that is, extraneous syntactical sugar and basic terms are left
-out of the core language definition.  Instead, these are defined as necessary
-in the latter chapters.
-
-\footnotetext{The extension lends some constructs from regular expressions to
-achieve a more concise dialect. The extension is described in further detail in
-Appendix \ref{appendix:ebnf}.}
-
-\subsection{General properties}
+\section{General properties}
 
 The intent of the language is for it be used to explain concepts such as
 size-change termination. One of the fundamental concepts required of the
@@ -35,20 +26,180 @@ that could arise from regarding lazy programs or where the notion of a global
 state of the machine is relevant. Simply put, this is done to ensure elegance
 of further proof with the help of the language.
 
-\subsection{Data \& Functions}
-
-%As Turing had mentioned in his novel analysis of
-%computation\cite{turing-machine}, having values with inifinite precision yields
-%values that differ to an infinite extent. This yields a requirement of
-%inifinitely many discrete operations to tell such values apart, for which there
-%cannot exist an effective procedure by it's mere definition. To remedy this
-%issue, Turing made use of a representation of data where the values were mere
-%finite sequences of atoms from a basic alphabet.
+\section{Data}
 
 The language \mono{D} is untyped, and represents all data in terms of
 \emph{unlabeled ordered binary trees}. Such a tree is recursively defined as
-a finite set of nodes which is either empty or consists of a single node with
-two trees as it's left and right child, respectively.
+follows:
+
+\begin{definition}
+
+A set of nodes which is either the empty set, or a singleton set. A node has no
+label, but has two binary trees as it's left and right child, respectively.
+
+\end{definition}
+
+To operate on such trees we require only the following capabilities:
+
+\begin{itemize}
+
+\item Represent a leaf node, that is, an empty set.
+
+\item Construct binary nodes from two other trees.
+
+\item Destruct binary nodes into their respective children.
+
+\item Distinguish between leaves and nodes.
+
+\end{itemize}
+
+\subsection{Size}
+
+For our purposes we'd also need to define the notion of size, and be sure to do
+it in such a way that the data values that can be constructed are well-founded.
+
+We know that the relation $<$ on the $\mathbb{N}$ is well-founded, so if we can
+map \mono{D}'s values to $\mathbb{N}$, then we are well off.
+
+\begin{definition}
+
+Size of a value in \mono{D} is the number of nodes in the tree representing
+that value.
+
+\end{definition}
+
+This definition almost allows us to devise an algorithm to compare the sizes of
+data values. The problem withstanding is that two different values can have
+rather diverging tree representations. Hence, comparaing them, using only the
+operations defined for data values above, is seemingly impossible unless we
+intially, or along the way, transform the trees of the values being compared
+into some standard representation. We'll define this representaiton as follows:
+
+\begin{definition}
+
+The standard representation of a data value is the tree that only has leafs as
+the left children of it's respective nodes.
+
+\end{definition}
+
+Hence, we'll define the function $\proc{Less}(A,B)$ with the help of an
+auxiliary function $\proc{Normalize}(A)$ that \emph{normalizes} the given value
+to the standard value representation.
+
+Before we can define the conrete algorithms for the respective functions, we
+need to formally define a few basic data representation and functions assumed
+to be implemented beneath the language:
+
+\begin{itemize}
+
+\item $leaf$, represents a leaf node.
+
+\item $\proc{Destruct}(A)\leadsto \{A_{left}, A_{right}\}$, destructs a node
+into it's corresponding children.
+
+\item $\proc{Construct}(A_{left},A_{right})\leadsto A$, constructs a node from
+two binary trees, such that the trees become the nodes children.
+
+\item $\proc{IsNode}(A)$, returns either $true$ or $false$, all depending on
+whether $A$ is a node or a leaf, respectively.
+
+\item $\proc{IsLeaf}(A)$, is the negation of $\proc{IsNode}(A)$.
+
+\end{itemize}
+
+We'll define the procedure $\proc{Normalize}(A)$ a little later, and start with
+the procedure $\proc{Less}(A,B)$ to complete the overview of the function.
+Before we can do that though, we need to define one additional peace of
+notation:
+
+\begin{itemize}
+
+\item $leaf$ represents $false$
+
+\item Any node represents $true$
+
+\end{itemize}
+
+
+returns a $leaf$ or a node consisting of two $leaf$s.
+
+\begin{codebox}
+\Procname{$\proc{Less}(A,B)$}
+\li \If $\proc{IsLeaf}(A)$ \Then
+\li   \Return $\proc{Construct}(leaf,leaf)$
+    \End
+\li \If $\proc{IsLeaf}(B)$ \Then
+\li   \Return $leaf$
+    \End
+\zi
+\li $A\gets \proc{Normalize}(A)$
+\li $B\gets \proc{Normalize}(B)$
+\zi
+\li $\{\_, A_{right}\} \gets \proc{Destruct}(A)$
+\li $\{\_, B_{right}\} \gets \proc{Destruct}(B)$
+\zi
+\li \Return $\proc{Less}(A_{right},B_{right})$
+\end{codebox}
+
+\begin{codebox}
+\Procname{$\proc{Normalize}(A)$}
+\li $\proc{NormalizeAuxiliary}(A,leaf,leaf)$
+\end{codebox}
+
+\begin{codebox}
+\Procname{$\proc{NormalizeAuxiliary}(A,A',A_{normalized})$}
+\li \If $\proc{IsNode}(A)$ \Then
+\li   $A_{normalized}\gets \proc{Construct}(leaf,A_{normalized})$
+\li \Else
+\li   \Return $leaf$
+    \End
+\zi
+\li $\{A_{left}, A_{right}\} \gets \proc{Destruct}(A)$
+\li \If $\proc{IsNode}(A_{left})$ \Then
+\li   $A'\gets \proc{Construct}(A_{left}, A')$
+    \End
+\li \If $\proc{IsNode}(A_{right})$ \Then
+\li   $A \gets A_{right}$
+\li \Else
+\li   \If $\proc{IsNode}(A')$ \Then
+\li     $\{A,A'\} \gets \proc{Destruct}(A')$
+\li   \Else
+\li     \Return $A_{normalized}$
+      \End
+    \End
+\li \Return $\proc{Normalize}(A,A',A_{normalized})$
+\end{codebox}
+
+\begin{codebox}
+\Procname{$\proc{Less}(A,B)$}
+\li \If $\proc{IsLeaf}(A)$ \Then
+\li   \Return $B$
+    \End
+\li \If $\proc{IsLeaf}(B)$ \Then
+\li   \Return $leaf$
+    \End
+\zi
+\li $A\gets \proc{Normalize}(A)$
+\li $B\gets \proc{Normalize}(B)$
+\zi
+\li $\{\_, A_{right}\} \gets \proc{Destruct}(A)$
+\li $\{\_, B_{right}\} \gets \proc{Destruct}(B)$
+\zi
+\li \Return $\proc{Less}(A_{right},B_{right})$
+\end{codebox}
+
+\section{The syntax}
+
+The syntax is described in terms of an extended Backus-Naur form\footnotemark.
+It is described in the simplest possible terms, that is, extraneous syntactical
+sugar and basic terms are left out of the core language definition.  Instead,
+these are defined ``as needed'', later on.
+
+\footnotetext{The extension lends some constructs from regular expressions to
+achieve a more concise dialect. The extension is described in further detail in
+Appendix \ref{appendix:ebnf}.}
+
+\subsection{Data \& Functions}
 
 \mono{D} represents an empty tree with the atom \mono{0}. Node constrution is
 done with the right-associative infix binary operator $\term{.}$, within
@@ -78,10 +229,10 @@ follows:
 \end{align}
 
 The term $\term{\_}$ in $\nonterm{pattern-value}$ is the conventional wildcard
-operator -- it indicates a value that is irrelevant to the function
-declaration. Multiple wildcards in the parameter list indicate possibly
-different value arguments, while multiple occurances of the same variable name
-in the parameter list are disallowed.
+operator -- it indicates a value that is irrelevant to the function declaration
+as such, but allows to keep the same function signature. Multiple wildcards in
+the parameter list indicate possibly different value arguments, while multiple
+occurances of the same variable name in the parameter list are disallowed.
 
 It is worth noting that the sets $\nonterm{function-name}$ and
 $\nonterm{variable-name}$ are disjoint, but are otherwise both defined by the
@@ -96,11 +247,13 @@ nonterminal $\nonterm{name}$:
 \subsection{Size}
 
 Althought the language is already complete, it would prove useful for further
-analysis to define the notion of size, and hence the equality and order of
-values.
+analysis to define the notion of \emph{size}, and hence the equality and order
+of relations on data values. Without further a-do, we define the size of a
+value to be \emph{the number of nodes in the binary tree}.
 
-\emph{We define the size of a value to be the number of nodes in the tree that
-represents that value.}
+The euqality and order relations are a bit more complicated though, as that
+there is seemingly no \emph{elegant} way to decide whether one arbitrary binary
+tree has the same or ..
 
 Hence, the tree \mono{0} has the value $0$, the tree \mono{0.0} has the value
 $1$, and the tree \mono{0.0.0} has the value $2$ as does it's symmetrical
@@ -113,6 +266,8 @@ primitive recursive fashion as follows:
 less 0 0 = 0
 less _._ 0 = 0
 less 0 _._ = 0.0
+less A.B X.Y = 
+
 less AR.AL BR.BL = or (and (less AR BR) (less AL BL))
 \end{verbatim}
 
@@ -402,3 +557,21 @@ We complete application by evaluating $\lambda$ with the new memory state:
 \end{equation}
 
 \emph{Note, we return to the original $\sigma$ once $\lambda$ is evaluated.}
+
+\newpage
+
+This is small-step..
+
+\begin{equation}
+{
+\left\langle n_f, [e], \sigma\right\rangle
+\longrightarrow
+\left\langle e_f, [p], [e], \sigma\right\rangle
+\ \ \ \ \ \text{where}\ \left\langle e_f, [p] \right\rangle
+\ \text{is the definition of the function with the name}\ n_f\text{.}
+\over
+\left\langle n_f, [e], \sigma\right\rangle
+\longrightarrow
+\left\langle v, \sigma\right\rangle
+}
+\end{equation}
