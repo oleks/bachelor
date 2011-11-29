@@ -185,6 +185,11 @@
 
 % references
 
+\NewDocumentCommand\referToDefinition{m}
+{
+	Definition \ref{definition:#1}/\pageref{definition:#1}
+}
+
 \NewDocumentCommand\referToSection{m}
 {
 	\textsection\ \ref{section:#1}/\pageref{section:#1}

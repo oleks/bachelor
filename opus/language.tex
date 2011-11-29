@@ -28,118 +28,303 @@ of further proof with the help of the language.
 
 \section{Data}
 
+\subsection{Representation}\label{section:d-data-representation}
+
 The language \mono{D} is untyped, and represents all data in terms of
-\emph{unlabeled ordered binary trees}. Such a tree is recursively defined as
-follows:
+\emph{unlabeled ordered binary trees}, henceforth referred to as simply,
+\emph{binary trees}. Such a tree is recursively defined as follows:
 
 \begin{definition}
 
-A set of nodes which is either the empty set, or a singleton set. A node has no
-label, but has two binary trees as it's left and right child, respectively.
+A binary tree is a set of nodes which is either the empty set, or a singleton
+set. A node has no label, but has two binary trees as it's left and right
+child, respectively.
 
 \end{definition}
 
-To operate on such trees we require only the following capabilities:
+For simplicity, we'll sometimes refer to the empty set as a \emph{leaf}, and
+the singleton set as a \emph{node}.
 
-\begin{itemize}
+To operate on such trees we'll require a few underlying capabilities. Below
+we'll define these capabilities in general for the purpose of analysis. In
+\referToSection{d-syntax} we'll define the concrete syntax for these in
+\mono{D}.
 
-\item Represent a leaf node, that is, an empty set.
+First and foremost, we need to represent leaves, we do this using the atom
+$leaf$. Furthermore, we'll define the following operations:
 
-\item Construct binary nodes from two other trees.
+\begin{equation}
+{
+{}\over{
+\proc{Construct}(A_{left}, A_{right})
+\longrightarrow
+A
+}}
+\ \ \ \ \ \ \text{If $A_{left}$ and $A_{right}$ are the respective children
+of $A$.}
+\end{equation}
 
-\item Destruct binary nodes into their respective children.
+\begin{equation}
+{
+{}\over{
+\proc{Destruct}(A)
+\longrightarrow
+\{A_{left},A_{right}\}
+}}
+\ \ \ \ \ \ \text{If $A_{left}$ and $A_{right}$ are the respective children
+of $A$.}
+\end{equation}
 
-\item Distinguish between leaves and nodes.
+\begin{equation}
+{
+{}\over{
+\proc{IsNode}(A)
+\longrightarrow
+true
+}}
+\ \ \ \ \ \ \text{If $A$ is a node.}
+\end{equation}
 
-\end{itemize}
+\begin{equation}
+{
+{}\over{
+\proc{IsNode}(A)
+\longrightarrow
+false
+}}
+\ \ \ \ \ \ \text{If $A$ is a leaf.}
+\end{equation}
+
+\begin{equation}
+{
+{
+\proc{IsNode}(A)
+\longrightarrow
+true
+}\over{
+\proc{IsLeaf}(A)
+\longrightarrow
+false
+}}
+\end{equation}
+
+\begin{equation}
+{
+{
+\proc{IsNode}(A)
+\longrightarrow
+false
+}\over{
+\proc{IsLeaf}(A)
+\longrightarrow
+true
+}}
+\end{equation}
+
+Although we won't be needing $\proc{IsNode}$ and $\proc{IsLeaf}$ once the
+concrete syntax of \mono{D} is in place (since it makes use of pattern
+matching), it is still worth defining what we'll regard as the values $true$
+and $false$, for the sake of other functions. We'll adopt a C-like convention:
+
+\begin{definition}\label{definition:true-false}
+
+Any non-$leaf$ binary tree represents the value $true$ and any $leaf$
+represents the value $false$.
+
+\end{definition}
 
 \subsection{Size}
 
-For our purposes we'd also need to define the notion of size, and be sure to do
-it in such a way that the data values that can be constructed are well-founded.
+For the purposes of talking about size-change termination, we also need to
+define the notion of size, and be sure to do so in such a way so that all
+possible data values are well-founded.
 
-We know that the relation $<$ on the $\mathbb{N}$ is well-founded, so if we can
-map \mono{D}'s values to $\mathbb{N}$, then we are well off.
-
-\begin{definition}
+\begin{definition}\label{definition:size}
 
 Size of a value in \mono{D} is the number of nodes in the tree representing
 that value.
 
 \end{definition}
 
-This definition almost allows us to devise an algorithm to compare the sizes of
-data values. The problem withstanding is that two different values can have
-rather diverging tree representations. Hence, comparaing them, using only the
-operations defined for data values above, is seemingly impossible unless we
-intially, or along the way, transform the trees of the values being compared
-into some standard representation. We'll define this representaiton as follows:
+The ``well-foundedness'' of \mono{D}'s data values, given such a definition can
+be argued for by equating the definition to a mapping of \mono{D}'s data values
+onto the natural numbers. This would imply that we can define the relation $<$
+on \mono{D}'s data values, which we know to be well-founded. 
 
-\begin{definition}
+We start by formally proving that \referToDefinition{size} yields a many-to-one
+mapping of \mono{D}'s data values to the natural numbers.
 
-The standard representation of a data value is the tree that only has leafs as
-the left children of it's respective nodes.
+First, we prove, by induction, that any natural number can be represented in
+\mono{D}:
+
+\begin{proof}\ \\
+
+\begin{description}[\setleftmargin{70pt}\setlabelstyle{\bf}]
+
+\item [Base] A $leaf$ has no nodes, and hence represents the value $0$.
+
+\item [Assumption] If we can represent the $n\in\mathbb{N}$ in \mono{D}, then
+we can also represent the number $n+1\in$. 
+
+\item [Induction] Let $n$ be represented by some binary tree $A$, then $n+1$
+can be represented by $\proc{Construct}(leaf,A)$. 
+
+\end{description}
+
+\end{proof}
+
+Second, we prove, also by induction, that any value \mono{D} has a
+representation in $\mathbb{N}$.
+
+\begin{proof}\ \\
+
+\begin{description}[\setleftmargin{70pt}\setlabelstyle{\bf}]
+
+\item [Base] A $leaf$ has no nodes, and hence corresponds to the value $0$.
+
+\item [Assumption]
+
+\begin{enumerate}
+
+\item If the binary tree $A$ has a representation $n\in\mathbb{N}$, then 
+$\left|\proc{Construct}(leaf, A)\right|\equiv n+1$ and
+$\left|\proc{Construct}(A, leaf)\right|\equiv n+1$.
+
+\item If the binary tree $A$ has a representation $n\in\mathbb{N}$, and the
+binary tree $B$ has a representation $m\in\mathbb{N}$, then
+$\left|\proc{Construct}(A,B)\right|\equiv n+m+1$ and
+$\left|\proc{Construct}(B,A)\right|\equiv n+m+1$.
+
+\end{enumerate}
+
+\item [Induction]
+
+By definition of the binary operation $\proc{Construct}$,
+
+$$\left|A\right|=1+\left|A_{left}\right|+\left|A_{right}\right|$$
+
+Hence, the assumptions must hold.
+
+\end{description}
+
+\end{proof}
+
+\referToDefinition{size} \emph{almost} allows us to devise an algorithm to
+compare the sizes of data values. The problem withstanding is that two
+different values can have rather diverging tree representations. Hence,
+comparing them, using only the operations defined in
+\referToSection{d-data-representation}, is seemingly impossible unless we
+initially, or along the way, transform the binary trees being compared into
+some sort of a \emph{standard representation}. We'll define this
+representation, recursively, as follows:
+
+\begin{definition}\label{definition:standard-representation}
+
+A binary tree in standard representation is a binary tree that either is a leaf
+or a node having a leaf as it's left child and a binary tree in standard
+representation as it's right child.
 
 \end{definition}
 
-Hence, we'll define the function $\proc{Less}(A,B)$ with the help of an
-auxiliary function $\proc{Normalize}(A)$ that \emph{normalizes} the given value
-to the standard value representation.
+Intuitively, a binary tree in standard representation is just a tree that only
+descends along the right side. Comparing the sizes of two trees in this
+representation is just a matter of walking the descending in the two trees
+simultaneously, until one of them, or both, bottom out. If there is a tree that
+bottoms out strictly before another, that is the lesser tree by
+\referToDefinition{size}.
 
-Before we can define the conrete algorithms for the respective functions, we
-need to formally define a few basic data representation and functions assumed
-to be implemented beneath the language:
+\subsection{$\proc{Less}(A,B)$}
 
-\begin{itemize}
-
-\item $leaf$, represents a leaf node.
-
-\item $\proc{Destruct}(A)\leadsto \{A_{left}, A_{right}\}$, destructs a node
-into it's corresponding children.
-
-\item $\proc{Construct}(A_{left},A_{right})\leadsto A$, constructs a node from
-two binary trees, such that the trees become the nodes children.
-
-\item $\proc{IsNode}(A)$, returns either $true$ or $false$, all depending on
-whether $A$ is a node or a leaf, respectively.
-
-\item $\proc{IsLeaf}(A)$, is the negation of $\proc{IsNode}(A)$.
-
-\end{itemize}
-
-We'll define the procedure $\proc{Normalize}(A)$ a little later, and start with
-the procedure $\proc{Less}(A,B)$ to complete the overview of the function.
-Before we can do that though, we need to define one additional peace of
-notation:
-
-\begin{itemize}
-
-\item $leaf$ represents $false$
-
-\item Any node represents $true$
-
-\end{itemize}
-
-
-returns a $leaf$ or a node consisting of two $leaf$s.
+Assuming that we've already defined a procedure $\proc{Normalize}$ for
+transforming an arbitrary tree into it's standard representation (which we'll
+do further below), we can define the procedure $\proc{Less}(A,B)$ for
+determining whether the value of the binary tree $A$ is strictly less than the
+value of binary tree $B$, as follows:
 
 \begin{codebox}
 \Procname{$\proc{Less}(A,B)$}
-\li \If $\proc{IsLeaf}(A)$ \Then
-\li   \Return $\proc{Construct}(leaf,leaf)$
+\li $\proc{NormalizedLess}(\proc{Normalize}(A),\proc{Normalize}(B))$
+\end{codebox}
+
+\begin{codebox}
+\Procname{$\proc{NormalizedLess}(A,B)$}
+\li \If $\proc{IsLeaf}(A)$ \Then\label{normalized-less-init-start}
+\li   \Return $\proc{IsNode}(A)$
     \End
 \li \If $\proc{IsLeaf}(B)$ \Then
-\li   \Return $leaf$
-    \End
-\zi
-\li $A\gets \proc{Normalize}(A)$
-\li $B\gets \proc{Normalize}(B)$
+\li   \Return $false$
+    \End\label{normalized-less-init-end}
 \zi
 \li $\{\_, A_{right}\} \gets \proc{Destruct}(A)$
 \li $\{\_, B_{right}\} \gets \proc{Destruct}(B)$
 \zi
-\li \Return $\proc{Less}(A_{right},B_{right})$
+\li \Return $\proc{NormalizedLess}(A_{right},B_{right})$
 \end{codebox}
+
+\subsubsection{Correctness}
+
+\begin{proof}
+
+Given \referToDefinition{standard-representation}, and the assumption that
+$\proc{Normalize}(A)$ computes the standard representation of $A$, we know the
+following:
+
+\begin{enumerate}
+
+\item $\left|A\right|\equiv\left|\proc{Normalize}(A)\right|$.
+
+\item We'll walk through all the nodes if we perform a recursive
+right-child-walk starting at $A$.
+
+\item The same holds for $B$.
+
+\end{enumerate}
+
+It is also trivial to see from lines
+\ref{normalized-less-init-start}:\ref{normalized-less-init-end} that
+$\proc{NormalizedLess}$ stops as soon as we reach the ``bottom'' of either $A$
+or $B$.
+
+Given \referToDefinition{size}, $A<B$ iff it bottoms out before $B$, that is,
+we reach an instance of the recursion where both $IsLeaf(A)$ and $IsNode(B)$
+hold.  In all other cases $A\geq B$, the cases specifically are:
+
+\begin{itemize}
+
+\item $IsLeaf(A)$ and $IsLeaf(B)$, then $\left|A\right|\equiv \left|B\right|$.
+
+\item $IsNode(A)$ and $IsLeaf(B)$, then $\left|A\right|>\left|B\right|$
+
+\end{itemize}
+
+Last but not least, due to all data values being finite, eventually one of the
+trees does bottom out.
+
+\end{proof}
+
+\subsubsection{Time complexity}
+
+Given that the binary trees $A$ and $B$ are in standard representation when we
+enter the auxiliary procedure, $\proc{NormalizedLess}$, it is fairly easy to
+get an upper bound on the running time of $\proc{NormalizedLess}$ itself.
+
+Indeed, the running time of $\proc{NormalizedLess}$ itself is
+$O\left(\proc{Max}\left(\left|A\right|,\left|B\right|\right)\right)$, since we
+just walk down the trees until one of them bottoms out. 
+
+We haven't yet defined the procedure $\proc{Normalize}$ yet. Hence, the only
+thing that we can say about the running time of $\proc{Less}$ in general is
+that it is $O\left(\proc{Normalize}(A) + \proc{Normalize}(B) +
+\proc{Max}\left(\left|A\right|,\left|B\right|\right) \right)$.
+
+\subsubsection{Space complexity}
+
+Coming soon..
+
+\subsection{$\proc{Normalize}(A)$}
+
+To complete the definition and analysis of $\proc{Less}$ we need to define and
+analyze $\proc{Normalize}$. We do this below.
 
 \begin{codebox}
 \Procname{$\proc{Normalize}(A)$}
@@ -170,25 +355,19 @@ returns a $leaf$ or a node consisting of two $leaf$s.
 \li \Return $\proc{Normalize}(A,A',A_{normalized})$
 \end{codebox}
 
-\begin{codebox}
-\Procname{$\proc{Less}(A,B)$}
-\li \If $\proc{IsLeaf}(A)$ \Then
-\li   \Return $B$
-    \End
-\li \If $\proc{IsLeaf}(B)$ \Then
-\li   \Return $leaf$
-    \End
-\zi
-\li $A\gets \proc{Normalize}(A)$
-\li $B\gets \proc{Normalize}(B)$
-\zi
-\li $\{\_, A_{right}\} \gets \proc{Destruct}(A)$
-\li $\{\_, B_{right}\} \gets \proc{Destruct}(B)$
-\zi
-\li \Return $\proc{Less}(A_{right},B_{right})$
-\end{codebox}
+\subsubsection{Correctness}
 
-\section{The syntax}
+Coming soon..
+
+\subsubsection{Time complexity}
+
+Coming soon..
+
+\subsubsection{Space complexity}
+
+Coming soon..
+
+\section{The syntax}\label{section:d-syntax}
 
 The syntax is described in terms of an extended Backus-Naur form\footnotemark.
 It is described in the simplest possible terms, that is, extraneous syntactical

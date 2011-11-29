@@ -1,5 +1,8 @@
 \documentclass[a4paper]{book}
 
+\usepackage{enumitem}
+\usepackage{expdlist}
+
 \usepackage[fancy]{oleks}
 
 \usepackage{synttree}
@@ -23,8 +26,8 @@
 \newcommand{\nonterm}[1]{\ensuremath{\text{\mono{<#1>}}}}
 \newcommand{\term}[1]{\ensuremath{\text{\mono{`#1'}}}}
 
-\newcounter{definitionCounter}
-\newtheorem{definition}{Definition}[definitionCounter]
+%\newcounter{definitionCounter}[section]
+\newtheorem{definition}{Definition}
 
 \newcounter{lemmaCounter}
 \newtheorem{lemma}{Lemma}[lemmaCounter]
