@@ -26,6 +26,8 @@ that could arise from regarding lazy programs or where the notion of a global
 state of the machine is relevant. Simply put, this is done to ensure elegance
 of further proof with the help of the language.
 
+\input{language/syntax}
+
 \section{Data}
 
 \subsection{Representation}\label{section:d-data-representation}
@@ -36,9 +38,8 @@ The language \mono{D} is untyped, and represents all data in terms of
 
 \begin{definition}
 
-A binary tree is a set of nodes which is either the empty set, or a singleton
-set. A node has no label, but has two binary trees as it's left and right
-child, respectively.
+A binary tree is a set that is either empty or contains a single labelless node
+with a left and right child.
 
 \end{definition}
 
@@ -150,6 +151,8 @@ The ``well-foundedness'' of \mono{D}'s data values, given such a definition can
 be argued for by equating the definition to a mapping of \mono{D}'s data values
 onto the natural numbers. This would imply that we can define the relation $<$
 on \mono{D}'s data values, which we know to be well-founded. 
+
+This is a bijection
 
 We start by formally proving that \referToDefinition{size} yields a many-to-one
 mapping of \mono{D}'s data values to the natural numbers.
@@ -280,7 +283,7 @@ right-child-walk starting at $A$.
 
 \end{enumerate}
 
-It is also trivial to see from lines
+It is also easy to see from lines
 \ref{normalized-less-init-start}:\ref{normalized-less-init-end} that
 $\proc{NormalizedLess}$ stops as soon as we reach the ``bottom'' of either $A$
 or $B$.
@@ -366,62 +369,6 @@ Coming soon..
 \subsubsection{Space complexity}
 
 Coming soon..
-
-\section{The syntax}\label{section:d-syntax}
-
-The syntax is described in terms of an extended Backus-Naur form\footnotemark.
-It is described in the simplest possible terms, that is, extraneous syntactical
-sugar and basic terms are left out of the core language definition.  Instead,
-these are defined ``as needed'', later on.
-
-\footnotetext{The extension lends some constructs from regular expressions to
-achieve a more concise dialect. The extension is described in further detail in
-Appendix \ref{appendix:ebnf}.}
-
-\subsection{Data \& Functions}
-
-\mono{D} represents an empty tree with the atom \mono{0}. Node constrution is
-done with the right-associative infix binary operator $\term{.}$, within
-expressions. Node destruction is done with the exact same operator, except that
-it is done while pattern matching an argument list to a parameter list of a
-function declaration. Conventional braces can be used to override the
-right-associativity of the $\term{.}$ operator in both cases.
-
-Hence, the grammar for expressions and function declarations is defined as
-follows:
-
-\begin{align}
-\nonterm{expression}\ ::=&\ \nonterm{value}\ (\ \term{.}\ \nonterm{expression}
-\ )\ ?\\
-\nonterm{value}\ ::=&\ \term{0}\ |\ \term{(}\ \nonterm{braces}\ \term{)}\ |
-\ \nonterm{variable-name}\\
-\nonterm{braces}\ ::=&\ \nonterm{expression}\ |
-\ \nonterm{application}\\
-\nonterm{application}\ ::=&\ \nonterm{function-name}
-\ \nonterm{expression}^+\\
-\nonterm{function}\ ::=&\ \nonterm{function-name}\ \nonterm{pattern}^+
-\ \term{:=}\ \nonterm{expression}\\
-\nonterm{pattern}\ ::=&\ \nonterm{pattern-value}\ (\ \term{.}
-\ \nonterm{pattern}\ )\ ?\\
-\nonterm{pattern-value}\ ::=&\ \term{0}\ |\ \term{\_}\ |\ \term{(}
-\ \nonterm{pattern}\ \term{)}\ |\ \nonterm{variable-name}
-\end{align}
-
-The term $\term{\_}$ in $\nonterm{pattern-value}$ is the conventional wildcard
-operator -- it indicates a value that is irrelevant to the function declaration
-as such, but allows to keep the same function signature. Multiple wildcards in
-the parameter list indicate possibly different value arguments, while multiple
-occurances of the same variable name in the parameter list are disallowed.
-
-It is worth noting that the sets $\nonterm{function-name}$ and
-$\nonterm{variable-name}$ are disjoint, but are otherwise both defined by the
-nonterminal $\nonterm{name}$:
-
-\begin{align}
-\nonterm{name}\ ::=&\ [\term{a}\mathmono{-}\term{z}]
-\ \left (\ [\term{-}\ \term{a}\mathmono{-}\term{z}]^*
-\ [\term{a}\mathmono{-}\term{z}]\ \right )?
-\end{align}
 
 \subsection{Size}
 

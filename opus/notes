@@ -5,3 +5,71 @@ Recursively enumerable and co-re
 Effective enumerability
 
 Effective decidability
+
+
+We can not only determine if a call safely decreases some value, but we also
+know exactly by how much it is safe to assert a decrease. On the contrary, we
+can also deduce a safe upper  bound on the increase in value for some call.
+
+In size change termination there's no converse claim -- that if no infinite
+descent is observed -- the program does not terminate.
+
+The first article doesn't regard stacks as sizes. E.g. a program that first
+grows and after some threshold infinitely decreases the call stack.
+
+f x = if (x < 5) (g x) else halt
+g x = f (x + 1)
+
+0. Perform dead code elimination.
+1. Draw the call graph.
+2. Determine halting operations.
+3. Map the halting operations to the call graph.
+4. Determine halting conditions.
+5. See if all values infinitely reduce towards the halting condition. So in theory, you could either have values going up or down, but they all go towards the halting condition.
+
+
+a(5,5)
+a(4,a(5,4))
+
+
+a(5,4)
+a(4,a(5,3))
+
+a(5,3)
+a(4,a(5,2))
+
+
+a(5,2)
+a(4,a(5,1))
+
+a(5,1)
+a(4,a(5,0))
+
+a(5,0)
+a(4,1)
+
+a(4,1)
+a(3,a(4,0))
+
+a(4,0)
+a(3,1)
+
+a(3,1)
+a(2,a(3,0))
+
+a(3,0)
+a(2,1)
+
+a(2,1)
+a(1,a(2,0))
+a(1,3)
+
+a(2,0)
+a(1,1)
+
+a(1,1)
+a(0,a(1,0))
+a(0,2) -> 3
+
+a(1,0)
+a(0,1) -> 2
