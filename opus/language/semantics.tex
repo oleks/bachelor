@@ -6,7 +6,7 @@ $x$ - expression
 
 $\phi$ - function space
 
-$\nu$ - variable space
+$\beta$ - variable space
 
 $\sigma$ - state, i.e. function and variable space
 
@@ -15,26 +15,35 @@ unite these to make \D{} higher order
 \subsection{Declaration}
 
 A declaration with a name $n$, an \emph{empty} pattern list $[]$ and an
-expression $e$ is simply stored in the variable space $\sigma$:
+expression $e$ is evaluated with the current state $\sigma$, and the value is
+stored in the variable spaces $\beta$:
 
 \begin{equation}\label{sem:declaration}
-\left\langle n, [], e, \sigma\right\rangle
-\Longrightarrow
-\left\langle \sigma(n)\leftarrow \left\langle [p], e\right\rangle\right\rangle
+{
+  \left\langle e,\sigma\right\rangle
+  \Rightarrow
+  \left\langle v,\sigma\right\rangle
+}\over{
+  \left\langle n, [], e, \sigma\right\rangle
+  \Rightarrow
+  \left\langle \beta(n)\leftarrow v\right\rangle
+}
 \end{equation}
 
 That is, unary functions can thought of as constants.
 
-On the other hand, a declaration with a name $n$, a \emph{non-empty} pattern
+A declaration with a name $n$, a \emph{non-empty} pattern
 list $[p]$ and an expression $e$ is stored in the function space $\phi$:
 
 \begin{equation}\label{sem:declaration}
 \left\langle n, [p], e, \phi\right\rangle
-\Longrightarrow
+\Rightarrow
 \left\langle \phi(n)\leftarrow \left\langle [p], e\right\rangle\right\rangle
 \end{equation}
 
 \subsection{Expression evaluation}
+
+Here we assume that $\cdot$ is already defined.. FIX
 
 An expression $x$ is either the element $e$, or a construction of an element
 $e'$ with another expression $x'$. That is, the binary infix operator $\cdot$
@@ -82,17 +91,26 @@ is right-associative, and has the following operational semantics:
 }
 \end{equation}
 
-
 \subsection{Element evaluation}
 
-According to the syntax specification, an element of an expression can either be the atom $0$, or an application. We'd like to distinguish between variables and functions, and we do that  
+According to the syntax specification, an element of an expression can either
+be the atom $0$, or an application. We'd like to distinguish between variables
+and functions, and we do that  
 
 \begin{equation}
 {
-\left(e\Longrightarrow 0\cap 0\Longrightarrow v\right)
-\cup
-\left(e\Longrightarrow n\cap \sigma(n)\Longrightarrow v\right)
-\cup
+\left(
+    e\Rightarrow 0
+  \wedge
+    0\Rightarrow v
+\right)
+\vee
+\left(
+    e\Rightarrow n
+  \wedge
+    \beta(n)\Rightarrow v
+\right)
+\vee
 \left(e\Longrightarrow \left\langle n, [e]\right\rangle\cap \left\langle
 n,[e],\sigma\right\rangle \Longrightarrow \left\langle v,
 \sigma\right\rangle\right)

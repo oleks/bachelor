@@ -12,10 +12,10 @@ non-terminal is $\nonterm{program}$.
 \nonterm{expression}\ ::=&\ \nonterm{element}\ (\ \term{.}\ \nonterm{expression}
 \ )\ ?\\
 \nonterm{element}\ ::=&\ \term{0}\ |\ \term{(}\ \nonterm{element}\ \term{)}\ |
-\ \nonterm{application}\\
+\ \nonterm{name}\ |\ \nonterm{application}\\
 \nonterm{application}\ ::=&\ \nonterm{name}
-\ \nonterm{expression}^*\\
-\nonterm{declaration}\ ::=&\ \nonterm{name}\ \nonterm{pattern}^*
+\ \nonterm{expression}^+\\
+\nonterm{declaration}\ ::=&\ \nonterm{name}\ \nonterm{pattern}^+
 \ \term{:=}\ \nonterm{expression}\\
 \nonterm{pattern}\ ::=&\ \nonterm{pattern-value}\ (\ \term{.}
 \ \nonterm{pattern}\ )\ ?\\
@@ -25,6 +25,9 @@ non-terminal is $\nonterm{program}$.
 \ \left (\ [\term{-}\ \term{a}\mathmono{-}\term{z}]^*
 \ [\term{a}\mathmono{-}\term{z}]\ \right )?
 \end{align}
+
+0-ary declarations are disallowed to avoid having to deal with constants in
+general.
 
 The term $\term{\_}$ in $\nonterm{pattern-value}$ is the conventional wildcard
 operator; it indicates a value that won't used by the declaration, but allows
