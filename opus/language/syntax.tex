@@ -1,19 +1,21 @@
 \section{Syntax}\label{section:d-syntax}
 
-We describe the syntax of \D in terms of an extended Backus-Naur
+We describe the syntax of \D{} in terms of an extended Backus-Naur
 form\footnote{The extension lends some constructs from regular expressions to
 achieve a more concise dialect. The extension is described in detail in
 \referToAppendix{ebnf}.}. This is a core syntax definition, and other, more
-practical, syntactical features may be defined later on as needed.
+practical, syntactical features may be defined later on as needed. The initial
+non-terminal is $\nonterm{program}$.
 
 \begin{align}
-\nonterm{expression}\ ::=&\ \nonterm{value}\ (\ \term{.}\ \nonterm{expression}
+\nonterm{program}\ ::=&\ \nonterm{declaration}^*\ \nonterm{expression}\\
+\nonterm{expression}\ ::=&\ \nonterm{element}\ (\ \term{.}\ \nonterm{expression}
 \ )\ ?\\
-\nonterm{value}\ ::=&\ \term{0}\ |\ \term{(}\ \nonterm{value}\ \term{)}\ |
+\nonterm{element}\ ::=&\ \term{0}\ |\ \term{(}\ \nonterm{element}\ \term{)}\ |
 \ \nonterm{application}\\
 \nonterm{application}\ ::=&\ \nonterm{name}
 \ \nonterm{expression}^*\\
-\nonterm{function}\ ::=&\ \nonterm{name}\ \nonterm{pattern}^*
+\nonterm{declaration}\ ::=&\ \nonterm{name}\ \nonterm{pattern}^*
 \ \term{:=}\ \nonterm{expression}\\
 \nonterm{pattern}\ ::=&\ \nonterm{pattern-value}\ (\ \term{.}
 \ \nonterm{pattern}\ )\ ?\\
@@ -25,13 +27,13 @@ practical, syntactical features may be defined later on as needed.
 \end{align}
 
 The term $\term{\_}$ in $\nonterm{pattern-value}$ is the conventional wildcard
-operator; it indicates a value that won't used by the function declaration, but
-allows us to keep the same function signature. We define the \emph{signature}
-of a function as follows:
+operator; it indicates a value that won't used by the declaration, but allows
+us to keep the same declaration signature. We hence define the \emph{signature}
+of a declaration as follows:
 
 \begin{definition}
 
-A function signature in D consists of the function name and the number of
+A declaration signature in \D{} consists of the function name and the number of
 parameters it has.
 
 \end{definition}

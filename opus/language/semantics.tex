@@ -1,3 +1,104 @@
 \section{Semantics}
 
+$e$ - element
 
+$x$ - expression
+
+$\phi$ - function space
+
+$\nu$ - variable space
+
+$\sigma$ - state, i.e. function and variable space
+
+unite these to make \D{} higher order
+
+\subsection{Declaration}
+
+A declaration with a name $n$, an \emph{empty} pattern list $[]$ and an
+expression $e$ is simply stored in the variable space $\sigma$:
+
+\begin{equation}\label{sem:declaration}
+\left\langle n, [], e, \sigma\right\rangle
+\Longrightarrow
+\left\langle \sigma(n)\leftarrow \left\langle [p], e\right\rangle\right\rangle
+\end{equation}
+
+That is, unary functions can thought of as constants.
+
+On the other hand, a declaration with a name $n$, a \emph{non-empty} pattern
+list $[p]$ and an expression $e$ is stored in the function space $\phi$:
+
+\begin{equation}\label{sem:declaration}
+\left\langle n, [p], e, \phi\right\rangle
+\Longrightarrow
+\left\langle \phi(n)\leftarrow \left\langle [p], e\right\rangle\right\rangle
+\end{equation}
+
+\subsection{Expression evaluation}
+
+An expression $x$ is either the element $e$, or a construction of an element
+$e'$ with another expression $x'$. That is, the binary infix operator $\cdot$
+is right-associative, and has the following operational semantics:
+
+\begin{equation}
+{
+\left(
+    x\Rightarrow e
+  \wedge
+    \left\langle e,\sigma\right\rangle
+    \Rightarrow
+    \left\langle v,\sigma\right\rangle
+\right)
+\vee
+\left(
+    x\Rightarrow e'\cdot x'
+  \wedge
+    \left\langle e'\cdot x',\sigma\right\rangle
+    \Rightarrow
+    \left\langle v,\sigma\right\rangle
+\right)
+}\over{
+  \left\langle x,\sigma\right\rangle
+  \Rightarrow
+  \left\langle v,\sigma\right\rangle
+}
+\end{equation}
+
+\begin{equation}
+{
+  \left\langle e,\sigma\right\rangle
+  \Rightarrow
+  \left\langle v',\sigma\right\rangle
+\wedge
+  \left\langle x,\sigma\right\rangle
+  \Rightarrow^*
+  \left\langle v'',\sigma\right\rangle
+\wedge
+  v'\cdot v'' \Rightarrow v
+}\over{
+\left\langle e\cdot x, \sigma\right\rangle
+\Rightarrow
+\left\langle v,\sigma\right\rangle
+}
+\end{equation}
+
+
+\subsection{Element evaluation}
+
+According to the syntax specification, an element of an expression can either be the atom $0$, or an application. We'd like to distinguish between variables and functions, and we do that  
+
+\begin{equation}
+{
+\left(e\Longrightarrow 0\cap 0\Longrightarrow v\right)
+\cup
+\left(e\Longrightarrow n\cap \sigma(n)\Longrightarrow v\right)
+\cup
+\left(e\Longrightarrow \left\langle n, [e]\right\rangle\cap \left\langle
+n,[e],\sigma\right\rangle \Longrightarrow \left\langle v,
+\sigma\right\rangle\right)
+}\over{
+\left\langle e,\sigma\right\rangle
+\Longrightarrow
+\left\langle v,\sigma\right\rangle
+}
+\end{equation}
