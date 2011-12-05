@@ -1,93 +1,116 @@
-\section{Semantics}
+\section{Semantics}\label{section:d-sos}
 
-$e$ - element
+In the following section we describe the semantics of \D{} using structured
+operational semantics. The syntax used to define the reduction rules is largely
+equivalent to the Aarhus report\cite{sos}, but differs slightly\footnote{The
+syntax applied here is described in further detail in \referToAppendix{sos}.}.
+The most notable about the syntax used here is the following:
 
-$x$ - expression
+\begin{itemize}
 
-$\phi$ - function space
+\item Rules should be read in increasing order of equation number.
 
-$\beta$ - variable space
+\item If some rule with a lower equation number makes use of an undefined
+reduction rule, it is because the reduction rule is defined under some higher
+equation number.
 
-$\sigma$ - state, i.e. function and variable space
+\item Rules can be defined in terms of themselves, i.e. they can be recursive,
+even mutually recursive.
 
-unite these to make \D{} higher order
+\end{itemize}
+
+The syntax aside, \referToTable{sos-definitions} defines a few lower-letter
+shorthands for various constructs. Additionally, we'll let the capital
+equivalents of these letters represent a sets of the respective construct, as
+well as let the atoms $0$ and $\_$ represent themselves in the reduction rules.
+It is also worth noting that $\forall\ v\in V\ :\ v\in \mathbb{B}$.
+
+\makeTable[h!]
+{sos-definitions}
+{Overview of the shorthands used in the reduction rules for \D{}.}
+{|cc|}
+{\textbf{Notation}&\textbf{Description}}
+{
+$x$ & expression\\
+$e$ & element\\
+$p$ & pattern\\
+$v$ & value\\
+$n$ & name
+}
+
+\subsection{The memory model}\label{section:d-semantics-memory}
+
+The memory is considered in terms of a set of stacks $\sigma$. Every stack has
+a unique identifier $n\in N$, that is, a stack represents a variable name. As
+we give a variable a value, we push that value on top of the corresponding
+stack. We pop the value off the corresponding stack as we leave the scope of
+the variable value.
+
+Due to \D{} being a first-order language, we should also separate the function
+and variable spaces. We'll represent these by $\phi$ and $\beta$, respectively.
+Whenever we use $\sigma$, $\phi$ or $\beta$ in set notation, we imply the sets
+of the names of functions and variables, and not the stacks themselves
+corresponding to those names.  Hence, $\sigma=\phi\cup\beta$, and to keep \D{}
+first-order we add the limitation, $\phi\cap\beta=\emptyset$.
+
+\subsubsection{Making \D{} higher order}
+
+The only change that this would require is to let $\phi=\beta=\sigma$.
 
 \subsection{Declaration}
-
-A declaration with a name $n$, an \emph{empty} pattern list $[]$ and an
-expression $e$ is evaluated with the current state $\sigma$, and the value is
-stored in the variable spaces $\beta$:
-
-\begin{equation}\label{sem:declaration}
-{
-  \left\langle e,\sigma\right\rangle
-  \Rightarrow
-  \left\langle v,\sigma\right\rangle
-}\over{
-  \left\langle n, [], e, \sigma\right\rangle
-  \Rightarrow
-  \left\langle \beta(n)\leftarrow v\right\rangle
-}
-\end{equation}
-
-That is, unary functions can thought of as constants.
 
 A declaration with a name $n$, a \emph{non-empty} pattern
 list $[p]$ and an expression $e$ is stored in the function space $\phi$:
 
 \begin{equation}\label{sem:declaration}
-\left\langle n, [p], e, \phi\right\rangle
-\Rightarrow
-\left\langle \phi(n)\leftarrow \left\langle [p], e\right\rangle\right\rangle
+{\displaystyle
+  \left\langle \phi(n)\leftarrow \left\langle P, x\right\rangle\right\rangle
+  \Rightarrow
+  \phi'
+\over\displaystyle
+  \left\langle n, P, x, \phi\right\rangle
+  \Rightarrow
+  \phi'
+}
 \end{equation}
 
 \subsection{Expression evaluation}
-
-Here we assume that $\cdot$ is already defined.. FIX
 
 An expression $x$ is either the element $e$, or a construction of an element
 $e'$ with another expression $x'$. That is, the binary infix operator $\cdot$
 is right-associative, and has the following operational semantics:
 
+\everymath{\displaystyle}
+
 \begin{equation}
-{
-\left(
-    x\Rightarrow e
-  \wedge
-    \left\langle e,\sigma\right\rangle
-    \Rightarrow
-    \left\langle v,\sigma\right\rangle
-\right)
-\vee
-\left(
-    x\Rightarrow e'\cdot x'
-  \wedge
-    \left\langle e'\cdot x',\sigma\right\rangle
-    \Rightarrow
-    \left\langle v,\sigma\right\rangle
-\right)
-}\over{
-  \left\langle x,\sigma\right\rangle
+{\displaystyle
+{\displaystyle
+  x\Rightarrow e
+\over\displaystyle
+  \left\langle e,\sigma\right\rangle
   \Rightarrow
   \left\langle v,\sigma\right\rangle
 }
-\end{equation}
-
-\begin{equation}
-{
-  \left\langle e,\sigma\right\rangle
+\vee
+{\displaystyle
+  x\Rightarrow e'\cdot x'
+\over\displaystyle
+{\displaystyle
+  \left\langle e',\sigma\right\rangle
   \Rightarrow
   \left\langle v',\sigma\right\rangle
 \wedge
-  \left\langle x,\sigma\right\rangle
-  \Rightarrow^*
+  \left\langle x',\sigma\right\rangle
+  \Rightarrow
   \left\langle v'',\sigma\right\rangle
-\wedge
+\over\displaystyle
   v'\cdot v'' \Rightarrow v
-}\over{
-\left\langle e\cdot x, \sigma\right\rangle
-\Rightarrow
-\left\langle v,\sigma\right\rangle
+}
+}
+\over\displaystyle
+  \left\langle x,\sigma\right\rangle
+  \Rightarrow
+  \left\langle v,\sigma\right\rangle
 }
 \end{equation}
 
@@ -98,25 +121,198 @@ be the atom $0$, or an application. We'd like to distinguish between variables
 and functions, and we do that  
 
 \begin{equation}
-{
+{\displaystyle
 \left(
     e\Rightarrow 0
   \wedge
-    0\Rightarrow v
+    v\equiv 0
 \right)
 \vee
-\left(
+{\displaystyle
     e\Rightarrow n
-  \wedge
+\over\displaystyle
     \beta(n)\Rightarrow v
-\right)
+}
 \vee
-\left(e\Longrightarrow \left\langle n, [e]\right\rangle\cap \left\langle
-n,[e],\sigma\right\rangle \Longrightarrow \left\langle v,
-\sigma\right\rangle\right)
-}\over{
+{\displaystyle
+    e\Rightarrow \left\langle n, X\right\rangle
+\over\displaystyle
+    \left\langle n,X,\sigma\right\rangle
+    \Rightarrow
+    \left\langle v,\sigma\right\rangle
+}
+\over\displaystyle
 \left\langle e,\sigma\right\rangle
-\Longrightarrow
+\Rightarrow
 \left\langle v,\sigma\right\rangle
+}
+\end{equation}
+
+\subsection{Function application}
+
+\begin{equation}
+{\displaystyle
+{\displaystyle
+{\displaystyle
+  \left\langle n, \phi\right\rangle
+  \Rightarrow
+  \left\langle P, x, \phi\right\rangle
+\over\displaystyle
+  \left\langle P, X, \sigma\right\rangle
+  \Rightarrow
+  \sigma'
+}
+\over\displaystyle
+  \left\langle x, \sigma'\right\rangle
+  \Rightarrow
+  \left\langle v,\sigma'\right\rangle
+}
+\over\displaystyle
+    \left\langle n,X,\sigma\right\rangle
+    \Rightarrow
+    \left\langle v,\sigma\right\rangle
+}
+\end{equation}
+
+\subsection{Pattern matching}
+
+\begin{equation}
+{\displaystyle
+{\displaystyle
+  \left\langle P_{head}, X_{head}, \sigma\right\rangle
+  \Rightarrow
+  \sigma''
+\over\displaystyle
+  \left\langle P_{tail}, X_{tail}, \sigma''\right\rangle
+  \Rightarrow
+  \sigma'
+}
+\over\displaystyle
+  \left\langle P, X, \sigma\right\rangle
+  \Rightarrow
+  \sigma'
+}
+\end{equation}
+
+\begin{equation}
+{
+  \left\langle\proc{I}, p,x,\sigma\right\rangle
+  \Rightarrow
+  \left\langle p',x',\sigma'\right\rangle
+\vee
+  \left\langle\proc{Z}, p,x,\sigma\right\rangle
+  \Rightarrow
+  \left\langle p',x',\sigma'\right\rangle
+\vee
+  \left\langle\proc{N}, p,x,\sigma\right\rangle
+  \Rightarrow
+  \left\langle p',x',\sigma'\right\rangle
+\vee
+  \left\langle\proc{P}, p,x,\sigma\right\rangle
+  \Rightarrow
+  \left\langle p',x',\sigma'\right\rangle
+}\over{
+  \left\langle p, x, \sigma\right\rangle
+  \Rightarrow
+  \left\langle p', x', \sigma'\right\rangle
+}
+\end{equation}
+
+For the sake of an elegant notation, we'll override the function $\cdot$ for
+patterns.
+
+\begin{definition}
+
+A pattern is an unlabeled of binary tree which is either empty or consists of
+an unlabeled node with a $0$, $\_$, name, or a pattern as it's left and right
+child. 
+
+\end{definition}
+
+\begin{definition}
+
+Let the set of all possible patterns be denoted by $\mathbb{P}$.
+
+\end{definition}
+
+\begin{definition}
+
+The function $\cdot
+:\mathbb{P}\times\mathbb{P}\rightarrow\mathbb{P}$ constructs a pattern node with the
+two arguments as it's left and right child, respectively. 
+
+\end{definition}
+
+\begin{equation}
+{
+    p\Rightarrow \_\cdot p'
+  \wedge
+    x\Rightarrow e\cdot x'
+  \wedge
+    \sigma\Rightarrow\sigma'
+}\over{
+  \left\langle\proc{I}, p,x,\sigma\right\rangle
+  \Rightarrow
+  \left\langle p',x',\sigma'\right\rangle
+}
+\end{equation}
+
+\begin{equation}
+{
+    p\Rightarrow 0\cdot p'
+  \wedge
+    x\Rightarrow e\cdot x'
+  \wedge
+    \sigma\Rightarrow\sigma'
+}\over{
+  \left\langle\proc{Z}, p,x,\sigma\right\rangle
+  \Rightarrow
+  \left\langle p',x',\sigma'\right\rangle
+}
+\end{equation}
+
+
+\begin{equation}
+{
+{{\displaystyle
+    p\Rightarrow n\cdot p'
+  \wedge
+    x\Rightarrow e\cdot x'
+\over\displaystyle
+    \left\langle e,\sigma\right\rangle
+    \Rightarrow
+    \left\langle v,\sigma\right\rangle
+}\over\displaystyle
+    \left\langle\sigma(n)\leftarrow v\right\rangle
+    \Rightarrow\sigma'
+}
+}\over{
+  \left\langle\proc{N}, p,x,\sigma\right\rangle
+  \Rightarrow
+  \left\langle p',x',\sigma'\right\rangle
+}
+\end{equation}
+
+\begin{equation}
+{\displaystyle
+{\displaystyle
+{\displaystyle
+{\displaystyle
+    p\Rightarrow p'\cdot p''    
+  \wedge
+    x\Rightarrow x'\cdot x''
+}\over\displaystyle
+    bah
+\over\displaystyle
+    \left\langle e,\sigma\right\rangle
+    \Rightarrow
+    \left\langle v,\sigma\right\rangle
+}\over\displaystyle
+    \left\langle\sigma(n)\leftarrow v\right\rangle
+    \Rightarrow\sigma'
+}\over\displaystyle
+  \left\langle\proc{P}, p,x,\sigma\right\rangle
+  \Rightarrow
+  \left\langle p',x',\sigma'\right\rangle
 }
 \end{equation}

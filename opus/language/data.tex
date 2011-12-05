@@ -1,6 +1,46 @@
 \section{Data}
 
-\mono{D} is a simple language where the emphasis is on the sizes of data.
-Hence, the way that data values are constructed may not be particularly well
-suited for applications in parallelism and alike, but that isn't the goal of
-the language either.
+\D{} is a simple language where the emphasis is on the sizes of data. Hence,
+the way that data values are constructed does not have to be particularly
+practical, but all values have to be well founded and easily comparable.
+
+The language \D{} is untyped, and represents all data in terms of
+\emph{unlabeled ordered binary trees}, henceforth referred to as simply,
+\emph{binary trees}. Such a tree is recursively defined as follows:
+
+\begin{definition}
+
+A binary tree is a set that is either empty or contains a single unlabeled node
+with two binary trees as it's left and right child, respectively.
+
+\end{definition}
+
+For simplicity, we'll sometimes refer to the empty set as a \emph{leaf}, and
+the unlabeled node simply as \emph{node}.
+
+\begin{definition}
+
+The set of all possible binary trees is denoted by $\mathbb{B}$.
+
+\end{definition}
+
+To operate on such trees we'll require a few basic things, namely a
+representation of leafs, recursive construction and destruction of nodes, as
+well as a way to tell nodes and leafs apart. Most of these we'll be derived in
+the operational semantics \referToSection{d-sos}, however, we do require the
+following basic definitions:
+
+\begin{definition}
+
+The leaf with the atom $0$. Clearly, $0\in\mathbb{B}$.
+
+\end{definition}
+
+\begin{definition}
+
+The function $\cdot
+:\mathbb{B}\times\mathbb{B}\rightarrow\mathbb{B}$ constructs a node with the
+two arguments as it's left and right child, respectively. 
+
+\end{definition}
+
