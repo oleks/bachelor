@@ -251,7 +251,7 @@ two arguments as it's left and right child, respectively.
   \wedge
     \sigma\Rightarrow\sigma'
 }\over{
-  \left\langle\proc{I}, p,x,\sigma\right\rangle
+  \left\langle\proc{Underscore}, p,x,\sigma\right\rangle
   \Rightarrow
   \left\langle p',x',\sigma'\right\rangle
 }
@@ -265,7 +265,7 @@ two arguments as it's left and right child, respectively.
   \wedge
     \sigma\Rightarrow\sigma'
 }\over{
-  \left\langle\proc{Z}, p,x,\sigma\right\rangle
+  \left\langle\proc{Zero}, p,x,\sigma\right\rangle
   \Rightarrow
   \left\langle p',x',\sigma'\right\rangle
 }
@@ -273,8 +273,9 @@ two arguments as it's left and right child, respectively.
 
 
 \begin{equation}
-{
-{{\displaystyle
+{\displaystyle
+{\displaystyle
+{\displaystyle
     p\Rightarrow n\cdot p'
   \wedge
     x\Rightarrow e\cdot x'
@@ -284,10 +285,10 @@ two arguments as it's left and right child, respectively.
     \left\langle v,\sigma\right\rangle
 }\over\displaystyle
     \left\langle\sigma(n)\leftarrow v\right\rangle
-    \Rightarrow\sigma'
-}
-}\over{
-  \left\langle\proc{N}, p,x,\sigma\right\rangle
+    \Rightarrow
+    \sigma'
+}\over\displaystyle
+  \left\langle\proc{Name}, p,x,\sigma\right\rangle
   \Rightarrow
   \left\langle p',x',\sigma'\right\rangle
 }
@@ -296,22 +297,16 @@ two arguments as it's left and right child, respectively.
 \begin{equation}
 {\displaystyle
 {\displaystyle
-{\displaystyle
-{\displaystyle
-    p\Rightarrow p'\cdot p''    
+    p\Rightarrow p''\cdot p'  
   \wedge
-    x\Rightarrow x'\cdot x''
-}\over\displaystyle
-    bah
+    x\Rightarrow x''\cdot x'
 \over\displaystyle
-    \left\langle e,\sigma\right\rangle
-    \Rightarrow
-    \left\langle v,\sigma\right\rangle
-}\over\displaystyle
-    \left\langle\sigma(n)\leftarrow v\right\rangle
-    \Rightarrow\sigma'
-}\over\displaystyle
-  \left\langle\proc{P}, p,x,\sigma\right\rangle
+  \left\langle p'', x'', \sigma\right\rangle
+  \Rightarrow
+  \sigma'
+}
+\over\displaystyle
+  \left\langle\proc{Pattern}, p,x,\sigma\right\rangle
   \Rightarrow
   \left\langle p',x',\sigma'\right\rangle
 }

@@ -1,0 +1,41 @@
+\subsection{Built-in high-order
+functions}\label{section:language-higher-order-built-ins}
+
+Although \mono{D} is initially a first-order language, we will ignore that
+limitation for a bit and define a few higher-order functions to provide some
+syntactical sugar to the language. Beyond the discussion in this section, these
+higher-order functions should be regarded as \mono{D} built-ins.
+
+\subsubsection{Branching}
+
+In the following definition, the variable names \mono{true} and \mono{false}
+refer to expressions to be executed in either case.
+
+\begin{verbatim}
+if 0 _ false := false
+if _._ _ true := true
+\end{verbatim}
+
+As you can see, we employ the C convention that any value other than $0$ is a
+``truthy'' value, and the expression \mono{true} is returned.
+
+Although the call-by-value nature of the language does not allow for
+short-circuiting the if-statements defined in such a way, this shouldn't be any
+impediment to further analysis.
+
+\subsection{Sample programs}
+
+As an illustration of the language syntax, the following program reverses a tree:
+
+\begin{verbatim}
+reverse 0 := 0
+reverse left.right := (reverse right).(reverse left)
+\end{verbatim}
+
+The following program computes the Fibonacci number \mono{n}:
+
+\begin{verbatim}
+fibonacci 0 x y := 0
+fibonacci 0.0 x y := y
+fibonacci n x y := fibonacci (minus n 0.0) y (add x y)
+\end{verbatim}
