@@ -1,5 +1,17 @@
 \section{Semantics}\label{section:d-sos}
 
+Revise the context of an expression within a function call, it should always be
+the context upon entering the function call! Or even better, the context when
+the function was defined!
+
+
+\textbf{Perhaps pattern matching must be exhaustive in general.}
+
+\textbf{Every subsequent definition must be strictly less specific than the former.}
+
+
+
+
 In the following section we describe the semantics of \D{} using structured
 operational semantics. The syntax used to define the reduction rules is largely
 equivalent to the Aarhus report\cite{sos}, but differs slightly\footnote{The

@@ -23,7 +23,7 @@ Although the call-by-value nature of the language does not allow for
 short-circuiting the if-statements defined in such a way, this shouldn't be any
 impediment to further analysis.
 
-\subsection{Sample programs}
+\subsection{Sample programs}\label{section:d-samples}
 
 As an illustration of the language syntax, the following program reverses a tree:
 
@@ -34,8 +34,16 @@ reverse left.right := (reverse right).(reverse left)
 
 The following program computes the Fibonacci number \mono{n}:
 
+Assume that the argument is
+
 \begin{verbatim}
-fibonacci 0 x y := 0
-fibonacci 0.0 x y := y
-fibonacci n x y := fibonacci (minus n 0.0) y (add x y)
+fibonacci n = fibonacci-aux (normalize n) 0 0
+
+fibonacci-aux 0 x y := 0
+fibonacci-aux 0.0 x y := y
+fibonacci-aux 0.n x y := fibonacci-aux n y (add x y)
 \end{verbatim}
+
+\emph{Note:} The return value is not normalized.
+
+
