@@ -10,30 +10,25 @@ The language \D{} is untyped, and represents all data in terms of
 
 \begin{definition}
 
-A binary tree is a set that is either empty, heneceforth refferred to as leaf,
-or contains a single unlabeled node with two binary trees as it's left and
-right child, henceforth simply reffered to as node. We'll refer to the set of
-all possible values in \D{} as $\mathbb{B}$.
+A binary tree is a set that is either empty, heneceforth refferred to as a leaf
+or simply $0$, or contains a single unlabeled node with two binary trees as
+it's left and right child, henceforth simply reffered to as a node. We'll refer
+to the set of all possible values in \D{} as $\mathbb{B}$.
 
 \end{definition}
 
-To operate on such trees we'll require a few primitives, namely a
+To operate on such trees we'll require a few primitives. Namely, a
 representation of leafs, recursive construction and destruction of nodes, as
 well as a way to tell nodes and leafs apart. Most of these will be derived in
 the operational semantics of \D{}\footnote{See \referToSection{d-sos}.},
-however, we do require the following basic definitions:
+however, they will make use of the following primitive function:
 
 \begin{definition}
 
-Let the atom $0$ represent a leaf binary tree.
-
-\end{definition}
-
-\begin{definition}
-
-The function $\cdot
-:\mathbb{B}\times\mathbb{B}\rightarrow\mathbb{B}$ constructs a node with the
-two arguments as it's left and right child, respectively. 
+The function $\cdot :\mathbb{B}\times\mathbb{B}\rightarrow\mathbb{B}$
+constructs a node with the two arguments as it's left and right child,
+respectively. We'll refer to this function, as well as the operator $\cdot$ in
+general, as ``cons''. 
 
 \end{definition}
 

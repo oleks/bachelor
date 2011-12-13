@@ -10,32 +10,16 @@ the function was defined!
 \textbf{Every subsequent definition must be strictly less specific than the former.}
 
 
+In the following section we describe the semantics of \D{} using a form of
+structured operational semantics. The syntax used to define the reduction rules
+is largely equivalent to the Aarhus report\cite{sos}, but differs
+slightly\footnote{The syntax applied here is described in further detail in
+\referToAppendix{sos}.}.
 
-
-In the following section we describe the semantics of \D{} using structured
-operational semantics. The syntax used to define the reduction rules is largely
-equivalent to the Aarhus report\cite{sos}, but differs slightly\footnote{The
-syntax applied here is described in further detail in \referToAppendix{sos}.}.
-The most notable about the syntax used here is the following:
-
-\begin{itemize}
-
-\item Rules should be read in increasing order of equation number.
-
-\item If some rule with a lower equation number makes use of an undefined
-reduction rule, it is because the reduction rule is defined under some higher
-equation number.
-
-\item Rules can be defined in terms of themselves, i.e. they can be recursive,
-even mutually recursive.
-
-\end{itemize}
-
-The syntax aside, \referToTable{sos-definitions} defines a few lower-letter
-shorthands for various constructs. Additionally, we'll let the capital
-equivalents of these letters represent a sets of the respective construct, as
-well as let the atoms $0$ and $\_$ represent themselves in the reduction rules.
-It is also worth noting that $\forall\ v\in V\ :\ v\in \mathbb{B}$.
+The syntax aside, \referToTable{sos-definitions} defines a few shorthands for
+various constructs in various contexts. We'll use these both when talking about
+the semantics as well as in futher proofs. Additionally, we'll let the atoms
+$0$ and $\_$ represent themselves in the reduction rules. 
 
 \makeTable[h!]
 {sos-definitions}
@@ -59,11 +43,14 @@ Name & $n$ & $N$ & $\mathbb{N}$
 \subsection{The memory model}\label{section:d-semantics-memory}
 
 Memory is considered in terms of a set of value stacks, $\sigma$. Every stack
-has a unique identifier $n\in N$, that is, each variable in a given program
-gets a value stack. As we enter a new scope, we bind a variable to a value,
-that is, we push that value on top of the corresponding stack. We pop the value
-off the corresponding stack as we leave the scope at the entry to which the
-variable was bound.
+has a unique identifier $n\in \mathbb{N}$, that is, each variable gets a value
+stack. This renders $\sigma$ countably infinite since $\mathbb{N}$ is countably
+infinite.
+
+As we enter a new scope, we bind a variable to a
+value, that is, we push that value on top of the corresponding stack. We pop
+the value off the corresponding stack as we leave the scope at the entry to
+which the variable was bound.
 
 An expression at a certain scope depth only has access to variables at the same
 scope depth. This is to ensure static scope. We won't adhere to this problem
@@ -84,19 +71,21 @@ first-order we add the limitation that $\phi\cap\gamma=\emptyset$.
 
 The only change that this would require is to let $\phi=\gamma=\sigma$.
 
-\subsection{Declaration}
+\subsection{Function declarations}
+
+Assuming that as a part of the semantic analysis all $\nonterm{declaration}$ with the same name are grouped into the set $\left\langle n F\right\rangle$
 
 A declaration with a name $n$, a \emph{non-empty} pattern
-list $[p]$ and an expression $e$ is stored in the function space $\phi$:
+list $P$ and an expression $e$ is stored in the function space $\phi$:
 
 \begin{equation}\label{sem:declaration}
 {\displaystyle
-  \left\langle \phi(n)\leftarrow \left\langle P, x\right\rangle\right\rangle
-  \Rightarrow
+  \left\langle \phi(n)\mapsto \left\langle P, x, \phi\right\rangle\right\rangle
+  \rightarrow
   \phi'
 \over\displaystyle
   \left\langle n, P, x, \phi\right\rangle
-  \Rightarrow
+  \rightarrow
   \phi'
 }
 \end{equation}
@@ -104,7 +93,7 @@ list $[p]$ and an expression $e$ is stored in the function space $\phi$:
 \subsection{Expression evaluation}
 
 An expression $x$ is either the element $e$, or a construction of an element
-$e'$ with another expression $x'$. That is, the binary infix operator $\cdot$
+$e_1$ with another expression $x_1$. That is, the binary infix operator $\cdot$
 is right-associative, and has the following operational semantics:
 
 \everymath{\displaystyle}
