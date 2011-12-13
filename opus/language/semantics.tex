@@ -39,35 +39,50 @@ It is also worth noting that $\forall\ v\in V\ :\ v\in \mathbb{B}$.
 
 \makeTable[h!]
 {sos-definitions}
-{Overview of the shorthands used in the reduction rules for \D{}.}
-{|cc|}
-{\textbf{Notation}&\textbf{Description}}
+{Overview of some of the shorthands used in this text. The column \textbf{A}
+refers to all possible instances of the given construct, i.e.  $\mathbb{B}$
+reffers to all constructable values in \D{}. The column \textbf{P} refers to
+all the instances of the given construct in a given program, i.e. $N$ reffers
+to all the names in a given program. The column \textbf{I} reffers to specific
+instances of the given constructs, i.e. $x$ reffers to a particular
+expression.}
+{|l|c|c|c|}
+{\textbf{Description}&\textbf{I}&\textbf{P}&\textbf{A}}
 {
-$x$ & expression\\
-$e$ & element\\
-$p$ & pattern\\
-$v$ & value\\
-$n$ & name
+Expression & $x$ & $X$ & $\mathbb{X}$\\
+Element (of an expression) & $e$ & $E$ & $\mathbb{E}$\\
+Pattern & $p$ & $P$ & $\mathbb{P}$\\
+Value(binary tree) & $b$ & $B$ & $\mathbb{B}$\\
+Name & $n$ & $N$ & $\mathbb{N}$
 }
 
 \subsection{The memory model}\label{section:d-semantics-memory}
 
-The memory is considered in terms of a set of stacks $\sigma$. Every stack has
-a unique identifier $n\in N$, that is, a stack represents a variable name. As
-we give a variable a value, we push that value on top of the corresponding
-stack. We pop the value off the corresponding stack as we leave the scope of
-the variable value.
+Memory is considered in terms of a set of value stacks, $\sigma$. Every stack
+has a unique identifier $n\in N$, that is, each variable in a given program
+gets a value stack. As we enter a new scope, we bind a variable to a value,
+that is, we push that value on top of the corresponding stack. We pop the value
+off the corresponding stack as we leave the scope at the entry to which the
+variable was bound.
 
-Due to \D{} being a first-order language, we should also separate the function
-and variable spaces. We'll represent these by $\phi$ and $\beta$, respectively.
-Whenever we use $\sigma$, $\phi$ or $\beta$ in set notation, we imply the sets
+An expression at a certain scope depth only has access to variables at the same
+scope depth. This is to ensure static scope. We won't adhere to this problem
+explicitly in the semantics, but instead ask you to simply keep it in mind.
+
+\subsubsection{Functions and variables}
+
+Due to \D{} being a first-order language, we should make sure to separate the
+function and variable spaces. We'll represent these by $\phi$ and $\gamma$,
+respectively.
+
+Whenever we use $\sigma$, $\phi$ or $\gamma$ in set notation, we imply the sets
 of the names of functions and variables, and not the stacks themselves
-corresponding to those names.  Hence, $\sigma=\phi\cup\beta$, and to keep \D{}
-first-order we add the limitation, $\phi\cap\beta=\emptyset$.
+corresponding to those names.  Hence, $\sigma=\phi\cup\gamma$, and to keep \D{}
+first-order we add the limitation that $\phi\cap\gamma=\emptyset$.
 
 \subsubsection{Making \D{} higher order}
 
-The only change that this would require is to let $\phi=\beta=\sigma$.
+The only change that this would require is to let $\phi=\gamma=\sigma$.
 
 \subsection{Declaration}
 
@@ -96,34 +111,51 @@ is right-associative, and has the following operational semantics:
 
 \begin{equation}
 {\displaystyle
-{\displaystyle
-  x\Rightarrow e
-\over\displaystyle
-  \left\langle e,\sigma\right\rangle
-  \Rightarrow
+  \left\langle \proc{Single}, x,\sigma\right\rangle
+  \rightarrow
   \left\langle v,\sigma\right\rangle
-}
 \vee
-{\displaystyle
-  x\Rightarrow e'\cdot x'
-\over\displaystyle
-{\displaystyle
-  \left\langle e',\sigma\right\rangle
-  \Rightarrow
-  \left\langle v',\sigma\right\rangle
-\wedge
-  \left\langle x',\sigma\right\rangle
-  \Rightarrow
-  \left\langle v'',\sigma\right\rangle
-\over\displaystyle
-  v'\cdot v'' \Rightarrow v
-}
-}
+  \left\langle \proc{Chain}, x,\sigma\right\rangle
+  \rightarrow
+  \left\langle v,\sigma\right\rangle
 \over\displaystyle
   \left\langle x,\sigma\right\rangle
-  \Rightarrow
+  \rightarrow
   \left\langle v,\sigma\right\rangle
 }
+\end{equation}
+
+\begin{equation}
+{\displaystyle
+  x\rightarrow e
+\wedge
+  \left\langle e,\sigma\right\rangle
+  \rightarrow
+  \left\langle v,\sigma\right\rangle
+\over\displaystyle
+  \left\langle \proc{Single}, x,\sigma\right\rangle
+  \rightarrow
+  \left\langle v,\sigma\right\rangle
+}
+\end{equation}
+
+\begin{equation}
+{\displaystyle
+  x\Rightarrow e_1\cdot x_1
+\wedge
+  \left\langle e_1,\sigma\right\rangle
+  \rightarrow
+  \left\langle v_1,\sigma\right\rangle
+\wedge
+  \left\langle x_1,\sigma\right\rangle
+  \rightarrow
+  \left\langle v_2,\sigma\right\rangle
+\over\displaystyle
+  \left\langle \proc{Chain}, x, \sigma\right\rangle
+  \rightarrow
+  \left\langle v, \sigma\right\rangle
+}
+\quad(\text{where }v_1\cdot v_2=v)
 \end{equation}
 
 \subsection{Element evaluation}
