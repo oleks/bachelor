@@ -1,4 +1,4 @@
-\chapter{Extended-BNF}\label{appendix:ebnf}
+\section{Extended-BNF}\label{appendix:ebnf}
 
 This report makes use of an extended version of the Backus-Naur form (BNF).
 This appendix is provided to cover the extensions employed in the report. This
@@ -6,7 +6,7 @@ is done because there is seemingly no universally acknowledged extension,
 unlike there is a universally acknowledged Backus-Naur form, namely the one
 used in the ALGOL 60 Reference Manual\cite{algol-bnf}.
 
-\section{What's in common with the original BNF}
+\subsection{What's in common with the original BNF}
 
 The following parts are in-common with the original Backus-Naur form:
 
@@ -23,7 +23,7 @@ In the original BNF, everything else represents itself, aka. a terminal. This
 is not preserved in this extension -- all terminals are encapsulated into
 single quotes.
 
-\section{Constructs borrowed from regular expressions.}
+\subsection{Constructs borrowed from regular expressions.}
 
 The use of single quotes around all terminals allows us to give characters such
 as $($, $)$, $]$, $]$, $*$, $+$, and ${}^*$ special meaning, namely:
@@ -58,7 +58,7 @@ group or the closing bracket of a character group has the same effect as
 applying the repetition operator to their respective hypothetical auxiliary
 declarations.
 
-\section{Nonterminals as sets and conditional declarations}
+\subsection{Nonterminals as sets and conditional declarations}
 
 Another extension to the original BNF is the ability to use nonterminals as
 sets in declaration conditions. For example, if the two nonterminals,

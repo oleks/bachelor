@@ -1,10 +1,14 @@
 \documentclass[a4paper]{book}
 
+
 \usepackage{enumitem}
 \usepackage{expdlist}
 \usepackage{subfigure}
 
 \usepackage[fancy]{oleks}
+
+\usepackage{tikz}
+\usetikzlibrary{snakes,arrows,shapes}
 
 \usepackage{synttree}
 
@@ -43,11 +47,11 @@
 \input{language/main}
 \input{size-change}
 
-\input{bibliography}
+\bibliographystyle{plain}
+\bibliography{../bibliography}
 
 \appendix
 
-\input{appendix/ebnf}
-\input{appendix/sos}
+\input{appendix/notation}
 
 \end{document}

@@ -1,0 +1,70 @@
+\begin{figure}
+\centering
+\begin{tikzpicture}[>=latex',line join=bevel,]
+
+\pgfsetlinewidth{1bp}
+\pgfsetcolor{black}
+
+% Edge: F0 -> F1
+\draw [->,dotted] (133.06bp,73.287bp) .. controls (136.46bp,68.306bp) and (137.79bp,63.325bp)  .. (133.09bp,48.766bp);
+
+\draw (145bp,60bp) node {$\top$};
+
+% Edge: S -> F0
+\draw [->] (54.403bp,88bp) .. controls (62.393bp,88bp) and (71.311bp,88bp)  .. (89.919bp,88bp);
+
+\draw (70bp,95bp) node {$\top$};
+
+% Edge: F1 -> F0
+\draw [->] (100.91bp,48.766bp) .. controls (97.522bp,53.747bp) and (96.204bp,58.727bp)  .. (100.94bp,73.287bp);
+
+\draw (90bp,60bp) node {$\downarrow$};
+
+% Edge: F0 -> E
+\draw [->] (144.4bp,88bp) .. controls (152.39bp,88bp) and (161.31bp,88bp)  .. (179.92bp,88bp);
+
+\draw (160bp,95bp) node {$\top$};
+
+% Node: F0
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (117bp,88bp) ellipse (27bp and 18bp);
+  \draw (117bp,88bp) node {$F_0$};
+\end{scope}
+
+% Node: F1
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (117bp,34bp) ellipse (27bp and 18bp);
+  \draw (117bp,34bp) node {$F_1$};
+\end{scope}
+
+% Node: S
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (27bp,106bp) -- (0bp,88bp) -- (27bp,70bp) -- (54bp,88bp) -- cycle;
+  \draw (27bp,88bp) node {$S$};
+\end{scope}
+
+% Node: E
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (207bp,106bp) -- (180bp,88bp) -- (207bp,70bp) -- (234bp,88bp) -- cycle;
+  \draw (207bp,88bp) node {$E$};
+\end{scope}
+
+\end{tikzpicture}
+
+\caption[]{An edge-labelled control flow graph for the program defined in
+\referToListing{d-loop}. Transitions that cause a strict decrease in some value
+are labelled $\downarrow$. False transitions from declaration cases (dotted
+edges) never change any values.}
+
+\label{figure:cfg-loop-down}
+
+\end{figure}
+
