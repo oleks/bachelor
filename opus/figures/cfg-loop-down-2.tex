@@ -1,0 +1,83 @@
+\documentclass{article}
+\usepackage[x11names, rgb]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{snakes,arrows,shapes}
+\usepackage{amsmath}
+%
+%
+
+%
+
+%
+
+\begin{document}
+\pagestyle{empty}
+%
+%
+%
+
+\enlargethispage{100cm}
+% Start of code
+% \begin{tikzpicture}[anchor=mid,>=latex',line join=bevel,]
+\begin{tikzpicture}[>=latex',line join=bevel,]
+  \pgfsetlinewidth{1bp}
+%%
+\begin{scope}
+  \pgfsetstrokecolor{black}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (84bp,8bp) -- (84bp,132bp) -- (154bp,132bp) -- (154bp,8bp) -- cycle;
+\end{scope}
+  \pgfsetcolor{black}
+  % Edge: F0 -> F1
+  \draw [->,dotted] (119bp,87.587bp) .. controls (119bp,79.941bp) and (119bp,70.892bp)  .. (119bp,52.169bp);
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (108.5bp,70bp) node {nice};
+  % Edge: S -> F0
+  \draw [->] (54.032bp,106bp) .. controls (62.632bp,106bp) and (72.363bp,106bp)  .. (91.715bp,106bp);
+  % Edge: F1 -> F0
+  \draw [->,fill] (134.39bp,49.369bp) .. controls (135.43bp,51.008bp) and (136.33bp,52.727bp)  .. (137bp,54.5bp) .. controls (140.87bp,64.774bp) and (141.66bp,70.172bp)  .. (134.39bp,90.631bp);
+  \draw (129.5bp,70bp) node {nice};
+  % Edge: F0 -> E
+  \draw [->] (146.04bp,106bp) .. controls (162.83bp,106bp) and (184.91bp,106bp)  .. (213.6bp,106bp);
+  \draw (180bp,113.5bp) node {nice};
+  % Node: F0
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (119bp,106bp) ellipse (27bp and 18bp);
+  \draw (119bp,106bp) node {F0};
+\end{scope}
+  % Node: F1
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (119bp,34bp) ellipse (27bp and 18bp);
+  \draw (119bp,34bp) node {F1};
+\end{scope}
+  % Node: S
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (27bp,124bp) -- (0bp,106bp) -- (27bp,88bp) -- (54bp,106bp) -- cycle;
+  \draw (27bp,106bp) node {S};
+\end{scope}
+  % Node: E
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (241bp,124bp) -- (214bp,106bp) -- (241bp,88bp) -- (268bp,106bp) -- cycle;
+  \draw (241bp,106bp) node {E};
+\end{scope}
+%
+\end{tikzpicture}
+% End of code
+
+%
+\end{document}
+%
+
+
+

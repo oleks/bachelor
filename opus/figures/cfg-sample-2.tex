@@ -1,0 +1,53 @@
+\begin{figure}[htbp!]
+\centering
+\begin{tikzpicture}[>=latex',line join=bevel,]
+\pgfsetlinewidth{1bp}
+\pgfsetcolor{black}
+
+% Edge: i -> g
+\draw [->] (141.75bp,53.791bp) .. controls (155.07bp,47.538bp) and (172.33bp,39.435bp)  .. (196.31bp,28.18bp);
+
+\definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+\pgfsetstrokecolor{strokecol}
+\draw (169bp,49.5bp) node {$1$};
+
+% Edge: i -> g
+\draw [->] (131.41bp,47.488bp) .. controls (139.3bp,37.571bp) and (150.73bp,25.786bp)  .. (164bp,20bp) .. controls (169.56bp,17.574bp) and (175.77bp,16.246bp)  .. (192.14bp,15.146bp);
+\draw (169bp,27.5bp) node {$2$};
+
+% Edge: i -> f
+\draw [->] (145.24bp,68.893bp) .. controls (156.67bp,71.109bp) and (170.38bp,73.767bp)  .. (192.85bp,78.124bp);
+\draw (169bp,81.5bp) node {$0$};
+
+% Node: i
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (119bp,64bp) ellipse (27bp and 18bp);
+  \draw (119bp,64bp) node {$i$};
+\end{scope}
+
+% Node: g
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (219bp,18bp) ellipse (27bp and 18bp);
+  \draw (219bp,18bp) node {$g$};
+\end{scope}
+
+% Node: f
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (219bp,83bp) ellipse (27bp and 18bp);
+  \draw (219bp,83bp) node {$f$};
+\end{scope}
+%
+\end{tikzpicture}
+
+\caption[]{A  control flow graph for the \D{} program in \referToListing{cfg-sample-2}.}
+
+\label{figure:cfg-sample-2}
+
+\end{figure}
+

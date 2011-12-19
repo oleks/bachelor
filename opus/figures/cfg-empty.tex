@@ -1,0 +1,31 @@
+\begin{figure}[htbp!]
+\centering
+\begin{tikzpicture}[>=latex',line join=bevel,]
+\pgfsetlinewidth{1bp}
+\pgfsetcolor{black}
+
+% Edge: S -> E
+\draw [->] (54.403bp,18bp) .. controls (62.393bp,18bp) and (71.311bp,18bp)  .. (89.919bp,18bp);
+
+% Node: S
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (27bp,18bp) node {$S$};
+\end{scope}
+
+% Node: E
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (117bp,18bp) node {$E$};
+\end{scope}
+
+\end{tikzpicture}
+
+\caption[]{A  control flow graph for the empty \D{} program.}
+
+\label{figure:cfg-empty}
+
+\end{figure}
+

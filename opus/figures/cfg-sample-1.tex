@@ -1,0 +1,75 @@
+\begin{figure}[htbp!]
+\centering
+\begin{tikzpicture}[>=latex',line join=bevel,]
+\pgfsetlinewidth{1bp}
+\pgfsetcolor{black}
+
+% Edge: i -> h
+\draw [->] (133.73bp,84.519bp) .. controls (147.37bp,71.964bp) and (167.3bp,53.624bp)  .. (190.4bp,32.356bp);
+
+% Edge: S -> i
+\draw [->] (54.403bp,99bp) .. controls (62.393bp,99bp) and (71.311bp,99bp)  .. (89.919bp,99bp);
+
+% Edge: i -> E
+\draw [->] (133.73bp,113.48bp) .. controls (146.28bp,125.03bp) and (164.14bp,141.47bp)  .. (186.4bp,161.96bp);
+
+% Edge: i -> f
+\draw [->] (142.05bp,106.38bp) .. controls (151.44bp,109.26bp) and (162.36bp,112.61bp)  .. (182.29bp,118.72bp);
+
+% Edge: i -> g
+\draw [->] (142.05bp,91.622bp) .. controls (151.44bp,88.741bp) and (162.36bp,85.389bp)  .. (182.29bp,79.275bp);
+
+% Node: E
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (207bp,180bp) node {$E$};
+\end{scope}
+
+% Node: g
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (207bp,72bp) ellipse (27bp and 18bp);
+  \draw (207bp,72bp) node {$g$};
+\end{scope}
+
+% Node: f
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (207bp,126bp) ellipse (27bp and 18bp);
+  \draw (207bp,126bp) node {$f$};
+\end{scope}
+
+% Node: i
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (117bp,99bp) ellipse (27bp and 18bp);
+  \draw (117bp,99bp) node {$i$};
+\end{scope}
+
+% Node: h
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (207bp,18bp) ellipse (27bp and 18bp);
+  \draw (207bp,18bp) node {$h$};
+\end{scope}
+
+% Node: S
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (27bp,99bp) node {$S$};
+\end{scope}
+
+\end{tikzpicture}
+
+\caption[]{A  control flow graph for the \D{} program in \referToListing{cfg-sample-1}.}
+
+\label{figure:cfg-sample-1}
+
+\end{figure}
+
