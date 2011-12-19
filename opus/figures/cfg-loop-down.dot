@@ -1,0 +1,15 @@
+digraph G {
+  size="3";
+  rankdir=LR;
+  S[shape=diamond];
+  E[shape=diamond];
+  S -> F0;
+  edge[label="nice"];
+  F0 -> E;
+  subgraph cluster0 {
+    edge[style=dotted,constraint=false];
+    F0 -> F1;
+    edge[style=filled];
+    F1 -> F0;
+  }
+}

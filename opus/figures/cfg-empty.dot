@@ -1,0 +1,7 @@
+digraph G {
+  size="1";
+  rankdir=LR;
+  S[shape=none];
+  E[shape=none];
+  S -> E;
+}

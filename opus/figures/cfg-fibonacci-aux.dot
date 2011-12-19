@@ -1,0 +1,17 @@
+digraph G {
+  S;
+  E;
+  F0;
+  F1;
+  F2;
+  S -> F0;
+  edge[style=filled];
+  F0 -> E;
+  F1 -> E;
+  edge[style=dotted];
+  F0 -> F1;
+  F1 -> F2;
+  edge[style=filled];
+  F2 -> A;
+  A -> F0;
+}

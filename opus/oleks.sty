@@ -185,6 +185,12 @@
 
 % references
 
+\NewDocumentCommand\refer{m}
+{
+  \ref{#1} (\pageref{#1})
+}
+
+
 \NewDocumentCommand\referToDefinition{m}
 {
 	Definition \ref{definition:#1} (\pageref{definition:#1})

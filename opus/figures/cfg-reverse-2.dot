@@ -1,0 +1,10 @@
+digraph G {
+  size="1";
+  rankdir=LR;
+  edge[style=dotted];
+  R0 -> R1;
+  edge[style=filled,label="{0|0}"];
+  R1 -> R0;
+  edge[label="1"];
+  R1 -> R0;
+}

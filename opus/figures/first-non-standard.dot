@@ -1,0 +1,13 @@
+digraph G {
+  edge [dir=none];
+  a [shape=point];
+  b [shape=point];
+  c [shape=point];
+  d [shape=point,color=white];
+  e [shape=point,color=white];
+  f [shape=point,color=white];
+  g [shape=point,color=white];
+  a -> {b;c};
+  c -> {d;e};
+  b -> {f;g};
+}

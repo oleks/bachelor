@@ -1,0 +1,78 @@
+
+
+\begin{verbatim}
+
+1: a 0 = 0
+2: a 0._ = 0.0
+3: a x.y = a x | a x.y = a y
+
+in every recursive step we strictly decrease the value, eventually we get to
+the node 0._ by definition of values, unless the value initially was 0, in
+which case we hit case 1, initially.
+
+a 0.0.0 = 0
+a x.0.0 = if x goes to 0
+a 0.x.0 = if x goes to 0
+a 0.0.x = if x goes to 0
+
+a x = a 0.x | a x = a x.0
+terminates if x initially is 0 or 0.0
+
+a 0.x = a x  i 0.(0.0.0)
+a x.0 = a x  i (0.0.0).0
+
+a 0.0 = a 0.0.0
+a 0 = a 0.0
+
+
+a 0.0 = 0
+a 0.(0.0) = 0
+a (0.0).0 = 0
+a x.y
+a x.0.0 = x
+a 0.x.0 = x
+a 0.0.x = a x <- if x >>> 0
+
+\end{verbatim}
+
+We cannot have a function that counts a value up until a bound without the
+counter functionality of counting down towards the bound (if the function is to
+always terminate).
+
+The patterns have to be exhaustive, because both, the initial value may be
+below the bound, and the tree generated from removing a node is perhaps smaller
+than bound, even though the initial value may have been bigger, in terms of
+number of nodes.
+
+
+\begin{verbatim}
+a 0 = 0
+a 0.0 = 0.0
+a 0.(0.0) = 0.0
+a (0.0).0 = 0.0
+a x.y = a x | a y
+
+a 0 = 0
+a 0.0 = 0.0
+a 0.y = a y
+a x.0 = a x
+a x.y = a x | a y
+
+a 0.(0.0) = 0.0
+a 0.y = a y
+a x.0 = a x
+a x.y = a x | a y
+a x = a 0.x
+
+a (0.0).0 = 0.0
+a 0.y = a y
+a x.0 = a x
+a x.y = a x | a y
+a x = a 0.x
+-- doesn't terminate
+
+a 0 = 0
+a x.y = a 0.x.y
+
+
+\end{verbatim}

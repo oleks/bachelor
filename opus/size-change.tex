@@ -1,0 +1,305 @@
+\chapter{Size-change termination}
+
+The size-change termination analysis builds upon the idea of flow analysis of
+programs. In general, flow analysis aims to answer the question, ``What can we
+say about a given point in a program without regard to the execution path taken
+to that point?''. A ``point'' in a computer program is in this case a primitive
+operation such as an assignment, a condition branch, etc.
+
+The idea is then to construct a graph where such points are nodes, and the arcs
+in between them represent a transfer of control between the primitive
+operations, that would otherwise occur under the execution of the program.
+Such a node may have variable in-degree and out-degree from one given
+primitive. For instance, a condition branch would usually have two possible
+transfers of control depending on the outcome of the condition. Hence, it
+serves useful to label arcs depending on when they are taken. The conditions
+should clearly not overlap to avoid non-determination.
+
+Such graphs are referred to as \emph{control flow graphs}.
+
+With such a graph at hand, various optimization algorithms can be devised to
+traverse the graph and deduce certain properties, such as reoccurring primitive
+operations on otherwise static variables\cite{kildall}, etc.
+
+\section{Control flow graphs in \D{}}
+
+\subsection{Start and end nodes}
+
+Every control flow graph has a start and an end node. These nodes do not
+explicitly represent control primitives, but rather the start and end of a
+program. \emph{A program cannot be started nor ended more than once}. The start
+node is labelled $S$ and has out-degree $1$ and in-degree $0$. The end node is
+labelled $E$ and has out-degree $0$, but variable in-degree, i.e. a program can
+be ended in more than one way.
+
+The control-flow graph for the empty program is hence:
+
+\input{figures/cfg-empty}
+
+\subsection{Function clauses}
+
+While node construction and destruction are primitive operations in \D{}, we'll
+refrain ourselves from delving into such details in the control flow graphs of
+our programs. Indeed because \emph{node construction and destruction always
+terminates}. Instead, we'll let a \emph{function clause} define a point in a
+program.
+
+The expression of the clause can thereafter make calls to its
+enclosing\footnote{We say that a function \emph{consists} of function clauses
+and a function clause is \emph{enclosed} in a function.}, or some other
+function. Such calls are represented by transfer of control, that is, arcs.
+Disregarding the cases where a function clause expression makes multiple calls
+to the same function with different arguments, these arcs need not be
+disjunctively labelled since all of these transitions happen unconditionally as
+a result of evaluating the expression. More specifically, \emph{we consider the
+order of evaluation to be insignificant}, and hence undeserving of labelling.
+We further discuss the reasons for this below.
+
+If calls are separated by node construction, the order in which those calls are
+made is definitely insignificant. For instance, consider the expression
+\mono{(f a).(g b)}, where \mono{f} and \mono{g} are some well-defined
+functions, $\text{\mono{f}}\neq\text{\mono{g}}$, and \mono{a} and \mono{b} are
+some bound variables. It makes no difference to the final result which of the
+calls, \mono{f a} and \mono{g b}, is evaluated first. Indeed, they can be
+evaluated in parallel, and we would still get the same result. This is easy to
+see for any nested construction of results of function calls, as in e.g.
+\mono{(f a).0.(g b)}.
+
+On the other hand, the syntax and semantics of \D{} allow for function calls to
+be nested as in e.g. the expression \mono{(f (g a) (h b))}, where \mono{h} is
+also some well-defined function and is pairwise unequal to \mono{f} and
+\mono{g}. While the order of evaluation of \mono{g a} and \mono{h b} is
+\emph{insignificant} wrt. to one another, as with function calls separated by
+construction, the order of evaluation of these two subexpressions wrt. to the
+call to function \mono{f}, \emph{is significant to the result}, and
+\emph{might} be significant to termination analysis in general. However, we'll
+regard this as insignificant for the time being for mere simplicity. We'll come
+back to the question of whether size-change termination analysis can benefit
+from regarding this as significant later on.
+
+We can now draw a control flow graph for the program define in
+\referToListing{cfg-sample-1} as shown in \referToFigure{cfg-sample-1}.
+
+\begin{lstlisting}[label=listing:cfg-sample-1,caption={A sample \D{} program, always returning \mono{0.0.0}.}]
+f x y := x.y
+g _ := 0
+h _ := 0
+i x y := (f ((h y).(g x)) (h y))
+i input input
+\end{lstlisting}
+
+\input{figures/cfg-sample-1}
+
+\subsection{Disregarding back-propagation}
+
+It is worth noting that in \referToFigure{cfg-sample-1}, the clauses that make
+no function calls have out-degree $0$. Technically, these functions \emph{do
+transfer control} -- back to the callee. We may refer to this process as
+\emph{back-propagation of control}. While considering back-propagation is
+seemingly important to a concept that bases itself on the changes in the sizes
+of the program values, \emph{size-change termination initially is only
+concerned with control flow graphs that contain call cycles}.
+
+The thing with back-propagation is that forward-propagation after
+back-propagation of a call cannot occur due to the way \D{} is defined. Hence,
+what we are really concerned with is, ``how deep the rabbit hole goes'', before
+we back-propagate, as back-propagation superimplies termination of the function
+we're back-propagating out of.
+
+\subsection{Dropping the start and end nodes}
+
+The disregard of the back-propagation of control forces us to either redefine
+the transition from the start node and the transitions to the end node. This is
+because neither of these transitions are ever back-propagated, while all other
+transitions \emph{must be} back-propagated if the program terminates.
+
+Alternatively, disregard of back-propagation allows us to drop these nodes
+completely and concentrate on the clauses and explicit calls within the clause
+expressions. Hence, start and end nodes will not appear in any further graphs.
+
+\subsection{Control flow graphs vs. abstract static call graphs}
+
+Disregard of back-propagation allows us to consider control flow graphs
+presented in this text as mere \emph{abstract static call graphs}, henceforth
+referred to simply as, \emph{call graphs}. The abstraction applied to these
+graphs compared to regular static call graphs is that the concrete arguments of
+the function calls are not considered, and we merely consider how these values
+can change in size from for a given function call. Interestingly, the problem
+of termination analysis can be rephrased as the problem of determining whether
+the regular static call graph of a program, i.e. the one containing the
+concrete function arguments, is finite.
+
+\subsection{Multiple calls to the same function}
+
+Up until now we've only regarded expressions that don't make calls to the same
+function with varying arguments. This is because these calls have to be
+disjunctively labelled for the purposes of our analysis, because the use of
+varying arguments \emph{may} mean varying decrease (or increase), in values for
+the different calls within the expression. For this purpose we'll disjunctively
+label \emph{all} the calls within an expression, if necessary, but remember
+that this has nothing to do with evaluation order as has been discussed above.
+
+This allows us to draw a control flow graph, or equivalently, a call graph,
+for the program in \referToListing{cfg-sample-2}. Here, we've already
+disjunctively labelled all of the calls in the expressions. This call graph is
+drawn in \referToFigure{cfg-sample-2}.
+
+\begin{lstlisting}[label=listing:cfg-sample-2,caption={A sample \D{} program, always returning \mono{(0.x).(0.y)}, where \mono{x} and \mono{y} are arbitrary \D{} values supplied by the user.}]
+f x y := x.y
+g x := 0.x
+i x y := (0: f (1: g x) (2: g y))
+i input input
+\end{lstlisting}
+
+\input{figures/cfg-sample-2}
+
+\subsection{Multiple clauses}
+
+If function clauses are nodes, and the function calls within the expressions of
+the function clauses are unconditional transitions, what exactly happens if the
+arguments supplied to the function clause fail to match the pattern declaration
+for the clause?
+
+The semantics of \D{} tell us to make an unconditional transition to the
+immediately next clause of the function. There is at most one such transition
+for any clause, and the last clause of a function declaration cannot fail to
+pattern match\footnote{See \referToSection{d-sos}.}.
+
+We'll refer to these transitions as \emph{fail transitions} and visually mark
+them with a dotted line rather than a filled line. We need this way of visually
+distinguishing fail transitions from the rest since they are conditionally
+different, in that for any clause with a fail transition, either the fail
+transition is chosen, or all the non-fail transitions are chosen
+simultaneously. Fail transitions also have the special property that values
+\emph{cannot} increase nor decrease in the course of this transition due to the
+way \D{} is defined\footnote{That is, until back-propagation occurs.}.
+
+Before we can draw the call graph we also need a way to distinguish the clauses
+of a function wrt. the program text. We decide to enumerate the clauses
+top-to-bottom starting with 0. Sometimes we'll annotate the program text with
+these unique labels for each clause to make the call graph more readable.
+
+Hence, we can now draw the call graph for the program defined in
+\referToListing{cfg-loop} as shown in \referToFigure{cfg-loop}.
+
+\begin{lstlisting}[label=listing:cfg-loop,caption={A simple, down-counting loop in \D{}.}]
+f0: f 0 := 0
+f1: f x._ := f x
+
+f input
+\end{lstlisting}
+
+\input{figures/cfg-loop} 
+
+For a more complex example, let's consider the call graph for the program
+\mono{reverse} introduced in \referToSection{d-samples}. The program is
+repeated in annotated form in \referToListing{cfg-reverse}, and its
+corresponding call graph is shown in \referToFigure{cfg-reverse}.
+
+\begin{lstlisting}[label=listing:cfg-reverse,caption={An annotated version of the program \mono{reverse} introduced in \referToSection{d-samples}.}]
+r0: reverse 0 := 0
+r1: reverse left.right := (0: reverse right).(1: reverse left)
+
+reverse input
+\end{lstlisting}
+
+\input{figures/cfg-reverse} 
+
+\section{Size-change termination principle}
+
+Consider the program in \referToListing{cfg-loop} and it's corresponding call
+graph in \referToFigure{cfg-loop}. Without any further information about the
+control flow transitions, the program seemingly loops indefinitely. However,
+some things we do know about the control flow transitions, and others we can
+deduce.
+
+First off, it has already been stated that fail transitions cannot cause values
+to increase nor decrease since no destruction or construction operations are
+involved. Arguments are passed as-is from one clause to the next in the case
+of a fail transition.
+
+This is not the case for non-fail transitions. Non-fail control flow
+transitions occur in the expressions of the function clauses. When they do,
+they may use some of the bound variables. Variables are bound when the
+arguments to the function clause are matched to it's pattern declaration.
+
+\begin{definition} For the sake of further discussion we'll regard the
+underscore pattern as a uniquely named variable that is not used in the
+expression of the function clause.\end{definition}
+
+\begin{lemma}\label{lemma:d-pattern-leq} If the single pattern declaration
+includes a variable name, we can safely state that if some variable is bound as
+a result of pattern matching the corresponding argument, the value that
+variable is bound to is less than or equal to the value of the original
+argument. \end{lemma}
+
+\begin{proof} There is no construction operator for a pattern
+declaration.\end{proof}
+
+\begin{lemma}\label{lemma:d-pattern-less} If a destruction operator
+participates in a pattern declaration, then any variable bound as a result of
+pattern matching the corresponding argument will be bound to a value strictly
+less than the value of the original argument.\end{lemma}
+
+\begin{proof} A variable can be bound to the actual value of the argument iff
+the entire pattern is just a variable name. If the pattern contains at least
+one destruction operator, the syntax rules of \D{} cause for that operation to
+be performed first when pattern matching the argument. Hence, any value that
+can be bound thereafter has a value with at least one node less than the
+original value of the argument. \end{proof}
+
+Hence, we can deduce from \referToListing{cfg-loop}, that when $f_1$ makes a
+call to $f_0$ it does so with a value strictly less then it's own argument,
+i.e. the transition $f_1\rightarrow f_0$ strictly decreases a value. Visually
+we will mark this with a $\downarrow$. The Lemmas \refer{lemma:d-pattern-leq}
+and \refer{lemma:d-pattern-less} can be used to deduce the same sort of
+relationship for the transitions $r_1\xrightarrow{0,1} r_0$ for
+\referToListing{cfg-reverse}. These observations are summarised in
+\referToFigure{cfg-first-sct-graph}.
+
+\input{figures/cfg-first-sct-graph}
+
+\newpage
+
+A derrivable property from the program text is that the value sent as the
+argument in the transition $F_1\rightarrow F_0$ is \emph{always} strictly less
+than the value sent as the argument in the preceeding transition,
+$F_0\rightarrow F_1$. Additionally, we can universally state that \emph{false
+transitions from case nodes by definition can't change any values}. Hence, the
+infinite control flow sequence $F_0\rightarrow F_1\rightarrow F_0$ strictly
+decreases a well founded value in every iteration of the control flow cycle.
+This means that eventually the value bottoms out at $0$ which would validate
+the $F_0$ pattern and lead the program to terminate. In general, we can state
+the following:
+
+\begin{lemma}
+
+An infinite control flow sequnece infinitely decreases a well founded value if
+all the transitions in the corresponding control flow graph cycle either
+strictly decrease a value or keep all values unchanged, and at least one
+transition strictcly decreases a value.
+
+\end{lemma}
+
+\referToFigure{cfg-loop-down} showcases an edge-labelled control flow graph for
+\referToListing{d-loop}. Transitions for which we can \emph{safely} say that a
+value is decreased we mark with the symbol $\downarrow$, transitions for which
+we can \emph{safely} say that no value is increased we mark with the symbol
+$\top$. The graph is rather verbose and in future graphs we'll omit $\top$
+labels for nodes that universally can't increase a value, i.e. $S\rightarrow
+F_0$, $F_0\rightarrow E$ and $F_0\rightarrow F_1$.
+
+We can further proove the soundness of the size-change termination principle.
+
+\begin{proof} Assume for the sake of contradiction that there exists an
+infinite control flow sequence that infinitely decreases a well-founded data
+value. Assume furthermore that the program does not terminate. Then, some
+variable has to decrease indefinately, which contradicts with the definition of
+well-founded values. \end{proof}
+
+Unfortunately, this particular program can be trivially unfolded into a loop
+program, so the point of using size-change termination analysis may seem
+superflous. Indeed, the only change wrt. the control flow diagram is the
+notaiton used in the diagram. For such programs, the termination property is
+easily derrivable\cite{complexity-of-loop-programs}. 
+
