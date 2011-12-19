@@ -1,0 +1,43 @@
+\begin{figure}[htbp!]
+\centering
+\begin{tikzpicture}[>=latex',line join=bevel,]
+\pgfsetlinewidth{1bp}
+\pgfsetcolor{black}
+
+% Edge: R0 -> R1
+\draw [->,dotted] (49.969bp,34.268bp) .. controls (56.882bp,36.851bp) and (64.635bp,39.282bp)  .. (72bp,40.58bp) .. controls (79.767bp,41.948bp) and (88bp,40.866bp)  .. (105.24bp,35.467bp);
+
+% Edge: R1 -> R0
+\draw [->] (99.957bp,22.51bp) .. controls (94.056bp,22.123bp) and (87.816bp,21.778bp)  .. (82bp,21.58bp) .. controls (76.252bp,21.384bp) and (70.164bp,21.454bp)  .. (53.809bp,22.204bp);
+
+\definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+\pgfsetstrokecolor{strokecol}
+\draw (77bp,29.08bp) node {$0$};
+
+% Edge: R1 -> R0
+\draw [->] (108.98bp,11.053bp) .. controls (98.589bp,4.4007bp) and (84.865bp,-1.5798bp)  .. (72bp,1.5798bp) .. controls (66.559bp,2.9161bp) and (61.044bp,5.0566bp)  .. (46.908bp,12.145bp);
+\draw (77bp,9.0798bp) node {$1$};
+
+% Node: R0
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (27bp,25bp) ellipse (27bp and 18bp);
+  \draw (27bp,24.58bp) node {$r_0$};
+\end{scope}
+
+% Node: R1
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (127bp,25bp) ellipse (27bp and 18bp);
+  \draw (127bp,24.58bp) node {$r_1$};
+\end{scope}
+%
+\end{tikzpicture}
+
+\caption[]{A  control flow graph for the \D{} program in \referToListing{cfg-reverse}.}
+
+\label{figure:cfg-reverse}
+
+\end{figure}
