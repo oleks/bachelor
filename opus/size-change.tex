@@ -373,9 +373,9 @@ shown in \referToFigure{sct-non-reducing}.
 \subsection{Increasing transitions}
 
 
-Values are not always decreasing.
+%Values are not always decreasing.
 
-Consider the following program:
+%Consider the following program:
 
 \begin{lstlisting}[
   label=listing:sct-infinite-join,
@@ -384,10 +384,10 @@ f0: f a b = f a.b b.a
 f input input
 \end{lstlisting}
 
-The function clause expression constructs a new value by joining the two
-incoming arguments into a new node. While we're unable to say by how much the
-values are increased exactly, we know that both values are increased by at
-least 1 due to the creation of a node for each argument.
+%The function clause expression constructs a new value by joining the two
+%incoming arguments into a new node. While we're unable to say by how much the
+%values are increased exactly, we know that both values are increased by at
+%least 1 due to the creation of a node for each argument.
 
 
 %\newpage
