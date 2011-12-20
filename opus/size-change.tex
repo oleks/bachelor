@@ -105,9 +105,8 @@ terminate, then one of the primitive operations, i.e. construction,
 destruction, comparison or binding, does not terminate, which is certainly
 absurd given the semantics of \D{}. \end{proof}
 
-Call cycles in \D{} can only occur in recursive function definitions, since
-there are no other cyclic constructs and mutual recursion is disallowed by the
-semantics of \D{}.
+Call cycles in \D{} can occur in recursive or mutually recursive function
+clauses.
 
 We will henceforth refer to function clauses with recursive calls as
 \emph{recursive clauses} and their counterparts, i.e. the base clauses of a
