@@ -90,6 +90,29 @@ i input input
 
 \input{figures/cfg-sample-1}
 
+\subsection{Call cycles}
+
+A call cycle occurs when there is a cyclical transition of control between the
+nodes of a control flow graph. I.e. when there is a cycle in the control flow
+graph.
+
+\begin{lemma} We're concerned with call cycles in control flow graphs since
+non-termination cannot occur if not for an infinite control flow cycle.
+\end{lemma}
+
+\begin{proof} If a program has a control flow graph with no cycles and does not
+terminate, then one of the primitive operations, i.e. construction,
+destruction, comparison or binding, does not terminate, which is certainly
+absurd given the semantics of \D{}. \end{proof}
+
+Call cycles in \D{} can only occur in recursive function definitions, since
+there are no other cyclic constructs and mutual recursion is disallowed by the
+semantics of \D{}.
+
+We will henceforth refer to function clauses with recursive calls as
+\emph{recursive clauses} and their counterparts, i.e. the base clauses of a
+function declaration, \emph{terminal clauses}.
+
 \subsection{Disregarding back-propagation}
 
 It is worth noting that in \referToFigure{cfg-sample-1}, the clauses that make
@@ -97,8 +120,7 @@ no function calls have out-degree $0$. Technically, these functions \emph{do
 transfer control} -- back to the callee. We may refer to this process as
 \emph{back-propagation of control}. While considering back-propagation is
 seemingly important to a concept that bases itself on the changes in the sizes
-of the program values, \emph{size-change termination initially is only
-concerned with control flow graphs that contain call cycles}.
+of the program values, we're only concerned with call cycles.
 
 The thing with back-propagation is that forward-propagation after
 back-propagation of a call cannot occur due to the way \D{} is defined. Hence,
@@ -170,9 +192,7 @@ them with a dotted line rather than a filled line. We need this way of visually
 distinguishing fail transitions from the rest since they are conditionally
 different, in that for any clause with a fail transition, either the fail
 transition is chosen, or all the non-fail transitions are chosen
-simultaneously. Fail transitions also have the special property that values
-\emph{cannot} increase nor decrease in the course of this transition due to the
-way \D{} is defined\footnote{That is, until back-propagation occurs.}.
+simultaneously.
 
 Before we can draw the call graph we also need a way to distinguish the clauses
 of a function wrt. the program text. We decide to enumerate the clauses
@@ -209,23 +229,62 @@ reverse input
 
 Consider the program in \referToListing{cfg-loop} and it's corresponding call
 graph in \referToFigure{cfg-loop}. Without any further information about the
-control flow transitions, the program seemingly loops indefinitely. However,
-some things we do know about the control flow transitions, and others we can
+control transitions, the program seemingly loops indefinitely. However,
+some things we do know about the control transitions, and others we can
 deduce.
 
-First off, it has already been stated that fail transitions cannot cause values
-to increase nor decrease since no destruction or construction operations are
-involved. Arguments are passed as-is from one clause to the next in the case
-of a fail transition.
+What we would like to know for any control transition is \emph{how the
+variables bound in the source relate to the variables bound in the
+destination}. The source and destination in this case are function clauses. We
+will denote this relation with the letter $\nabla$, s.t. if the clause $f_0$ is
+the source and the clause $g_0$ is the destination, we would like to construct
+the relation $f_0\nabla g_0$.
 
-This is not the case for non-fail transitions. Non-fail control flow
-transitions occur in the expressions of the function clauses. When they do,
-they may use some of the bound variables. Variables are bound when the
-arguments to the function clause are matched to it's pattern declaration.
+According to the semantics of \D{}, when a function call occurs, the source
+evaluates the arguments of the function call and generates some \emph{values}.
+The values may hence be a nested construction of other concrete values, values
+of variables, and results of nested function calls. This implies that a
+relation can be deduced between the variables bound in the source and the
+values that result from the evaluation. That relation need not be precise in
+the sense of size displacement, but it suffices for initial size-change
+termination analysis to know if the value of the variable is strictly increased
+or perhaps equivalent to the final value.
+
+This is followed by the source transmitting the resulting values to the
+destination, i.e.  performing a control transition and the destination pattern
+matching the incoming values, the result of which may be binding of variables
+in the destination clause.
+
+Variables (or names) are bound to values, hence the relation $\nabla$ is a
+injective relation between variable names, where each mapping is annotated with
+the change in size indicating a lower bound on the difference between the
+values of the variables.
+
+In the following sections we discuss how we can deduce the lower bound on the
+difference between the values of the variables.
+
+\subsection{Fail transitions}
+
+If pattern matching fails for a given clause, a fail transition occurs, where
+the values originally sent to given clause are simply forwarded to the next
+clause.
+
+\begin{lemma} Fail transitions are transitive in the sense that the
+relationship between the variables bound in the source and the variables bound
+in the destination is the same regardless of the number of fail transitions in
+the path between the source and the destination.\end{lemma}
+
+\begin{proof} Follows from the semantics of \D{}. \end{proof}
+
+Note, that due to \D{} being first order and statically scoped, the variable
+space is always initially empty when a function clause begins pattern matching.
+
+\subsection{Pattern matching}
 
 \begin{definition} For the sake of further discussion we'll regard the
-underscore pattern as a uniquely named variable that is not used in the
-expression of the function clause.\end{definition}
+underscore pattern simply as a uniquely named variable that is not used in the
+expression of the function clause, i.e. it is also bound to a
+value.\end{definition}
 
 \begin{lemma}\label{lemma:d-pattern-leq} If the single pattern declaration
 includes a variable name, we can safely state that if some variable is bound as
@@ -255,51 +314,123 @@ we will mark this with a $\downarrow$. The Lemmas \refer{lemma:d-pattern-leq}
 and \refer{lemma:d-pattern-less} can be used to deduce the same sort of
 relationship for the transitions $r_1\xrightarrow{0,1} r_0$ for
 \referToListing{cfg-reverse}. These observations are summarised in
-\referToFigure{cfg-first-sct-graph}.
+\referToFigure{sct-first}.
 
-\input{figures/cfg-first-sct-graph}
+\input{figures/sct-first}
 
-\newpage
+\subsection{Calls to multivariate functions}
 
-A derrivable property from the program text is that the value sent as the
-argument in the transition $F_1\rightarrow F_0$ is \emph{always} strictly less
-than the value sent as the argument in the preceeding transition,
-$F_0\rightarrow F_1$. Additionally, we can universally state that \emph{false
-transitions from case nodes by definition can't change any values}. Hence, the
-infinite control flow sequence $F_0\rightarrow F_1\rightarrow F_0$ strictly
-decreases a well founded value in every iteration of the control flow cycle.
-This means that eventually the value bottoms out at $0$ which would validate
-the $F_0$ pattern and lead the program to terminate. In general, we can state
-the following:
+The call graph notation used thus far has only been used for describing calls
+to unary functions. As an example of a multivariate function, we may consider
+the function \mono{normalized-less/2}, introduced in
+\referToSection{d-size-less}. We use this function to define the program in
+\referToListing{sct-normalized-less}. The corresponding call graph is shown in
+\referToFigure{sct-normalized-less}.
 
-\begin{lemma}
+\begin{lstlisting}[
+  label={listing:sct-normalized-less},
+  caption={A sample program with a multivariate function.}]
+n0: normalized-less 0 b := b
+n1: normalized-less _ 0 := 0
+n2: normalized-less _.a _.b := normalized-less a b
+normalized-less input input
+\end{lstlisting}
 
-An infinite control flow sequnece infinitely decreases a well founded value if
-all the transitions in the corresponding control flow graph cycle either
-strictly decrease a value or keep all values unchanged, and at least one
-transition strictcly decreases a value.
+\input{figures/sct-normalized-less}
 
-\end{lemma}
+The notation is straightforward, the juxtaposition of the $\downarrow$
+indicates the size change of the respective arguments, read left to right as in
+the function clause definition.
 
-\referToFigure{cfg-loop-down} showcases an edge-labelled control flow graph for
-\referToListing{d-loop}. Transitions for which we can \emph{safely} say that a
-value is decreased we mark with the symbol $\downarrow$, transitions for which
-we can \emph{safely} say that no value is increased we mark with the symbol
-$\top$. The graph is rather verbose and in future graphs we'll omit $\top$
-labels for nodes that universally can't increase a value, i.e. $S\rightarrow
-F_0$, $F_0\rightarrow E$ and $F_0\rightarrow F_1$.
+\subsection{Nonincreasing transitions}
 
-We can further proove the soundness of the size-change termination principle.
+There are cases where for a given transition in a call cycle, we can't tell
+whether the sizes are strictly decreased or remain the same, but we can
+definitely say that there is \emph{no increase} in size.
 
-\begin{proof} Assume for the sake of contradiction that there exists an
-infinite control flow sequence that infinitely decreases a well-founded data
-value. Assume furthermore that the program does not terminate. Then, some
-variable has to decrease indefinately, which contradicts with the definition of
-well-founded values. \end{proof}
+As an example, consider the program in \referToListing{sct-non-reducing}.
 
-Unfortunately, this particular program can be trivially unfolded into a loop
-program, so the point of using size-change termination analysis may seem
-superflous. Indeed, the only change wrt. the control flow diagram is the
-notaiton used in the diagram. For such programs, the termination property is
-easily derrivable\cite{complexity-of-loop-programs}. 
+\begin{lstlisting}[
+  label=listing:sct-non-reducing,
+  caption={A binary function where a strict decrease in value is uncertain
+    for some transition in a call cycle.}]
+g0: g 0 0 = 0
+g1: g _.a b._ = g 0.a b.0
+g input input
+\end{lstlisting}
+
+
+For the recursive clause $g_1$, it is unclear whether
+the sizes of the variables are decreased in the transition $g_1\rightarrow g_0$, or not.
+Specifically, if the arguments to \mono{g} are of the form \mono{0.\_} and
+\mono{\_.0}, respectively, the size is \emph{not} decreased by the call. We'll
+denote such transitions by the symbol $\Downarrow$. We can now draw the call
+graph for the program in \referToListing{sct-non-reducing}. The call graph is
+shown in \referToFigure{sct-non-reducing}.
+
+\input{figures/sct-non-reducing}
+
+\subsection{Increasing transitions}
+
+
+Values are not always decreasing.
+
+Consider the following program:
+
+\begin{lstlisting}[
+  label=listing:sct-infinite-join,
+  caption={The function \mono{infinite-join/2} infinitely joins..}]
+f0: f a b = f a.b b.a
+f input input
+\end{lstlisting}
+
+The function clause expression constructs a new value by joining the two
+incoming arguments into a new node. While we're unable to say by how much the
+values are increased exactly, we know that both values are increased by at
+least 1 due to the creation of a node for each argument.
+
+
+%\newpage
+
+%A derrivable property from the program text is that the value sent as the
+%argument in the transition $F_1\rightarrow F_0$ is \emph{always} strictly less
+%than the value sent as the argument in the preceeding transition,
+%$F_0\rightarrow F_1$. Additionally, we can universally state that \emph{false
+%transitions from case nodes by definition can't change any values}. Hence, the
+%infinite control flow sequence $F_0\rightarrow F_1\rightarrow F_0$ strictly
+%decreases a well founded value in every iteration of the control flow cycle.
+%This means that eventually the value bottoms out at $0$ which would validate
+%the $F_0$ pattern and lead the program to terminate. In general, we can state
+%the following:
+
+%\begin{lemma}
+
+%An infinite control flow sequnece infinitely decreases a well founded value if
+%all the transitions in the corresponding control flow graph cycle either
+%strictly decrease a value or keep all values unchanged, and at least one
+%transition strictcly decreases a value.
+
+%\end{lemma}
+
+%\referToFigure{cfg-loop-down} showcases an edge-labelled control flow graph for
+%\referToListing{d-loop}. Transitions for which we can \emph{safely} say that a
+%value is decreased we mark with the symbol $\downarrow$, transitions for which
+%we can \emph{safely} say that no value is increased we mark with the symbol
+%$\top$. The graph is rather verbose and in future graphs we'll omit $\top$
+%labels for nodes that universally can't increase a value, i.e. $S\rightarrow
+%F_0$, $F_0\rightarrow E$ and $F_0\rightarrow F_1$.
+
+%We can further prove the soundness of the size-change termination principle.
+
+%\begin{proof} Assume for the sake of contradiction that there exists an
+%infinite control flow sequence that infinitely decreases a well-founded data
+%value. Assume furthermore that the program does not terminate. Then, some
+%variable has to decrease indefinately, which contradicts with the definition of
+%well-founded values. \end{proof}
+
+%Unfortunately, this particular program can be trivially unfolded into a loop
+%program, so the point of using size-change termination analysis may seem
+%superflous. Indeed, the only change wrt. the control flow diagram is the
+%notaiton used in the diagram. For such programs, the termination property is
+%easily derrivable\cite{complexity-of-loop-programs}. 
 
