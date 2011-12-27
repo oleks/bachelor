@@ -224,6 +224,10 @@ reverse input
 
 \input{figures/cfg-reverse} 
 
+\subsection{Deeply nested function calls}
+
+Blah
+
 \section{Size-change termination principle}
 
 Consider the program in \referToListing{cfg-loop} and it's corresponding call
@@ -337,6 +341,18 @@ destination\footnote{While this information may be useful for dead-code
 elimination and other forms of static analysis, this is of little importance to
 size-change termination.}.
 
+More formally, given a function argument as the expression $x$, we construct
+the expression $x^c$ where we replace all first-level nested function
+calls\footnote{Nested function calls of nested function calls are hence
+considered irrelevant to the derivation of the size relation of the top-level
+call, however, they may become relevant as we derive the size relations of the
+corresponding nested calls.} by auxiliary variables.  We group all those
+auxiliary variables into the set of variable names $N_{calls}^c$ and all the
+remaining variables into the set $N_{vars}^c$.  Furthermore we construct the
+auxiliary variable names in such way that $N_{vars}^c\cup
+N_{calls}^c=\emptyset$.  Hence, we obtain the tuple
+$(x^c,N_{vars}^c,N_{calls}^c)$.
+
 Continuing on with the example above, i.e. having the size relations
 $\{v>\textt{a}, v> \textt{b}, v\geq \textt{a.0}, v\geq \textt{0.b}\}$, assume
 that the destination clause has the corresponding pattern \mono{x.y}. The
@@ -346,15 +362,15 @@ that the control transition neither decreases nor increases any values. We can
 perform a corresponding analysis on the pattern declaration and deduce the set
 of conditions that will hold after pattern matching succeeds, indeed,
 $\{v>\textt{x}, v> \textt{y}, v\geq \textt{x.0}, v\geq \textt{0.y}\}$. The
-participation of $x$ in the same kind of relations as $a$ and the participation
-of $y$ in the same kind of relations as $b$ does not alone indicate their
-respective equivalence, since the actual property that $v\equiv\textt{a.b}$ is
-lost.
+participation of $x$ in the same kind of relations as $a$, and the
+participation of $y$ in the same kind of relations as $b$, does not alone
+indicate their respective equivalence, since the actual property that
+$v\equiv\textt{a.b}$ is lost.
 
 On the other hand, if we had to formally define the relation that had to be
 built between the variables bound in the source and the values that the
 function call arguments evaluated to, this would be a relation between values
-and some kind of ``abstract patterns''.
+and some kind of ``abstract patterns'', as e.g. $v\geq\textt{0.b}$.
 
 To simplify the entire process, instead of deducing actual size relations
 between the variables bound in the source and the values that the function
@@ -362,15 +378,136 @@ arguments evaluate to, we can simply turn the function argument into the
 abstract pattern to begin with. The actual size relations are hence withkept
 and can be deduced at a later stage in the process.
 
+Indeed, the tuple $(x^c,N_{vars}^c,N_{calls}^c)$ constitutes such an abstract
+pattern already, since the expression $x^c$, contains no function calls and
+hence syntactically matches a pattern in \D{}\footnote{See
+\referToSection{d-syntax} if you're uncertain.}. Given a clause with the
+pattern $p$, we can easily deduce the set $N_{vars}^p$, which is the set of
+variable names used in $p$. Our task is then to deduce a size relation between
+the variables in the sets $N_{vars}^c$ and $N_{vars}^p$ given the tuples
+$(x^c,N_{vars}^c,N_{calls}^c)$ and $(p,N_{vars}^p)$. 
+
+\subsection{Pattern matching}
+
+Let the function $\phi\ :\ N \times N \rightarrow \{<,\leq,\bot\}$ denote the
+function $\lambda N^c, N^p . \Phi\left(C^c,N^c,C^p,N^p\right)$. We will in the
+following section discuss the rules involved in deducing the function $\phi$,
+that is, the function $\Phi$ for some given source and destination function
+clauses.
+
+In the following rules we assume that $N_{vars}^c$ and $N_{vars}^p$ are always
+available. We don't pass them around since theses sets need not be modified in
+any of the rules. We use matlab-like set notation, i.e. providing a set where a
+scalar is expected yields an execution of the function for each element in the
+set.
+
+The simplest case is when the abstract pattern $x$ is simply \mono{0}, in this
+case, regardless of the clause pattern $p$, no relation needs to be drawn
+between the sets $N_{vars}^c$ and $N_{vars}^p$, as the following rule states:
+
+\begin{equation}
+{
+    x\rightarrow 0
+  \wedge
+    \phi\rightarrow\phi'
+}\over{
+  \left\langle\proc{B},p,x,\phi\right\rangle
+  \rightarrow
+  \phi'
+}
+\end{equation}
+
+Likewise, clause patterns that are not destructions nor name patterns, have no
+effect on the relationship between the sets $N_{vars}^c$ and $N_{vars}^p$
+either:
+
+\begin{equation}
+{
+\left(
+    p\rightarrow \_
+\vee
+    p\rightarrow 0
+\right)
+  \wedge
+    \phi\rightarrow\phi'
+}\over{
+  \left\langle\proc{D},p,x,\phi\right\rangle
+  \rightarrow
+  \phi'
+}
+\end{equation}
+
+Name patterns in clauses have a more complex effect. First, if the expression
+$x$ is some node, then all the variables that occur in $x$, i.e.
+$N_{vars}^c(x)$, are all strictly less than $n$.
+
+\begin{equation}
+{
+    p\rightarrow n
+  \wedge
+    x\rightarrow x'\cdot x''
+  \wedge
+    \left\langle\phi\left(N_{vars}^c(x), n\right)\mapsto <\right\rangle\rightarrow\phi'
+}\over{
+  \left\langle\proc{A},p,x,\phi\right\rangle
+  \rightarrow
+  \phi'
+}
+\end{equation}
+
+Second, if the expression $x$ is just a variable reference, as is the pattern
+$p$, then the values of these variables will be equivalent. However, we're not
+concerned with exact equivalence and simply mark this relationship with the
+weaker relation, $\leq$:
+
+\begin{equation}
+{
+    p\rightarrow n^p
+  \wedge
+    x\rightarrow n^c
+  \wedge
+    \left\langle\phi\left(n^c, n^p\right)\mapsto \leq\right\rangle\rightarrow\phi'
+}\over{
+  \left\langle\proc{C},p,x,\phi\right\rangle
+  \rightarrow
+  \phi'
+}
+\end{equation}
+
+
+
+Patterns with destructions are evaluated recursively as follows:
+
+\begin{equation}
+{
+    p\rightarrow p'\cdot p''
+  \wedge
+    x\rightarrow x'\cdot x''
+  \wedge
+    \left\langle p', x', \phi\right\rangle
+    \rightarrow
+    \phi''
+  \wedge
+    \left\langle p'', x'', \phi''\right\rangle
+    \rightarrow
+    \phi'
+}\over{
+  \left\langle\proc{E},p,x,\phi\right\rangle
+  \rightarrow
+  \phi'
+}
+\end{equation}
+
 For instance, consider the more complex program \mono{reverse} in
 \referToListing{cfg-reverse} and it's corresponding control flow graph in
 \referToFigure{cfg-reverse}. The abstract pattern for the success transition 0
-is simply \mono{right} with the variable space consisting merely of the
+is simply \mono{right} with the set $N_{vars}'$ consisting merely of the
 variable \mono{right} with an unknown value. The abstract pattern is matched to
 the actual pattern \mono{left.right}, and for the sake of avoiding ambiguity
 let us refer to that pattern as simply \mono{a.b}. Hence, the variable is
 destructed into two children, \mono{a} and \mono{b} such that
 $\textt{a}<\textt{right}$ and $\textt{b}<\textt{right}$.
+
 
 \begin{definition} The relation $\Upsilon\ :\ C_{caller} \times N_{caller} \times C_{callee} \times B_{callee}\rightarrow
 \{>,\}$, between the values of the bound variables of the
