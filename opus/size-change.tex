@@ -228,27 +228,159 @@ reverse input
 
 Consider the program in \referToListing{cfg-loop} and it's corresponding call
 graph in \referToFigure{cfg-loop}. Without any further information about the
-control transitions, the program seemingly loops indefinitely. However,
-some things we do know about the control transitions, and others we can
-deduce.
+control transitions, the program seemingly loops indefinitely. However, there
+are some things that we can deduce about the control transitions.
 
-What we would like to know for any control transition is \emph{how the
-variables bound in the source relate to the variables bound in the
-destination}. The source and destination in this case are function clauses. We
-will denote this relation with the letter $\nabla$, s.t. if the clause $f_0$ is
-the source and the clause $g_0$ is the destination, we would like to construct
-the relation $f_0\nabla g_0$.
+\begin{lemma} If we can deduce for every control flow cycle in a prorgram that
+it reduces a value of well-founded data-type on each iteration of the cycle,
+then the value must eventually bottom out and the program must terminate.
+\end{lemma}
 
-According to the semantics of \D{}, when a function call occurs, the source
-evaluates the arguments of the function call and generates some \emph{values}.
-The values may hence be a nested construction of other concrete values, values
-of variables, and results of nested function calls. This implies that a
-relation can be deduced between the variables bound in the source and the
-values that result from the evaluation. That relation need not be precise in
-the sense of size displacement, but it suffices for initial size-change
-termination analysis to know if the value of the variable is strictly increased
-or perhaps equivalent to the final value.
+\begin{proof} Assume for the sake of contradiction that a program that reduces
+a value of a well-founded data type in each call cycle does not terminate.
+Then, either the value reduces indefinitely, which is a contradiction to the
+well-foundedness of its data type, or some noncyclic call sequence causes an
+infinite loop, also an absurdity due to the definition of \D{}. \end{proof}
 
+That is the \emph{size-change termination principle}. All values in \D{} are
+inherently well-founded so what remains to be shown is how we can deduce from a
+call cycle whether it reduces a value on each iteration.
+
+\begin{lemma}\label{lemma:cycle-reduce} A control flow cycle reduces a value on
+each iteration if at least one of the participating control transitions reduces
+the value and all other control transitions do not increase that
+value.\end{lemma}
+
+\begin{proof} If a value is not reduced in a cycle, it either stays the same or
+is increased. If it is increased, then at least one control transition must've
+increased the value, an absurdity. If it stays the same then none of the
+participating control transitions have neither increased nor decreased the
+value, also an absurdity. \end{proof}
+
+By the definition of call graphs, function clauses participate as nodes in a
+call cycle. A control transition is a directed edge between two function
+clauses where one clause is the \emph{source} and the other is the
+\emph{destination}. 
+
+We can analyze how a value changes it's size through a call sequence by
+analyzing the size relation between the variables bound in the source and the
+variables bound in the destination of every control transition.
+
+%how the variables bound in the source relate to the variables bound in the
+%destination.
+
+\begin{definition} The relation $\Upsilon\ :\ C_{caller} \times N_{caller}
+\times C_{callee} \times N_{callee} \rightarrow \{\bot,<,\leq\}$ is defined to
+be the size relation between the caller ($C_{caller}$) and callee
+($C_{callee}$) clauses in \D{} where $N_{caller}$ are the names of the
+variables bound in the caller, and $N_{callee}$ are the names of the variables
+bound in the callee. Note, that we are only concerned with reductions and
+non-increases in size, all other relationships are marked by the no
+relationship symbol $\bot$. Initially, the relationship between all the clauses
+and their variables is $\bot$. \end{definition}
+
+The construction of the relationship $\Upsilon$ for a given transition depends
+first and foremost on whether that transition is a fail or success transition.
+
+\subsection{Fail transitions}
+
+A fail transition occurs if the values passed to a given clause to match it's
+pattern. If the values fail to match the pattern, no variables are bound and
+hence no change in values can occur. The values are simply passed along as they
+were to the next clause of the function declaration.
+
+\begin{lemma} Fail transitions are transitive in the sense that the
+relationship between the variables bound in the source and the variables bound
+in the destination is the same regardless of the number of fail transitions in
+the path between the source and the destination.\end{lemma}
+
+\begin{proof} Follows from the semantics of \D{}. \end{proof}
+
+Hence all fail transitions in the $\Upsilon$ relation return the result $\leq$
+for all variable pairs.
+
+Note, that due to \D{} being first order and statically scoped, the variable
+space is always initially empty when a function clause begins pattern matching.
+
+\subsection{Success transitions}
+
+Since \D{} is a call-by-value language, when a function call is encountered,
+the source evaluates the arguments of the function call and generates some
+\emph{values} before giving up control.
+
+The values may hence be a nested construction of some concrete values, values
+bound to variables in the source, and results of nested function calls. Without
+further regard of nested function calls, this implies that a \emph{size
+relation} can be deduced between the variables bound in the source and the
+values that result from an evaluation of the function call arguments. 
+
+Of course, we cannot deduce a precise size displacement as the values of the
+bound variables may initially be \emph{unknown} at compile
+time\footnote{Although some values can be deduced via static analysis of the
+program, others can come in from the outside world via the 0-ary function
+\mono{input} at run time.}.  However, we can deduce a \emph{safe} displacement
+estimate, such that it is less than or equal to the actual displacement in
+terms of absolute value. For instance, if the expression \mono{a.b} appears as
+a function call argument, where \mono{a} and \mono{b} are some bound variables
+with unknown values, and this argument evaluates to some value $v$, then we can
+\emph{safely} say that $v>\text{\mono{a}}$, $v>\text{\mono{b}}$,
+$v\geq\text{\mono{a.0}}$ and $v\geq\text{\mono{0.b}}$.
+
+We decide to ignore the nested function calls because this would imply a more
+complex static analysis of the program. Specifically, we're unable to say
+anything about the result of the nested function call from the scope of the
+source clause alone. Instead, we treat results from nested function calls
+simply as variables with \emph{unknown} values. We also make sure to keep these
+variables separate from the bound variables as there is no relationship to draw
+between these ``variables'' and the variables bound in the
+destination\footnote{While this information may be useful for dead-code
+elimination and other forms of static analysis, this is of little importance to
+size-change termination.}.
+
+Continuing on with the example above, i.e. having the size relations
+$\{v>\textt{a}, v> \textt{b}, v\geq \textt{a.0}, v\geq \textt{0.b}\}$, assume
+that the destination clause has the corresponding pattern \mono{x.y}. The
+question henceforth is how do we draw the relationship that
+$\textt{a}\equiv\textt{x}$ and $\textt{b}\equiv\textt{y}$, or perhaps simply
+that the control transition neither decreases nor increases any values. We can
+perform a corresponding analysis on the pattern declaration and deduce the set
+of conditions that will hold after pattern matching succeeds, indeed,
+$\{v>\textt{x}, v> \textt{y}, v\geq \textt{x.0}, v\geq \textt{0.y}\}$. The
+participation of $x$ in the same kind of relations as $a$ and the participation
+of $y$ in the same kind of relations as $b$ does not alone indicate their
+respective equivalence, since the actual property that $v\equiv\textt{a.b}$ is
+lost.
+
+On the other hand, if we had to formally define the relation that had to be
+built between the variables bound in the source and the values that the
+function call arguments evaluated to, this would be a relation between values
+and some kind of ``abstract patterns''.
+
+To simplify the entire process, instead of deducing actual size relations
+between the variables bound in the source and the values that the function
+arguments evaluate to, we can simply turn the function argument into the
+abstract pattern to begin with. The actual size relations are hence withkept
+and can be deduced at a later stage in the process.
+
+For instance, consider the more complex program \mono{reverse} in
+\referToListing{cfg-reverse} and it's corresponding control flow graph in
+\referToFigure{cfg-reverse}. The abstract pattern for the success transition 0
+is simply \mono{right} with the variable space consisting merely of the
+variable \mono{right} with an unknown value. The abstract pattern is matched to
+the actual pattern \mono{left.right}, and for the sake of avoiding ambiguity
+let us refer to that pattern as simply \mono{a.b}. Hence, the variable is
+destructed into two children, \mono{a} and \mono{b} such that
+$\textt{a}<\textt{right}$ and $\textt{b}<\textt{right}$.
+
+\begin{definition} The relation $\Upsilon\ :\ C_{caller} \times N_{caller} \times C_{callee} \times B_{callee}\rightarrow
+\{>,\}$, between the values of the bound variables of the
+function clause and the values that the arguments of the function call evaluate
+to. $\uparrow$ indicates an increase, $\Uparrow$ a nondecrease.\end{definition}
+
+\begin{lemma}
+
+\end{lemma}
+ 
 This is followed by the source transmitting the resulting values to the
 destination, i.e.  performing a control transition and the destination pattern
 matching the incoming values, the result of which may be binding of variables
@@ -262,21 +394,6 @@ values of the variables.
 In the following sections we discuss how we can deduce the lower bound on the
 difference between the values of the variables.
 
-\subsection{Fail transitions}
-
-If pattern matching fails for a given clause, a fail transition occurs, where
-the values originally sent to given clause are simply forwarded to the next
-clause.
-
-\begin{lemma} Fail transitions are transitive in the sense that the
-relationship between the variables bound in the source and the variables bound
-in the destination is the same regardless of the number of fail transitions in
-the path between the source and the destination.\end{lemma}
-
-\begin{proof} Follows from the semantics of \D{}. \end{proof}
-
-Note, that due to \D{} being first order and statically scoped, the variable
-space is always initially empty when a function clause begins pattern matching.
 
 \subsection{Pattern matching}
 
@@ -345,27 +462,26 @@ the function clause definition.
 
 There are cases where for a given transition in a call cycle, we can't tell
 whether the sizes are strictly decreased or remain the same, but we can
-definitely say that there is \emph{no increase} in size.
-
-As an example, consider the program in \referToListing{sct-non-reducing}.
+definitely say that there is \emph{no increase} in the sizes of variables. As
+an example, consider the program in \referToListing{sct-non-reducing}.
 
 \begin{lstlisting}[
   label=listing:sct-non-reducing,
-  caption={A binary function where a strict decrease in value is uncertain
-    for some transition in a call cycle.}]
+  caption={The binary function \mono{g} has a call cycle with nonincreasing
+    sizes in variables.}]
 g0: g 0 0 = 0
 g1: g _.a b._ = g 0.a b.0
 g input input
 \end{lstlisting}
 
 
-For the recursive clause $g_1$, it is unclear whether
-the sizes of the variables are decreased in the transition $g_1\rightarrow g_0$, or not.
+For the recursive clause $g_1$, it is unclear whether the sizes of the
+variables are decreased in the transition $g_1\rightarrow g_0$, or not.
 Specifically, if the arguments to \mono{g} are of the form \mono{0.\_} and
 \mono{\_.0}, respectively, the size is \emph{not} decreased by the call. We'll
 denote such transitions by the symbol $\Downarrow$. We can now draw the call
-graph for the program in \referToListing{sct-non-reducing}. The call graph is
-shown in \referToFigure{sct-non-reducing}.
+graph for the program in \referToListing{sct-non-reducing} as in
+\referToFigure{sct-non-reducing}.
 
 \input{figures/sct-non-reducing}
 

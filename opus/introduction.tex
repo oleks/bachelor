@@ -1,0 +1,98 @@
+\chapter{Introduction}\label{section:introduction}
+
+\section{Motivation}
+
+The generic halting problem, or the \emph{Entscheidungsproblem}, was formulated
+well before the invention of the modern computer. It was formulated at a time
+when many mathematicians believed that they could formalize all of mathematics
+and use algorithmic means to formally prove all statements within that formal
+system. The problem can be stated as follows:
+
+\begin{definition} Given the set of all possible programs $P$, find a program
+$p\in P$, that can for any $p'\in P$,  within a finite amount of time return
+\mono{halts}\ or $\text{\mono{doesn't halt}}$, depending on whether $p'$
+eventually stops or runs indefinitely, respectively.\end{definition}
+ 
+While the concept of a program remains to be formally defined, an important
+part of that definition is that it is a finite sequence of discrete,
+terminating steps. Hence, the problem can be restated as determining whether
+the given program contains program flow cycles that loop indefinitely.
+
+Alan A. Turing and Alonzo D. Church developed separate proofs for the
+infeasibility of such a program almost simultaneously in 1937. Turing's proof
+however, would become the one more widely recognised, although they are
+mutually reduceable to one another.
+
+However, the fact that termination checking is infeasible \emph{in general},
+has unfortunately become an easy excuse for many to claim that the property is
+\emph{always} undecidable. 
+
+The motivation behind this project is to examine some of the contexts in which
+the halting property \emph{is} decidable in a matter that is both sound and
+complete. To those unfamiliar with logic, a \emph{sound} proof is a proof that
+produces the correct result for any query, and a \emph{complete} proof is a
+proof that always terminates.
+
+To do this for a generic program\footnote{A term that also remains to be
+formally defined.} we need to slightly relax the definition of the halting
+problem allowing for the answer \mono{unknown} to be returned. The goal is then
+to reduce the number of programs in $P$ for which the termination checking
+program returns the result \mono{unknown}.
+
+\begin{definition} Given the set of all possible programs $P$, find a program
+$p\in P$, that can for any $p'\in P$, within a finite amount of time, either
+give up and return \mono{unknown}, or return \mono{halts}\ or
+$\text{\mono{doesn't halt}}$, depending on whether $p'$ eventually stops or
+runs indefinitely, respectively. Find a $p$ such that the number of $p'\in P$
+for which $p$ returns \mono{unknown} is minimized.\end{definition}
+
+\section{Expectations of the reader}
+
+The reader is expected to have a background in computer science on a graduate
+level or higher. In particular, it is expected that the reader is familiar with
+basic concepts of compilers, computability and complexity, which at the present
+state of writing, are subject to basic undergraduate courses in computer
+science. Furthermore, the reader is expected to be familiar with discrete
+mathematics and the basic concepts of functional programming languages.
+Ideally, the reader should be well familiar with at least one purely functional
+programming language such as ML or Haskell.
+
+In summary, the following concepts are used without definition:
+
+\begin{itemize}
+
+\item Algorithm.
+
+\item Function, pattern matching, loop, recursion.
+
+\item Induction, variant, invariant.
+
+\item Big-O notation.
+
+\item Regular Expressions (\mono{preg} syntax).
+
+\item Backus-Naur Form, structured operational semantics.
+
+\item Turing machine, the halting problem.
+
+\item List, head, tail.
+
+\item Basic discrete mathematics.
+
+\item Basic graph theory.
+
+\end{itemize}
+
+\section{Chapter overview}
+
+\begin{description}[\setleftmargin{70pt}\setlabelstyle{\bf}]
+
+\item [Chapter 2]
+
+\item [Chapter 3]
+
+\item [Chapter 4]
+
+\item [Chapter 5]
+
+\end{description}
