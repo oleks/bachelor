@@ -273,17 +273,17 @@ variables bound in the destination of every control transition.
 %how the variables bound in the source relate to the variables bound in the
 %destination.
 
-\begin{definition} The relation $\Upsilon\ :\ C_{caller} \times N_{caller}
-\times C_{callee} \times N_{callee} \rightarrow \{\bot,<,\leq\}$ is defined to
-be the size relation between the caller ($C_{caller}$) and callee
-($C_{callee}$) clauses in \D{} where $N_{caller}$ are the names of the
-variables bound in the caller, and $N_{callee}$ are the names of the variables
-bound in the callee. Note, that we are only concerned with reductions and
-non-increases in size, all other relationships are marked by the no
-relationship symbol $\bot$. Initially, the relationship between all the clauses
-and their variables is $\bot$. \end{definition}
+\begin{definition} The relation $\Phi\ :\ C_{caller} \times C_{callee} \times
+N_{caller} \times N_{callee} \rightarrow \{\bot,<,\leq\}$ is defined to be the
+size relation between the caller and callee
+clauses in \D{} where $N_{caller}$ are the names of the variables bound in the
+caller, and $N_{callee}$ are the names of the variables bound in the callee.
+Note, that we are only concerned with reductions and non-increases in size, all
+other relationships are marked by the no relationship symbol $\bot$. Initially,
+the relationship between all the clauses and their variables is $\bot$.
+\end{definition}
 
-The construction of the relationship $\Upsilon$ for a given transition depends
+The construction of the relationship $\Phi$ for a given transition depends
 first and foremost on whether that transition is a fail or success transition.
 
 \subsection{Fail transitions}
@@ -300,8 +300,8 @@ the path between the source and the destination.\end{lemma}
 
 \begin{proof} Follows from the semantics of \D{}. \end{proof}
 
-Hence all fail transitions in the $\Upsilon$ relation return the result $\leq$
-for all variable pairs.
+We are not concerned with exact equivalence, hence all fail transitions in the
+$\Phi$ relation return the relation $\leq$ for all variable pairs.
 
 Note, that due to \D{} being first order and statically scoped, the variable
 space is always initially empty when a function clause begins pattern matching.
@@ -342,16 +342,16 @@ elimination and other forms of static analysis, this is of little importance to
 size-change termination.}.
 
 More formally, given a function argument as the expression $x$, we construct
-the expression $x^c$ where we replace all first-level nested function
+the expression $x^s$ where we replace all first-level nested function
 calls\footnote{Nested function calls of nested function calls are hence
 considered irrelevant to the derivation of the size relation of the top-level
 call, however, they may become relevant as we derive the size relations of the
 corresponding nested calls.} by auxiliary variables.  We group all those
-auxiliary variables into the set of variable names $N_{calls}^c$ and all the
-remaining variables into the set $N_{vars}^c$.  Furthermore we construct the
-auxiliary variable names in such way that $N_{vars}^c\cup
-N_{calls}^c=\emptyset$.  Hence, we obtain the tuple
-$(x^c,N_{vars}^c,N_{calls}^c)$.
+auxiliary variables into the set of variable names $N_{calls}^s$ and all the
+remaining variables into the set $N_{vars}^s$.  Furthermore we construct the
+auxiliary variable names in such way that $N_{vars}^s\cup
+N_{calls}^s=\emptyset$.  Hence, we obtain the tuple
+$(x^c,N_{vars}^s,N_{calls}^s)$.
 
 Continuing on with the example above, i.e. having the size relations
 $\{v>\textt{a}, v> \textt{b}, v\geq \textt{a.0}, v\geq \textt{0.b}\}$, assume
@@ -378,187 +378,201 @@ arguments evaluate to, we can simply turn the function argument into the
 abstract pattern to begin with. The actual size relations are hence withkept
 and can be deduced at a later stage in the process.
 
-Indeed, the tuple $(x^c,N_{vars}^c,N_{calls}^c)$ constitutes such an abstract
-pattern already, since the expression $x^c$, contains no function calls and
+Indeed, the tuple $(x^s,N_{vars}^s,N_{calls}^s)$ constitutes such an abstract
+pattern already, since the expression $x^s$, contains no function calls and
 hence syntactically matches a pattern in \D{}\footnote{See
-\referToSection{d-syntax} if you're uncertain.}. Given a clause with the
-pattern $p$, we can easily deduce the set $N_{vars}^p$, which is the set of
-variable names used in $p$. Our task is then to deduce a size relation between
-the variables in the sets $N_{vars}^c$ and $N_{vars}^p$ given the tuples
-$(x^c,N_{vars}^c,N_{calls}^c)$ and $(p,N_{vars}^p)$. 
+\referToSection{d-syntax} if you're uncertain.}. We henceforth refer to such an
+expression as $p^s$\footnote{Where $s$ stands for \emph{source}.}. Given a
+clause with the pattern $p^d$\footnote{Where $d$ stands for
+\emph{destination}.}, we can easily deduce the set $N_{vars}^d$, which is the
+set of variable names used in $p$. Our task is then to deduce a size relation
+between the variables in the sets $N_{vars}^s$ and $N_{vars}^d$ given the
+tuples $(p^s,N_{vars}^s,N_{calls}^s)$ and $(p^d,N_{vars}^d)$.
 
 \subsection{Pattern matching}
 
-Let the function $\phi\ :\ N \times N \rightarrow \{<,\leq,\bot\}$ denote the
-function $\lambda N^c, N^p . \Phi\left(C^c,N^c,C^p,N^p\right)$. We will in the
-following section discuss the rules involved in deducing the function $\phi$,
-that is, the function $\Phi$ for some given source and destination function
-clauses.
+Let the function $\phi\ :\ \mathbb{N} \times \mathbb{N} \rightarrow
+\{<,\leq,\bot\}$ denote the function $\lambda N^d, N^s .
+\Phi\left(C^d,C^s,N^d,N^s\right)$. In the following section we will discuss the
+rules involved in deducing the function $\phi$, that is, the function $\Phi$
+for some given source and destination of a success transition.
 
-In the following rules we assume that $N_{vars}^c$ and $N_{vars}^p$ are always
-available. We don't pass them around since theses sets need not be modified in
-any of the rules. We use matlab-like set notation, i.e. providing a set where a
-scalar is expected yields an execution of the function for each element in the
-set.
+For this purpose we will regard the tuples $(P^s,N_{vars}^s)$ and
+$(P^d,N_{vars}^d)$, of a given success transition, where $P^s$ is the list of
+abstract patterns derived from the function arguments in the source, and $P^d$
+is the list of corresponding actual patterns in the destination. Furthermore,
+let $N_{vars}^s$ and $N_{vars}^d$ be unary functions of the type
+$\mathbb{P}\rightarrow\mathbb{N}^*$, accepting a pattern and yielding the
+variable names that are contained both in the input pattern and the sets
+$N_{vars}^s$ and $N_{vars}^d$, respectively.
 
-The simplest case is when the abstract pattern $x$ is simply \mono{0}, in this
-case, regardless of the clause pattern $p$, no relation needs to be drawn
-between the sets $N_{vars}^c$ and $N_{vars}^p$, as the following rule states:
+In the following analysis we will look at but one instance of the lists $P^s$
+and $P^d$, namely the abstract pattern $p^s$ from the source and its
+corresponding actual pattern in the declaration, $p^d$. In total, however, this
+process has to be repeated for each such pair given the sets $P^s$ and $P^d$,
+iteratively extending the definition of the relation $\phi$ to all variables
+bound in the sets $N_{vars}^s$ and $N_{vars}^d$.
+
+We initially define $\phi$ to yield the value $\bot$ for all arguments. We will
+continuously modify this definition as we process $p^s$ and $p^d$. We denote
+this within the semantics in a manner similar to the state $\sigma$ in the
+semantics\footnote{See \referToSection{d-sos}.}. However, $\phi$ is now a
+binary ``memory'', requiring both a destination name and a source name (in that
+order). For simplicity, we will borrow some suger coding from the matlab
+notation which allows us to provide a collection in place of a single element
+and let the runtime apply the given function to each element in the collection.
+For instance, we might write that $\phi\left(N_{vars}^d(p^d), n^s\right)\mapsto
+<$, meaning that all the destination variables used in $p^d$ are strictly less
+than the source variable $n^s$.
+
+We now define a summoning rule, dividing the rules up into sub-rules:
 
 \begin{equation}
 {
-    x\rightarrow 0
-  \wedge
-    \phi\rightarrow\phi'
+    \left\langle\proc{A},p^d,p^s,\phi\right\rangle
+    \rightarrow
+    \phi'
+  \vee
+    \left\langle\proc{B},p^d,p^s,\phi\right\rangle
+    \rightarrow
+    \phi'
+  \vee
+    \left\langle\proc{C},p^d,p^s,\phi\right\rangle
+    \rightarrow
+    \phi'
+  \vee
+    \left\langle\proc{D},p^d,p^s,\phi\right\rangle
+    \rightarrow
+    \phi'
+  \vee
+    \left\langle\proc{E},p^d,p^s,\phi\right\rangle
+    \rightarrow
+    \phi'
 }\over{
-  \left\langle\proc{B},p,x,\phi\right\rangle
+  \left\langle p^d,p^s,\phi\right\rangle
   \rightarrow
   \phi'
 }
 \end{equation}
 
-Likewise, clause patterns that are not destructions nor name patterns, have no
-effect on the relationship between the sets $N_{vars}^c$ and $N_{vars}^p$
-either:
+The simplest case is when the abstract pattern $p^s$ is simply \mono{0}, or
+some name $n^s$, that is not in $N_{vars}^s$, i.e. it is in $N_{calls}^s$. In
+this case, regardless of $p^d$, $\phi$ need not be modified, since no variables
+appear in $x$.
 
-\begin{equation}
+\begin{equation}\label{eq:sct-pattern-source-fail}
 {
 \left(
-    p\rightarrow \_
-\vee
-    p\rightarrow 0
+    p^s\rightarrow 0
+  \vee
+\left(
+    p^s\rightarrow n^s
+  \wedge
+    n^s\notin N_{vars}^s
+\right)
 \right)
   \wedge
     \phi\rightarrow\phi'
 }\over{
-  \left\langle\proc{D},p,x,\phi\right\rangle
+  \left\langle\proc{A},p^d,p^s,\phi\right\rangle
   \rightarrow
   \phi'
 }
 \end{equation}
 
-Name patterns in clauses have a more complex effect. First, if the expression
-$x$ is some node, then all the variables that occur in $x$, i.e.
-$N_{vars}^c(x)$, are all strictly less than $n$.
+Likewise, if $p^d$ is neither a destruction, nor a name pattern, then $\phi$
+need not be modified since no variables appear in $p^d$, i.e. no variables are
+bound while pattern matching to $p^d$.
 
 \begin{equation}
 {
-    p\rightarrow n
+\left(
+    p^d\rightarrow 0
+\vee
+    p^d\rightarrow \_
+\right)
   \wedge
-    x\rightarrow x'\cdot x''
-  \wedge
-    \left\langle\phi\left(N_{vars}^c(x), n\right)\mapsto <\right\rangle\rightarrow\phi'
+    \phi\rightarrow\phi'
 }\over{
-  \left\langle\proc{A},p,x,\phi\right\rangle
+  \left\langle\proc{B},p^d,p^s,\phi\right\rangle
   \rightarrow
   \phi'
 }
 \end{equation}
 
-Second, if the expression $x$ is just a variable reference, as is the pattern
-$p$, then the values of these variables will be equivalent. However, we're not
-concerned with exact equivalence and simply mark this relationship with the
-weaker relation, $\leq$:
+If $p^d$ is the name pattern $n^d$, this has a more complex effect. First, if
+$p^s$ is some node, then all the variables that occur in $p^s$, i.e.
+$N_{vars}^s(p^s)$, will all be strictly less than $n^d$ by the semantics of
+\D{}. However, we are not concerned with this relation, as we would like to
+know when a value is decreased from source to destination, and not as in this
+case, increased.
+
+Second, if $p^s$ is also a name pattern, and it is not an auxiliary variable
+(which is always true, since the converse case was already covered in rule
+\refer{eq:sct-pattern-source-fail}) then the values of the corresponding
+variables will be equivalent. However, we're not concerned with exact
+equivalence, and simply mark this relationship with the weaker, but still sound
+relation, $\leq$:
 
 \begin{equation}
 {
-    p\rightarrow n^p
+    p^d\rightarrow n^d
   \wedge
-    x\rightarrow n^c
+    p^s\rightarrow n^s
   \wedge
-    \left\langle\phi\left(n^c, n^p\right)\mapsto \leq\right\rangle\rightarrow\phi'
+    n^s\in N_{vars}^s
+  \wedge
+    \left\langle\phi\left(n^d, n^s\right)\mapsto \leq\right\rangle\rightarrow\phi'
 }\over{
-  \left\langle\proc{C},p,x,\phi\right\rangle
+  \left\langle\proc{C},p^d,p^s,\phi\right\rangle
   \rightarrow
   \phi'
 }
 \end{equation}
 
-
-
-Patterns with destructions are evaluated recursively as follows:
+If $p^d$ is a destruction and $p^s$ is the variable name $n^s$, then we can safely say that
+all the variables that occur in $p^d$, i.e. $N_{vars}^d(p^d)$, are all strictly less
+than the variable in $n^s$:
 
 \begin{equation}
 {
-    p\rightarrow p'\cdot p''
+    p^d\rightarrow p^d_1\cdot p^d_2
   \wedge
-    x\rightarrow x'\cdot x''
+    p^s\rightarrow n^s
   \wedge
-    \left\langle p', x', \phi\right\rangle
+    n^s\in N_{vars}^s
+  \wedge
+    \left\langle\phi\left(N_{vars}^d(p^d), n^s\right)\mapsto <\right\rangle\rightarrow\phi'
+}\over{
+  \left\langle\proc{D},p^d,p^s,\phi\right\rangle
+  \rightarrow
+  \phi'
+}
+\end{equation}
+
+If $p^d$ is a destruction, as is $p^s$, then the following recursive rule applies:
+
+\begin{equation}
+{
+    p^d\rightarrow p^d_1\cdot p^d_2
+  \wedge
+    p^s\rightarrow p^s_1\cdot p^s_2
+  \wedge
+    \left\langle p^d_1, p^s_1, \phi\right\rangle
     \rightarrow
     \phi''
   \wedge
-    \left\langle p'', x'', \phi''\right\rangle
+    \left\langle p^d_2, p^s_2, \phi''\right\rangle
     \rightarrow
     \phi'
 }\over{
-  \left\langle\proc{E},p,x,\phi\right\rangle
+  \left\langle\proc{E},p^d,p^s,\phi\right\rangle
   \rightarrow
   \phi'
 }
 \end{equation}
 
-For instance, consider the more complex program \mono{reverse} in
-\referToListing{cfg-reverse} and it's corresponding control flow graph in
-\referToFigure{cfg-reverse}. The abstract pattern for the success transition 0
-is simply \mono{right} with the set $N_{vars}'$ consisting merely of the
-variable \mono{right} with an unknown value. The abstract pattern is matched to
-the actual pattern \mono{left.right}, and for the sake of avoiding ambiguity
-let us refer to that pattern as simply \mono{a.b}. Hence, the variable is
-destructed into two children, \mono{a} and \mono{b} such that
-$\textt{a}<\textt{right}$ and $\textt{b}<\textt{right}$.
-
-
-\begin{definition} The relation $\Upsilon\ :\ C_{caller} \times N_{caller} \times C_{callee} \times B_{callee}\rightarrow
-\{>,\}$, between the values of the bound variables of the
-function clause and the values that the arguments of the function call evaluate
-to. $\uparrow$ indicates an increase, $\Uparrow$ a nondecrease.\end{definition}
-
-\begin{lemma}
-
-\end{lemma}
- 
-This is followed by the source transmitting the resulting values to the
-destination, i.e.  performing a control transition and the destination pattern
-matching the incoming values, the result of which may be binding of variables
-in the destination clause.
-
-Variables (or names) are bound to values, hence the relation $\nabla$ is a
-injective relation between variable names, where each mapping is annotated with
-the change in size indicating a lower bound on the difference between the
-values of the variables.
-
-In the following sections we discuss how we can deduce the lower bound on the
-difference between the values of the variables.
-
-
-\subsection{Pattern matching}
-
-\begin{definition} For the sake of further discussion we'll regard the
-underscore pattern simply as a uniquely named variable that is not used in the
-expression of the function clause, i.e. it is also bound to a
-value.\end{definition}
-
-\begin{lemma}\label{lemma:d-pattern-leq} If the single pattern declaration
-includes a variable name, we can safely state that if some variable is bound as
-a result of pattern matching the corresponding argument, the value that
-variable is bound to is less than or equal to the value of the original
-argument. \end{lemma}
-
-\begin{proof} There is no construction operator for a pattern
-declaration.\end{proof}
-
-\begin{lemma}\label{lemma:d-pattern-less} If a destruction operator
-participates in a pattern declaration, then any variable bound as a result of
-pattern matching the corresponding argument will be bound to a value strictly
-less than the value of the original argument.\end{lemma}
-
-\begin{proof} A variable can be bound to the actual value of the argument iff
-the entire pattern is just a variable name. If the pattern contains at least
-one destruction operator, the syntax rules of \D{} cause for that operation to
-be performed first when pattern matching the argument. Hence, any value that
-can be bound thereafter has a value with at least one node less than the
-original value of the argument. \end{proof}
+\section{Graph annotation}
 
 Hence, we can deduce from \referToListing{cfg-loop}, that when $f_1$ makes a
 call to $f_0$ it does so with a value strictly less then it's own argument,
