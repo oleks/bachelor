@@ -23,4 +23,13 @@ Although the call-by-value nature of the language does not allow for
 short-circuiting the if-statements defined in such a way, this shouldn't be any
 impediment to further analysis.
 
+\subsection{Boolean operations}
+
+\begin{verbatim}
+and _._ _._ = 0.0
+and _ _ = 0
+
+or 0 0 = 0
+or _ _ = 0.0
+\end{verbatim}
 

@@ -455,10 +455,11 @@ We now define a summoning rule, dividing the rules up into sub-rules:
 }
 \end{equation}
 
-The simplest case is when the abstract pattern $p^s$ is simply \mono{0}, or
-some name $n^s$, that is not in $N_{vars}^s$, i.e. it is in $N_{calls}^s$. In
-this case, regardless of $p^d$, $\phi$ need not be modified, since no variables
-appear in $x$.
+One of the simpler cases is when the abstract pattern $p^s$ is simply \mono{0},
+or some name $n^s$, and $n^s\in N_{calls}^s$. Since no variables bound in the
+source participate in $p^s$, then no relations need to be drawn to any of the
+destination variables that might appear in the corresponding $p^d$. Hence,
+$\phi$ need not be modified.
 
 \begin{equation}\label{eq:sct-pattern-source-fail}
 {
@@ -480,9 +481,11 @@ appear in $x$.
 }
 \end{equation}
 
-Likewise, if $p^d$ is neither a destruction, nor a name pattern, then $\phi$
-need not be modified since no variables appear in $p^d$, i.e. no variables are
-bound while pattern matching to $p^d$.
+This has a symmetrical case. Indeed when $p^d$ is neither a destruction, nor
+any name $n^d$, that is, it is \mono{\_} or \mono{0}. This pattern contains no
+variables, and hence  no relations need to be drawn from any of the variables
+that might appear in the corresponding $p^s$. Hence, $\phi$ need not be
+modified in such a case either.
 
 \begin{equation}
 {
@@ -500,19 +503,20 @@ bound while pattern matching to $p^d$.
 }
 \end{equation}
 
-If $p^d$ is the name pattern $n^d$, this has a more complex effect. First, if
-$p^s$ is some node, then all the variables that occur in $p^s$, i.e.
+If $p^d$ is the name pattern $n^d$, the matters get a bit more complicated:
+
+\begin{enumerate}
+
+\item If $p^s$ is some node, then all the variables that occur in $p^s$, i.e.
 $N_{vars}^s(p^s)$, will all be strictly less than $n^d$ by the semantics of
 \D{}. However, we are not concerned with this relation, as we would like to
-know when a value is decreased from source to destination, and not as in this
+know when a value is decreased from source to destination, and not, as in this
 case, increased.
 
-Second, if $p^s$ is also a name pattern, and it is not an auxiliary variable
-(which is always true, since the converse case was already covered in rule
-\refer{eq:sct-pattern-source-fail}) then the values of the corresponding
-variables will be equivalent. However, we're not concerned with exact
-equivalence, and simply mark this relationship with the weaker, but still sound
-relation, $\leq$:
+\item If $p^s$ is also some name pattern $n^s$, and  $n^s\in N^s_{vars}$, then
+the values of these corresponding variables will be \emph{equivalent}. However,
+we're not concerned with exact equivalence, and simply mark this relationship
+with the weaker, but still sound relation, $\leq$:
 
 \begin{equation}
 {
@@ -529,6 +533,8 @@ relation, $\leq$:
   \phi'
 }
 \end{equation}
+
+\end{enumerate}
 
 If $p^d$ is a destruction and $p^s$ is the variable name $n^s$, then we can safely say that
 all the variables that occur in $p^d$, i.e. $N_{vars}^d(p^d)$, are all strictly less
@@ -550,7 +556,7 @@ than the variable in $n^s$:
 }
 \end{equation}
 
-If $p^d$ is a destruction, as is $p^s$, then the following recursive rule applies:
+If both $p^d$ and $p^s$ are a destructions, then the following recursive rule applies:
 
 \begin{equation}
 {

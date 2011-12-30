@@ -10,9 +10,9 @@ The language \D{} is untyped, and represents all data in terms of
 
 \begin{definition}
 
-A binary tree is a set that is either empty, heneceforth refferred to as a leaf
+A binary tree is a set that is either empty, henceforth referred to as a leaf
 or simply $0$, or contains a single unlabeled node with two binary trees as
-it's left and right child, henceforth simply reffered to as a node. We'll refer
+it's left and right child, henceforth simply referred to as a node. We'll refer
 to the set of all possible values in \D{} as $\mathbb{B}$.
 
 \end{definition}
@@ -32,3 +32,17 @@ general, as ``cons''.
 
 \end{definition}
 
+Sometimes we'll refer to the \emph{shape} of a data value. A shape
+specification starts at the root of a value, and specifies a few some immediate
+nodes or leafs, leaving some sub-values unspecified. This will often be expressed
+either in graphical binary tree notation, or using the syntax of \D{} for
+constructing binary trees. In either case there will be sub-trees who's actual
+structure is irrelevant. When using \D{}'s notation we'll make use of auxiliary
+variables for such sub-trees, and when using graphical binary tree notation,
+we'll make use of the conventional triangle. As an example, consider
+\referToFigure{first-shape}.
+
+\includeFigure{first-shape}{Representation of a value consisting of a node with
+a node as its left child. The triangles represent sub-trees who's actual
+structure is irrelevant to the shape specification.}
+ 

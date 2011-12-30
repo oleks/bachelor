@@ -1,0 +1,10 @@
+digraph G {
+  edge [dir=none];
+  a [shape=point];
+  b [shape=point];
+  c [shape=triangle,label=""];
+  d [shape=triangle,label=""];
+  e [shape=triangle,label=""];
+  a -> {b;c};
+  b -> {d;e};
+}
