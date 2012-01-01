@@ -1,14 +1,35 @@
 \newcommand{\D}{$\Delta$}
 \chapter{The language \D{}}
 
-For the purposes of describing size-change termination we'll consider a
-language \D{}. The following chapter describes the syntax and semantics of the
-language.
+The goal of this work is to describe a few automated termination analysis
+techniques, and in particular, size-change termination. In order to allow for
+the following chapters to retain a modest level of abstraction to the Turing
+machine, such that the techniques are described for an environment that is
+modestly applicable to solving moderate programming problems, a Turing complete
+language \D{} is introduced.
+
+The intent of the language is hence two-fold, (1) aid the descriptions of the
+automated termination analysis techniques in further chapters and (2) be
+relatively modern in the subjective sense of expressiveness.
+
+Expressiveness of a language depends on its initially intended domains. Of
+course, Turing complete languages are known to be universally applicable,
+however some languages are just more fine tuned to solving some problems, while
+others are better tuned for solving other problems, hence the domain-specific
+and subjective term of expressiveness.
+
+\D{} is a language that disregards the aspect of abstract data structures.
+Hence, many data driven programs \emph{will} be hard to write in \D{} due to,
+for instance, the complete absence of types. This is of course, relative.
+Various aspects of the data flow of a program can be important to various
+automated termination analysis techniques, in particular size-change
+termination. Hence, \D{} is not completely useless and does have data and even
+simple ways of analyzing the sizes and shapes of its values and branching
+depending on the outcome of such analyses.
 
 \section{General properties}
 
-The intent of the language is for it be used to explain concepts such as
-size-change termination. One of the fundamental concepts required of the
+One of the fundamental concepts required of the
 language of application is that it's datatypes are well-founded. That is, any
 subset $S$ of the range of values of some well-defined type has a value $s$
 s.t. $\forall {s'\in S}\ s\leq s'$. This makes it ideal to chose some
@@ -27,6 +48,8 @@ that could arise from regarding lazy programs or where the notion of a global
 state of the machine is relevant. Simply put, this is done to ensure elegance
 of further proof with the help of the language.
 
+The language \D{} is also Turing complete in the sense that it can model the
+Turing machine.
 
 \input{language/data}
 \input{language/syntax}
