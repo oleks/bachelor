@@ -380,72 +380,72 @@ hence syntactically matches a pattern in \D{}\footnote{See
 \referToSection{d-syntax} if you're uncertain.}. We henceforth refer to such an
 expression as $p^s$\footnote{Where $s$ stands for \emph{source}.}. Given a
 clause with the pattern $p^t$\footnote{Where $t$ stands for \emph{target}.}, we
-can easily deduce the set $N_{vars}^d$, which is the set of variable names used
+can easily deduce the set $N_{vars}^t$, which is the set of variable names used
 in $p$. Our task is then to deduce a size relation between the variables in the
-sets $N_{vars}^s$ and $N_{vars}^d$ given the tuples
-$(p^s,N_{vars}^s,N_{calls}^s)$ and $(p^d,N_{vars}^d)$.
+sets $N_{vars}^s$ and $N_{vars}^t$ given the tuples
+$(p^s,N_{vars}^s,N_{calls}^s)$ and $(p^t,N_{vars}^t)$.
 
 \subsection{Pattern matching}
 
 Let the function $\phi\ :\ \mathbb{N} \times \mathbb{N} \rightarrow
-\{<,\leq,\bot\}$ denote the function $\lambda N^d, N^s .
-\Phi\left(C^d,C^s,N^d,N^s\right)$. In the following section we will discuss the
+\{<,\leq,\bot\}$ denote the function $\lambda N^t, N^s .
+\Phi\left(C^t,C^s,N^t,N^s\right)$. In the following section we will discuss the
 rules involved in deducing the function $\phi$, that is, the function $\Phi$
 for some given source and target of a success transition.
 
 For this purpose we will regard the tuples $(P^s,N_{vars}^s)$ and
-$(P^d,N_{vars}^d)$, of a given success transition, where $P^s$ is the list of
-abstract patterns derived from the function arguments in the source, and $P^d$
+$(P^t,N_{vars}^t)$, of a given success transition, where $P^s$ is the list of
+abstract patterns derived from the function arguments in the source, and $P^t$
 is the list of corresponding actual patterns in the target. Furthermore, let
-$N_{vars}^s$ and $N_{vars}^d$ be unary functions of the type
+$N_{vars}^s$ and $N_{vars}^t$ be unary functions of the type
 $\mathbb{P}\rightarrow\mathbb{N}^*$, accepting a pattern and yielding the
 variable names that are contained both in the input pattern and the sets
-$N_{vars}^s$ and $N_{vars}^d$, respectively.
+$N_{vars}^s$ and $N_{vars}^t$, respectively.
 
 In the following analysis we will look at but one instance of the lists $P^s$
-and $P^d$, namely the abstract pattern $p^s$ from the source and its
-corresponding actual pattern in the declaration, $p^d$. In total, however, this
-process has to be repeated for each such pair given the sets $P^s$ and $P^d$,
+and $P^t$, namely the abstract pattern $p^s$ from the source and its
+corresponding actual pattern in the declaration, $p^t$. In total, however, this
+process has to be repeated for each such pair given the sets $P^s$ and $P^t$,
 iteratively extending the definition of the relation $\phi$ to all variables
-bound in the sets $N_{vars}^s$ and $N_{vars}^d$.
+bound in the sets $N_{vars}^s$ and $N_{vars}^t$.
 
 We initially define $\phi$ to yield the value $\bot$ for all arguments. We will
-continuously modify this definition as we process $p^s$ and $p^d$. We denote
+continuously modify this definition as we process $p^s$ and $p^t$. We denote
 this within the semantics in a manner similar to the state $\sigma$ in the
 semantics\footnote{See \referToSection{d-sos}.}. However, $\phi$ is now a
 binary ``memory'', requiring both a target name and a source name (in that
 order). For simplicity, we will borrow some suger coding from the matlab
 notation which allows us to provide a collection in place of a single element
 and let the runtime apply the given function to each element in the collection.
-For instance, we might write that $\phi\left(N_{vars}^d(p^d), n^s\right)\mapsto
-<$, meaning that all the target variables used in $p^d$ are strictly less than
+For instance, we might write that $\phi\left(N_{vars}^t(p^t), n^s\right)\mapsto
+<$, meaning that all the target variables used in $p^t$ are strictly less than
 the source variable $n^s$.
 
 We now define a summoning rule, dividing the rules up into sub-rules:
 
 \begin{equation}
 {
-    \left\langle\proc{A},p^d,p^s,\phi\right\rangle
+    \left\langle\proc{A},p^t,p^s,\phi\right\rangle
     \rightarrow
     \phi'
   \vee
-    \left\langle\proc{B},p^d,p^s,\phi\right\rangle
+    \left\langle\proc{B},p^t,p^s,\phi\right\rangle
     \rightarrow
     \phi'
   \vee
-    \left\langle\proc{C},p^d,p^s,\phi\right\rangle
+    \left\langle\proc{C},p^t,p^s,\phi\right\rangle
     \rightarrow
     \phi'
   \vee
-    \left\langle\proc{D},p^d,p^s,\phi\right\rangle
+    \left\langle\proc{D},p^t,p^s,\phi\right\rangle
     \rightarrow
     \phi'
   \vee
-    \left\langle\proc{E},p^d,p^s,\phi\right\rangle
+    \left\langle\proc{E},p^t,p^s,\phi\right\rangle
     \rightarrow
     \phi'
 }\over{
-  \left\langle p^d,p^s,\phi\right\rangle
+  \left\langle p^t,p^s,\phi\right\rangle
   \rightarrow
   \phi'
 }
@@ -454,7 +454,7 @@ We now define a summoning rule, dividing the rules up into sub-rules:
 One of the simpler cases is when the abstract pattern $p^s$ is simply \mono{0},
 or some name $n^s$, and $n^s\in N_{calls}^s$. Since no variables bound in the
 source participate in $p^s$, then no relations need to be drawn to any of the
-target variables that might appear in the corresponding $p^d$. Hence, $\phi$
+target variables that might appear in the corresponding $p^t$. Hence, $\phi$
 need not be modified.
 
 \begin{equation}\label{eq:sct-pattern-source-fail}
@@ -471,14 +471,14 @@ need not be modified.
   \wedge
     \phi\rightarrow\phi'
 }\over{
-  \left\langle\proc{A},p^d,p^s,\phi\right\rangle
+  \left\langle\proc{A},p^t,p^s,\phi\right\rangle
   \rightarrow
   \phi'
 }
 \end{equation}
 
-This has a symmetrical case. Indeed when $p^d$ is neither a destruction, nor
-any name $n^d$, that is, it is \mono{\_} or \mono{0}. This pattern contains no
+This has a symmetrical case. Indeed when $p^t$ is neither a destruction, nor
+any name $n^t$, that is, it is \mono{\_} or \mono{0}. This pattern contains no
 variables, and hence  no relations need to be drawn from any of the variables
 that might appear in the corresponding $p^s$. Hence, $\phi$ need not be
 modified in such a case either.
@@ -486,25 +486,25 @@ modified in such a case either.
 \begin{equation}
 {
 \left(
-    p^d\rightarrow 0
+    p^t\rightarrow 0
 \vee
-    p^d\rightarrow \_
+    p^t\rightarrow \_
 \right)
   \wedge
     \phi\rightarrow\phi'
 }\over{
-  \left\langle\proc{B},p^d,p^s,\phi\right\rangle
+  \left\langle\proc{B},p^t,p^s,\phi\right\rangle
   \rightarrow
   \phi'
 }
 \end{equation}
 
-If $p^d$ is the name pattern $n^d$, the matters get a bit more complicated:
+If $p^t$ is the name pattern $n^t$, the matters get a bit more complicated:
 
 \begin{enumerate}
 
 \item If $p^s$ is some node, then all the variables that occur in $p^s$, i.e.
-$N_{vars}^s(p^s)$, will all be strictly less than $n^d$ by the semantics of
+$N_{vars}^s(p^s)$, will all be strictly less than $n^t$ by the semantics of
 \D{}. However, we are not concerned with this relation, as we would like to
 know when a value is decreased from source to target, and not, as in this case,
 increased.
@@ -516,15 +516,15 @@ with the weaker, but still sound relation, $\leq$:
 
 \begin{equation}
 {
-    p^d\rightarrow n^d
+    p^t\rightarrow n^t
   \wedge
     p^s\rightarrow n^s
   \wedge
     n^s\in N_{vars}^s
   \wedge
-    \left\langle\phi\left(n^d, n^s\right)\mapsto \leq\right\rangle\rightarrow\phi'
+    \left\langle\phi\left(n^t, n^s\right)\mapsto \leq\right\rangle\rightarrow\phi'
 }\over{
-  \left\langle\proc{C},p^d,p^s,\phi\right\rangle
+  \left\langle\proc{C},p^t,p^s,\phi\right\rangle
   \rightarrow
   \phi'
 }
@@ -532,43 +532,43 @@ with the weaker, but still sound relation, $\leq$:
 
 \end{enumerate}
 
-If $p^d$ is a destruction and $p^s$ is the variable name $n^s$, then we can safely say that
-all the variables that occur in $p^d$, i.e. $N_{vars}^d(p^d)$, are all strictly less
+If $p^t$ is a destruction and $p^s$ is the variable name $n^s$, then we can safely say that
+all the variables that occur in $p^t$, i.e. $N_{vars}^t(p^t)$, are all strictly less
 than the variable in $n^s$:
 
 \begin{equation}
 {
-    p^d\rightarrow p^d_1\cdot p^d_2
+    p^t\rightarrow p^t_1\cdot p^t_2
   \wedge
     p^s\rightarrow n^s
   \wedge
     n^s\in N_{vars}^s
   \wedge
-    \left\langle\phi\left(N_{vars}^d(p^d), n^s\right)\mapsto <\right\rangle\rightarrow\phi'
+    \left\langle\phi\left(N_{vars}^t(p^t), n^s\right)\mapsto <\right\rangle\rightarrow\phi'
 }\over{
-  \left\langle\proc{D},p^d,p^s,\phi\right\rangle
+  \left\langle\proc{D},p^t,p^s,\phi\right\rangle
   \rightarrow
   \phi'
 }
 \end{equation}
 
-If both $p^d$ and $p^s$ are a destructions, then the following recursive rule applies:
+If both $p^t$ and $p^s$ are a destructions, then the following recursive rule applies:
 
 \begin{equation}
 {
-    p^d\rightarrow p^d_1\cdot p^d_2
+    p^t\rightarrow p^t_1\cdot p^t_2
   \wedge
     p^s\rightarrow p^s_1\cdot p^s_2
   \wedge
-    \left\langle p^d_1, p^s_1, \phi\right\rangle
+    \left\langle p^t_1, p^s_1, \phi\right\rangle
     \rightarrow
     \phi''
   \wedge
-    \left\langle p^d_2, p^s_2, \phi''\right\rangle
+    \left\langle p^t_2, p^s_2, \phi''\right\rangle
     \rightarrow
     \phi'
 }\over{
-  \left\langle\proc{E},p^d,p^s,\phi\right\rangle
+  \left\langle\proc{E},p^t,p^s,\phi\right\rangle
   \rightarrow
   \phi'
 }
