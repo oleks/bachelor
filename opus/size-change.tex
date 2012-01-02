@@ -264,14 +264,11 @@ value, also an absurdity. \end{proof}
 By the definition of call graphs, function clauses participate as nodes in a
 call cycle. A control transition is a directed edge between two function
 clauses where one clause is the \emph{source} and the other is the
-\emph{destination}. 
+\emph{target}. 
 
 We can analyze how a value changes it's size through a call sequence by
 analyzing the size relation between the variables bound in the source and the
-variables bound in the destination of every control transition.
-
-%how the variables bound in the source relate to the variables bound in the
-%destination.
+variables bound in the target of every control transition.
 
 \begin{definition} The relation $\Phi\ :\ C_{caller} \times C_{callee} \times
 N_{caller} \times N_{callee} \rightarrow \{\bot,<,\leq\}$ is defined to be the
@@ -295,8 +292,8 @@ were to the next clause of the function declaration.
 
 \begin{lemma} Fail transitions are transitive in the sense that the
 relationship between the variables bound in the source and the variables bound
-in the destination is the same regardless of the number of fail transitions in
-the path between the source and the destination.\end{lemma}
+in the target is the same regardless of the number of fail transitions in
+the path between the source and the target.\end{lemma}
 
 \begin{proof} Follows from the semantics of \D{}. \end{proof}
 
@@ -337,9 +334,9 @@ source clause alone. Instead, we treat results from nested function calls
 simply as variables with \emph{unknown} values. We also make sure to keep these
 variables separate from the bound variables as there is no relationship to draw
 between these ``variables'' and the variables bound in the
-destination\footnote{While this information may be useful for dead-code
-elimination and other forms of static analysis, this is of little importance to
-size-change termination.}.
+target\footnote{While this information may be useful for dead-code elimination
+and other forms of static analysis, this is of little importance to size-change
+termination.}.
 
 More formally, given a function argument as the expression $x$, we construct
 the expression $x^s$ where we replace all first-level nested function
@@ -355,17 +352,16 @@ $(x^c,N_{vars}^s,N_{calls}^s)$.
 
 Continuing on with the example above, i.e. having the size relations
 $\{v>\textt{a}, v> \textt{b}, v\geq \textt{a.0}, v\geq \textt{0.b}\}$, assume
-that the destination clause has the corresponding pattern \mono{x.y}. The
-question henceforth is how do we draw the relationship that
-$\textt{a}\equiv\textt{x}$ and $\textt{b}\equiv\textt{y}$, or perhaps simply
-that the control transition neither decreases nor increases any values. We can
-perform a corresponding analysis on the pattern declaration and deduce the set
-of conditions that will hold after pattern matching succeeds, indeed,
-$\{v>\textt{x}, v> \textt{y}, v\geq \textt{x.0}, v\geq \textt{0.y}\}$. The
-participation of $x$ in the same kind of relations as $a$, and the
-participation of $y$ in the same kind of relations as $b$, does not alone
-indicate their respective equivalence, since the actual property that
-$v\equiv\textt{a.b}$ is lost.
+that the target clause has the corresponding pattern \mono{x.y}. The question
+henceforth is how do we draw the relationship that $\textt{a}\equiv\textt{x}$
+and $\textt{b}\equiv\textt{y}$, or perhaps simply that the control transition
+neither decreases nor increases any values. We can perform a corresponding
+analysis on the pattern declaration and deduce the set of conditions that will
+hold after pattern matching succeeds, indeed, $\{v>\textt{x}, v> \textt{y},
+v\geq \textt{x.0}, v\geq \textt{0.y}\}$. The participation of $x$ in the same
+kind of relations as $a$, and the participation of $y$ in the same kind of
+relations as $b$, does not alone indicate their respective equivalence, since
+the actual property that $v\equiv\textt{a.b}$ is lost.
 
 On the other hand, if we had to formally define the relation that had to be
 built between the variables bound in the source and the values that the
@@ -383,11 +379,11 @@ pattern already, since the expression $x^s$, contains no function calls and
 hence syntactically matches a pattern in \D{}\footnote{See
 \referToSection{d-syntax} if you're uncertain.}. We henceforth refer to such an
 expression as $p^s$\footnote{Where $s$ stands for \emph{source}.}. Given a
-clause with the pattern $p^d$\footnote{Where $d$ stands for
-\emph{destination}.}, we can easily deduce the set $N_{vars}^d$, which is the
-set of variable names used in $p$. Our task is then to deduce a size relation
-between the variables in the sets $N_{vars}^s$ and $N_{vars}^d$ given the
-tuples $(p^s,N_{vars}^s,N_{calls}^s)$ and $(p^d,N_{vars}^d)$.
+clause with the pattern $p^t$\footnote{Where $t$ stands for \emph{target}.}, we
+can easily deduce the set $N_{vars}^d$, which is the set of variable names used
+in $p$. Our task is then to deduce a size relation between the variables in the
+sets $N_{vars}^s$ and $N_{vars}^d$ given the tuples
+$(p^s,N_{vars}^s,N_{calls}^s)$ and $(p^d,N_{vars}^d)$.
 
 \subsection{Pattern matching}
 
@@ -395,13 +391,13 @@ Let the function $\phi\ :\ \mathbb{N} \times \mathbb{N} \rightarrow
 \{<,\leq,\bot\}$ denote the function $\lambda N^d, N^s .
 \Phi\left(C^d,C^s,N^d,N^s\right)$. In the following section we will discuss the
 rules involved in deducing the function $\phi$, that is, the function $\Phi$
-for some given source and destination of a success transition.
+for some given source and target of a success transition.
 
 For this purpose we will regard the tuples $(P^s,N_{vars}^s)$ and
 $(P^d,N_{vars}^d)$, of a given success transition, where $P^s$ is the list of
 abstract patterns derived from the function arguments in the source, and $P^d$
-is the list of corresponding actual patterns in the destination. Furthermore,
-let $N_{vars}^s$ and $N_{vars}^d$ be unary functions of the type
+is the list of corresponding actual patterns in the target. Furthermore, let
+$N_{vars}^s$ and $N_{vars}^d$ be unary functions of the type
 $\mathbb{P}\rightarrow\mathbb{N}^*$, accepting a pattern and yielding the
 variable names that are contained both in the input pattern and the sets
 $N_{vars}^s$ and $N_{vars}^d$, respectively.
@@ -417,13 +413,13 @@ We initially define $\phi$ to yield the value $\bot$ for all arguments. We will
 continuously modify this definition as we process $p^s$ and $p^d$. We denote
 this within the semantics in a manner similar to the state $\sigma$ in the
 semantics\footnote{See \referToSection{d-sos}.}. However, $\phi$ is now a
-binary ``memory'', requiring both a destination name and a source name (in that
+binary ``memory'', requiring both a target name and a source name (in that
 order). For simplicity, we will borrow some suger coding from the matlab
 notation which allows us to provide a collection in place of a single element
 and let the runtime apply the given function to each element in the collection.
 For instance, we might write that $\phi\left(N_{vars}^d(p^d), n^s\right)\mapsto
-<$, meaning that all the destination variables used in $p^d$ are strictly less
-than the source variable $n^s$.
+<$, meaning that all the target variables used in $p^d$ are strictly less than
+the source variable $n^s$.
 
 We now define a summoning rule, dividing the rules up into sub-rules:
 
@@ -458,8 +454,8 @@ We now define a summoning rule, dividing the rules up into sub-rules:
 One of the simpler cases is when the abstract pattern $p^s$ is simply \mono{0},
 or some name $n^s$, and $n^s\in N_{calls}^s$. Since no variables bound in the
 source participate in $p^s$, then no relations need to be drawn to any of the
-destination variables that might appear in the corresponding $p^d$. Hence,
-$\phi$ need not be modified.
+target variables that might appear in the corresponding $p^d$. Hence, $\phi$
+need not be modified.
 
 \begin{equation}\label{eq:sct-pattern-source-fail}
 {
@@ -510,8 +506,8 @@ If $p^d$ is the name pattern $n^d$, the matters get a bit more complicated:
 \item If $p^s$ is some node, then all the variables that occur in $p^s$, i.e.
 $N_{vars}^s(p^s)$, will all be strictly less than $n^d$ by the semantics of
 \D{}. However, we are not concerned with this relation, as we would like to
-know when a value is decreased from source to destination, and not, as in this
-case, increased.
+know when a value is decreased from source to target, and not, as in this case,
+increased.
 
 \item If $p^s$ is also some name pattern $n^s$, and  $n^s\in N^s_{vars}$, then
 the values of these corresponding variables will be \emph{equivalent}. However,
