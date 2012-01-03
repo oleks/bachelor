@@ -1,0 +1,51 @@
+\begin{figure}[htbp!]
+\centering
+\begin{tikzpicture}[>=latex',line join=bevel,]
+\pgfsetlinewidth{1bp}
+\pgfsetcolor{black}
+
+% Edge: n0 -> n1
+\draw [->,dotted] (51.177bp,26.241bp) .. controls (61.57bp,29.936bp) and (74.012bp,34.36bp)  .. (94.901bp,41.787bp);
+
+% Edge: n1 -> n2
+\draw [->,dotted] (143.18bp,41.759bp) .. controls (153.57bp,38.064bp) and (166.01bp,33.64bp)  .. (186.9bp,26.213bp);
+
+% Edge: n2 -> n0
+\draw [->] (184.88bp,13.152bp) .. controls (173.12bp,11.121bp) and (158.89bp,9.0013bp)  .. (146bp,8bp) .. controls (122.07bp,6.1419bp) and (115.93bp,6.1419bp)  .. (92bp,8bp) .. controls (82.632bp,8.7275bp) and (72.561bp,10.045bp)  .. (53.124bp,13.152bp);
+
+\definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+\pgfsetstrokecolor{strokecol}
+\draw (119bp,15.5bp) node {$\downarrow\downarrow$};
+
+% Node: n0
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (27bp,18bp) ellipse (27bp and 18bp);
+  \draw (27bp,18bp) node {$n_0$};
+\end{scope}
+
+% Node: n1
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (119bp,50bp) ellipse (27bp and 18bp);
+  \draw (119bp,50bp) node {$n_1$};
+\end{scope}
+% Node: n2
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (211bp,18bp) ellipse (27bp and 18bp);
+  \draw (211bp,18bp) node {$n_2$};
+\end{scope}
+%
+\end{tikzpicture}
+
+\caption[]{A  control flow graph for the program defined in
+\referToListing{sct-normalized-less}.}
+
+\label{figure:sct-normalized-less}
+
+\end{figure}
+

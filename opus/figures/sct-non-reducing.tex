@@ -1,0 +1,38 @@
+\begin{figure}[htbp!]
+\centering
+\begin{tikzpicture}[>=latex',line join=bevel,]
+
+\pgfsetlinewidth{1bp}
+\pgfsetcolor{black}
+
+% Edge: F0 -> F1
+\draw [->,dotted] (133.06bp,73.287bp) .. controls (136.46bp,68.306bp) and (137.79bp,63.325bp)  .. (133.09bp,48.766bp);
+
+\draw (90bp,60bp) node {$\Downarrow$};
+
+% Edge: F1 -> F0
+\draw [->] (100.91bp,48.766bp) .. controls (97.522bp,53.747bp) and (96.204bp,58.727bp)  .. (100.94bp,73.287bp);
+
+% Node: F0
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (117bp,88bp) ellipse (27bp and 18bp);
+  \draw (117bp,88bp) node {$f_0$};
+\end{scope}
+
+% Node: F1
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (117bp,34bp) ellipse (27bp and 18bp);
+  \draw (117bp,34bp) node {$f_1$};
+\end{scope}
+
+\end{tikzpicture}
+
+\caption[]{An annotated call graph for the program in \referToListing{sct-non-reducing}.}
+
+\label{figure:sct-non-reducing}
+
+\end{figure}

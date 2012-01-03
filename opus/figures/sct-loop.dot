@@ -1,0 +1,8 @@
+digraph G {
+  size="3";
+  rankdir=LR;
+  edge[style=dotted];
+  F0 -> F1;
+  edge[style=filled,label="0"];
+  F1 -> F0;
+}
