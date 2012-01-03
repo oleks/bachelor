@@ -1,48 +1,110 @@
 \section{Data}
 
-\D{} is a simple language where the emphasis is on the sizes of data. Hence,
-the way that data values are constructed does not have to be particularly
-practical, but all values have to be well founded and easily comparable.
+The automated termination analysis techniques discussed in latter chapters will
+rely heavily on the well-foundedness of the language's data types.
 
-The language \D{} is untyped, and represents all data in terms of
-\emph{unlabeled ordered binary trees}, henceforth referred to as simply,
-\emph{binary trees}. Such a tree is recursively defined as follows:
+\begin{definition} Let $\mathbb{B}$ denote all the values of a data type $T$,
+and let $f:\mathbb{B}\rightarrow \mathbb{N}$ be a surjective function. $T$ is
+well-founded if $$\forall B\subseteq \mathbb{B} \left( B \neq \emptyset
+\rightarrow \exists\ b' \in B \mid \forall\ b\in B\ f(b') <
+f(b)\right).$$\end{definition}
 
-\begin{definition}
+We choose to keep \D{} untyped, and hence, there is only one data type to
+ensure well-foundedness for. We chose to represent all data in terms of
+\emph{unlabeled ordered binary trees}, henceforth referred to as simply
+\emph{binary trees}.
 
-A binary tree is a set that is either empty, henceforth referred to as a leaf
-or simply $0$, or contains a single unlabeled node with two binary trees as
-it's left and right child, henceforth simply referred to as a node. We'll refer
-to the set of all possible values in \D{} as $\mathbb{B}$.
+\begin{definition} \D{} represents all data in terms of binary trees. We refer
+to the set of all values representable in \D{} as $\mathbb{B}$. A binary tree
+is a set that is either empty, referred to as a leaf, or contains a single
+unlabeled node with two binary trees as its left and right child,
+respectively.\end{definition}
 
-\end{definition}
-
-To operate on such trees we'll require a few primitives. Namely, a
+To operate on such trees we'll require a few primitives. We'll need, a
 representation of leafs, recursive construction and destruction of nodes, as
-well as a way to tell nodes and leafs apart. Most of these will be derived in
-the operational semantics of \D{}\footnote{See \referToSection{d-sos}.},
-however, they will make use of the following primitive function:
+well as a way to tell nodes and leafs apart. Most of these primitives will be
+defined in \referToSection{d-syntax} and \referToSection{d-sos}, however, we
+are ready to define the construction function.
 
-\begin{definition}
+\begin{definition} The function (dot) $\cdot
+:\mathbb{B}\times\mathbb{B}\rightarrow\mathbb{B}$ constructs a node with the
+two arguments as it's left and right child, respectively. We'll refer to this
+function, as well as the operator $\cdot$, as ``cons''.\end{definition}
 
-The function $\cdot :\mathbb{B}\times\mathbb{B}\rightarrow\mathbb{B}$
-constructs a node with the two arguments as it's left and right child,
-respectively. We'll refer to this function, as well as the operator $\cdot$ in
-general, as ``cons''. 
+\subsection{Size}
 
-\end{definition}
+\subsection{Visual representation}
 
-Sometimes we'll refer to the \emph{shape} of a data value. A shape
-specification starts at the root of a value, and specifies a few some immediate
-nodes or leafs, leaving some sub-values unspecified. This will often be expressed
-either in graphical binary tree notation, or using the syntax of \D{} for
-constructing binary trees. In either case there will be sub-trees who's actual
-structure is irrelevant. When using \D{}'s notation we'll make use of auxiliary
-variables for such sub-trees, and when using graphical binary tree notation,
-we'll make use of the conventional triangle. As an example, consider
-\referToFigure{first-shape}.
+To provide for a more comprehensible discussion, we'll sometimes visualize the
+values we're dealing with. \referToFigure{visualization-example} shows a few
+sample value visualizations.
 
-\includeFigure{first-shape}{Representation of a value consisting of a node with
-a node as its left child. The triangles represent sub-trees who's actual
-structure is irrelevant to the shape specification.}
- 
+\begin{definition}\label{definition:value-visualization} We visually represent
+values in $\mathbb{B}$ using a common convention of drawing binary trees, with
+the root at the top and the subtrees drawn in an ordered manner in a downward
+direction. Nodes are represented by filled dots while leafs are represented by
+hollow ones. We use the Reingold-Tilford algorithm\cite{reingold-tilford} for
+laying out the trees.\end{definition}
+
+\includeFigure{visualization-example}{A few sample value visualizations having
+the sizes $1$, $2$, $2$, and $3$ respectively.}
+
+Although visually, a strict increase is usually associated with an upwards
+direction, and a strict decrease is usually associated with a downwards
+direction, this definition implies the exact opposite. A strict increase in
+value would imply more nodes and hence a downward extension of the binary tree
+along one of the branches, while a strict decrease in value would imply fewer
+nodes and hence and upward contraction of the binary tree in one of the
+branches.
+
+\subsection{Shapes}
+
+\begin{definition}\label{definition:shape} A shape is an abstract description
+of a value in \D{}. Shapes describe values, and values match shapes. A shape
+$s$ describes a value $b$ if $b$ matches the shape $s$. We refer to the set of
+all possible shapes as $\mathbb{S}$, and define the binary relation $\succ$ to
+be the set $\left\{(b,s)\mid b\in\mathbb{B} \wedge s\in\mathbb{S} \wedge b\
+\text{matches}\ s\right\}$.\end{definition}
+
+\begin{definition}\label{definition:value-matches-shape} A shape is a binary
+tree that is either a leaf, a triangle, or a node having two shapes as its left
+and right child, respectively. Any value matches the triangle shape. Only the
+leaf value matches the leaf shape. A node value matches a node shape if the
+children of the node value match the respective children of the node
+shape.\end{definition}
+
+\begin{lemma} Any shape that contains at least one triangle describes
+infinitely many values.\end{lemma}
+
+\begin{proof} Follows directly from \referToDefinition{value-matches-shape}.
+\end{proof} 
+
+As with values, it might prove beneficial to the discussion to visualize the
+shapes. \referToFigure{shape-visualization-example} shows a few visualizations
+of shapes. 
+
+\begin{definition} Generally we'll represent shapes as we represent values.
+Triangle shapes will be represented with hollow triangles. \end{definition}
+
+\includeFigure{shape-visualization-example}{A few shape visualization examples.
+The leftmost shape describes values that are nodes with leafs as right children
+and any trees as left children. The two leftmost values in
+\referToFigure{visualization-example} match this shape.}
+
+\begin{definition}\label{definition:shape-matches-shape} A shape
+$s_1\in\mathbb{S}$ matches a shape $s_2\in\mathbb{S}$ if $v\succ s_2$, where
+$v$ is a value constructed from $s_1$ by replacing all the triangles in the
+binary tree with leafs. We hence overload the binary relation $\succ$ with the
+set $\left\{(s_1,s_2)\mid s_1\in\mathbb{S} \wedge s_2\in\mathbb{S} \wedge s_1\
+\text{matches}\ s_2\right\}$.\end{definition}
+
+\begin{lemma} $\forall\ s_1, s_2 \in \mathbb{S} \left(\left(s_1\neq s_2 \wedge
+s_1\succ s_2\right) \rightarrow s_2\nsucc s_1\right)$\end{lemma}
+
+\begin{proof}If $s_1\neq s_2$ and $s_1\succ s_2$, then by
+\referToDefinition{value-matches-shape}, $s_1$ must have more nodes than $s_2$,
+and by \referToDefinition{value-matches-shape} and
+\referToDefinition{shape-matches-shape}, a shape with more nodes cannot match a
+shape with fewer nodes.\end{proof}
+
+

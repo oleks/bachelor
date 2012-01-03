@@ -8,48 +8,42 @@ machine, such that the techniques are described for an environment that is
 modestly applicable to solving moderate programming problems, a Turing complete
 language \D{} is introduced.
 
-The intent of the language is hence two-fold, (1) aid the descriptions of the
-automated termination analysis techniques in further chapters and (2) be
-relatively modern in the subjective sense of expressiveness.
+\section{The intent of the language}
 
-Expressiveness of a language depends on its initially intended domains. Of
-course, Turing complete languages are known to be universally applicable,
-however some languages are just more fine tuned to solving some problems, while
-others are better tuned for solving other problems, hence the domain-specific
-and subjective term of expressiveness.
+The intent of the language is two-fold, \begin{inparaenum}[(1)]\item aid the
+descriptions of automated termination analysis techniques in latter
+chapters, and \item be relatively expressive\end{inparaenum}.
 
-\D{} is a language that disregards the aspect of abstract data structures.
-Hence, many data driven programs \emph{will} be hard to write in \D{} due to,
-for instance, the complete absence of types. This is of course, relative.
-Various aspects of the data flow of a program can be important to various
-automated termination analysis techniques, in particular size-change
-termination. Hence, \D{} is not completely useless and does have data and even
-simple ways of analyzing the sizes and shapes of its values and branching
-depending on the outcome of such analyses.
+Expressiveness of a language is a rather subjective and domain-driven concept.
+First and foremost, expressiveness depends on the initial intended domain of
+the language. Of course, Turing complete languages are known to be universally
+applicable, however, some languages are just more fine tuned to solving some
+problems, while others are better tuned to solving other problems.
 
-\section{General properties}
+\D{} is a language with very few primitive operations but is expressive enough
+to write the Fibonacci and Ackermann functions in an elegant way. To do this,
+\D{} borrows some syntax and semantics from purely functional languages such as
+ML or Haskell. Hence, programs in \D{} make heavy use of pattern matching and
+recursion to achieve branching and looping, some of the constructs required for
+a language to be Turing complete.
 
-One of the fundamental concepts required of the
-language of application is that it's datatypes are well-founded. That is, any
-subset $S$ of the range of values of some well-defined type has a value $s$
-s.t. $\forall {s'\in S}\ s\leq s'$. This makes it ideal to chose some
-oversimplistic data type structure rather than an army of basic types. Besides,
-an apropriately defined basic data type should be able to represent arbitrarily
-complex data values.
+Unlike ML and Haskell, \D{} is a language that completely disregards the
+concepts of abstract data structures and types. Hence, many data driven
+programs will be hard to write in \D{}. Of course, this is not to say that data
+flow analysis is irrelevant to termination analysis as such, on the contrary,
+it is key to size-change termination. It is because of this prime importance of
+data flow to termination analysis, that data value representation is kept to
+its almost lowest possible denominator. This keeps the analysis clean of rather
+irrelevant abstract data structure fiddling. What's more, any methods developed
+for \D{} can be extended and used in a language with types and abstract data
+structures, as long as it is computationally equivalent to \D{}.
 
-The language is initially first-order since the size-change termination
-principle is first described for first-order programs later on in this work.
-However, the language is designed so that it is easy to turn it into a
-high-level language without much effort. This may prove necessary as we try to
-expand size-change termination to higher-order programs.
-
-The language is a call-by-value and purely functional to avoid any problems
-that could arise from regarding lazy programs or where the notion of a global
-state of the machine is relevant. Simply put, this is done to ensure elegance
-of further proof with the help of the language.
-
-The language \D{} is also Turing complete in the sense that it can model the
-Turing machine.
+Also, unlike most purely functional languages, \D{} is a first-order,
+call-by-value language. This is done in part to adhere to the general flow of
+\cite{size-change}, and in part to keep the analysis simple at first.
+Higher-order constructs impose difficulties when deducing changes in size, and
+evaluation strategies other than call-by-value impose a similar sort of
+difficulties.
 
 \input{language/data}
 \input{language/syntax}
