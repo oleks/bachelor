@@ -1,15 +1,14 @@
 \section{Semantics}\label{section:d-sos}
 
-Revise the context of an expression within a function call, it should always be
-the context upon entering the function call! Or even better, the context when
-the function was defined!
+% Revise the context of an expression within a function call, it should always be
+% the context upon entering the function call! Or even better, the context when
+% the function was defined!
 
-\textbf{Allow mutual recursion}
+% \textbf{Allow mutual recursion}
 
-\textbf{Perhaps pattern matching must be exhaustive in general.}
+% \textbf{Perhaps pattern matching must be exhaustive in general.}
 
-\textbf{Every subsequent definition must be strictly less specific than the former.}
-
+% \textbf{Every subsequent definition must be strictly less specific than the former.}
 
 In the following section we describe the semantics of \D{} using a form of
 structured operational semantics. The syntax used to define the reduction rules
@@ -17,45 +16,32 @@ is largely equivalent to the Aarhus report\cite{sos}, but differs
 slightly\footnote{The syntax applied here is described in further detail in
 \referToAppendix{sos}.}.
 
-The syntax aside, \referToTable{sos-definitions} defines a few shorthands for
-various constructs in various contexts. We'll use these both when talking about
-the semantics as well as in further proofs. Additionally, we'll let the atoms
-$0$ and $\_$ represent themselves in the reduction rules. 
-
-\makeTable[h!]
-{sos-definitions}
-{Definitions of various shorthands used throughout the remainder of this work.
-The column \textbf{A} refers to all possible instances of the given construct,
-i.e.  $\mathbb{B}$ reffers to all constructable values in \D{}. The column
-\textbf{P} refers to all the instances of the given construct in a given
-program, i.e. $N$ reffers to all the names in a given program. The column
-\textbf{I} reffers to specific instances of the given constructs, i.e. $x$
-reffers to a particular expression.}
-{|l|c|c|c|}
-{\textbf{Description}&\textbf{Instance}&\textbf{Program set}&\textbf{Complete set}}
-{
-Expression & $x$ & $X$ & $\mathbb{X}$\\
-Element (of an expression) & $e$ & $E$ & $\mathbb{E}$\\
-Pattern & $p$ & $P$ & $\mathbb{P}$\\
-Value & $b$ & $B$ & $\mathbb{B}$\\
-Name & $v$ & $V$ & $\mathbb{V}$
-}
-
 \subsection{The memory model}\label{section:d-semantics-memory}
 
-Memory is considered in terms of a set of value stacks, $\sigma$. Every stack
-has a unique identifier $n\in \mathbb{N}$, that is, each variable gets a value
-stack. This renders $\sigma$ countably infinite since $\mathbb{N}$ is countably
-infinite.
+\begin{definition}\label{definition:memory} Memory is considered in terms of a
+binary relation $\sigma$ which for any given clause $c$ is the set $\{(n,b)\mid
+n\in\mathbb{N} \wedge b\in\mathbb{B} \wedge n\in P_c\}$. For any given
+$(n,b)\in\sigma_c$, we say that in the scope of $c$, the variable $n$, is bound
+to $b$.\end{definition}
 
-As we enter a new scope, we bind a variable to a
-value, that is, we push that value on top of the corresponding stack. We pop
-the value off the corresponding stack as we leave the scope at the entry to
-which the variable was bound.
+\begin{corollary}\label{corollary:init-empty-scope} Variables are bound when
+arguments are matched to clause patterns, and if the argument matches a
+pattern, hence before pattern matching the arguments for any given clause $c$,
+$\sigma_c=\emptyset$.\end{corollary}
 
-An expression at a certain scope depth only has access to variables at the same
-scope depth. This is to ensure static scope. We won't adhere to this problem
-explicitly in the semantics, but instead ask you to simply keep it in mind.
+\referToDefinition{memory} and \referToCorollary{init-empty-scope} indicate
+that \D{} is statically scoped.  Furthermore, \referToDefinition{memory} may
+prove hampering if we were ever to extend \D{} with lambda calculus, but there
+are initially no plans to do so.
+
+\begin{definition} The \nonterm{expression} at the end of \nonterm{program} can
+be considered as the main clause of a program, which we'll refer to as
+$c_{main}$.\end{definition}
+
+\begin{corollary} $\sigma_{c_{main}}=\emptyset$. \end{corollary}
+
+% This renders $\sigma$ countably infinite since $\mathbb{V}$ is countably
+% infinite.
 
 \subsubsection{Functions and variables}
 

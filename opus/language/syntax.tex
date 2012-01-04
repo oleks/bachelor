@@ -8,33 +8,71 @@ practical, syntactical features may be defined later on as needed. The initial
 non-terminal is $\nonterm{program}$.
 
 \begin{align}
-\nonterm{program}\ ::=&\ \nonterm{declaration}^*\ \nonterm{expression}\\
+\nonterm{program}\ ::=&\ \nonterm{clause}^*\ \nonterm{expression}\\
 \nonterm{expression}\ ::=&\ \nonterm{element}\ (\ \term{.}\ \nonterm{expression}
 \ )\ ?\\
 \nonterm{element}\ ::=&\ \term{0}\ |\ \term{(}\ \nonterm{element}\ \term{)}\ |
 \ \nonterm{name}\ |\ \nonterm{application}\\
 \nonterm{application}\ ::=&\ \nonterm{name}
 \ \nonterm{expression}^+\\
-\nonterm{declaration}\ ::=&\ \nonterm{name}\ \nonterm{pattern}^+
+\nonterm{clause}\ ::=&\ \nonterm{name}\ \nonterm{pattern}^+
 \ \term{:=}\ \nonterm{expression}\\
-\nonterm{pattern}\ ::=&\ \nonterm{pattern-value}\ (\ \term{.}
+\nonterm{pattern}\ ::=&\ \nonterm{pattern-element}\ (\ \term{.}
 \ \nonterm{pattern}\ )\ ?\\
-\nonterm{pattern-value}\ ::=&\ \term{0}\ |\ \term{\_}\ |\ \term{(}
+\nonterm{pattern-element}\ ::=&\ \term{0}\ |\ \term{\_}\ |\ \term{(}
 \ \nonterm{pattern}\ \term{)}\ |\ \nonterm{name}\\
 \nonterm{name}\ ::=&\ [\term{a}\mathmono{-}\term{z}]
 \ \left (\ [\term{-}\ \term{a}\mathmono{-}\term{z}]^*
 \ [\term{a}\mathmono{-}\term{z}]\ \right )?
 \end{align}
 
-0-ary declarations are disallowed to avoid having to deal with constants in
-general. The term $\term{\_}$ in $\nonterm{pattern-value}$ is the conventional wildcard
-operator; it indicates a value that won't used by the declaration, but allows
-us to keep the same declaration signature. 
+\begin{definition} \referToTable{sos-definitions} defines shorthands for
+various language constructs. We'll often refer to these in further discussions.
+Additionally, we'll let the atoms $0$ and $\_$ represent
+themselves.\end{definition} 
 
-\begin{definition} A declaration signature in \D{} consists of the function
-name and the number of parameters it has. We'll adopt the Erlang notation when
-talking about function signatures, i.e. if we have a function \mono{less} that
-takes in two parameters, we'll refer to it as \mono{less/2}.\end{definition}
+\makeTable[h!]
+{sos-definitions}
+{Shorthands for various language constructs for use in latter discussions. We
+provide shorthands for an instance, a list, and the space of a construct. For
+instance, $x$ is some particular expression, $X$ is some particular list of
+expressions, and $\mathbb{X}$ is the set of all possible expressions.}
+{|l|c|c|c|}
+{\textbf{Description}&\textbf{Instance}&\textbf{List}&\textbf{Space}}
+{
+Expression & $x$ & $X$ & $\mathbb{X}$\\
+Element (of an expression) & $e$ & $E$ & $\mathbb{E}$\\
+Function & $f$ & $F$ & $\mathbb{F}$\\
+Clause & $c$ & $C$ & $\mathbb{C}$\\
+Pattern & $p$ & $P$ & $\mathbb{P}$\\
+Value & $b$ & $B$ & $\mathbb{B}$\\
+Name & $v$ & $V$ & $\mathbb{V}$
+}
+
+\begin{definition} For any given $n\in\mathbb{N}$ and $P\subseteq\mathbb{P}$,
+we say that $n\in P$ if $n$ occurs in some $p\in P$.\end{definition}
+
+\begin{definition} A clause $c$ is a tuple $(n_c,P_c,x_c)$, where $n_c$ is the
+name of the clause, $P_c$ is the list of patterns of the clause, and $x_c$ is
+the expression of the clause.\end{definition}
+
+\begin{definition} A function $f$ is a non-empty set of clauses $C$, s.t.
+$\forall\ c_1,c_2\in C \left(|P_{c_1}|=|P_{c_2}|\wedge n_{c_1}=n_{c_2}\right)$,
+where $|P_{c_1}|$ and $|P_{c_2}|$ are the respective sizes of the pattern lists
+of the clauses $c_1$ and $c_2$, and $n_{c_1}$ and $n_{c_2}$ are their
+respective names. A function signature for the set of clauses $C$ is hence the
+tuple $(n,|P|)$, s.t. $\forall\ c\in C (|P_c|=|P|\wedge n_c=n)$.  We'll adopt
+the Erlang notation when talking about function signatures, i.e. if we have a
+function \mono{less} that takes in two parameters, we'll refer to it as
+\mono{less/2}.\end{definition}
+
+0-ary clauses are disallowed to avoid having to deal with constants in general.
+The term $\term{\_}$ in $\nonterm{pattern-element}$ is the conventional
+wildcard operator; it indicates a value that won't used in the clause
+expression, but some value has to be there for an argument to match the
+pattern. Furthermore, as will be clear from the semantics, multiple occurrences
+of \term{\_} in a clause pattern list does not indicate that the same value has
+to be in place for each \term{\_}. 
 
 % TODO this should be clear from the semantics.
 
