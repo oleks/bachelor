@@ -24,21 +24,21 @@ $0$ and $\_$ represent themselves in the reduction rules.
 
 \makeTable[h!]
 {sos-definitions}
-{Overview of some of the shorthands used in this text. The column \textbf{A}
-refers to all possible instances of the given construct, i.e.  $\mathbb{B}$
-reffers to all constructable values in \D{}. The column \textbf{P} refers to
-all the instances of the given construct in a given program, i.e. $N$ reffers
-to all the names in a given program. The column \textbf{I} reffers to specific
-instances of the given constructs, i.e. $x$ reffers to a particular
-expression.}
+{Definitions of various shorthands used throughout the remainder of this work.
+The column \textbf{A} refers to all possible instances of the given construct,
+i.e.  $\mathbb{B}$ reffers to all constructable values in \D{}. The column
+\textbf{P} refers to all the instances of the given construct in a given
+program, i.e. $N$ reffers to all the names in a given program. The column
+\textbf{I} reffers to specific instances of the given constructs, i.e. $x$
+reffers to a particular expression.}
 {|l|c|c|c|}
-{\textbf{Description}&\textbf{I}&\textbf{P}&\textbf{A}}
+{\textbf{Description}&\textbf{Instance}&\textbf{Program set}&\textbf{Complete set}}
 {
 Expression & $x$ & $X$ & $\mathbb{X}$\\
 Element (of an expression) & $e$ & $E$ & $\mathbb{E}$\\
 Pattern & $p$ & $P$ & $\mathbb{P}$\\
-Value(binary tree) & $b$ & $B$ & $\mathbb{B}$\\
-Name & $n$ & $N$ & $\mathbb{N}$
+Value & $b$ & $B$ & $\mathbb{B}$\\
+Name & $v$ & $V$ & $\mathbb{V}$
 }
 
 \subsection{The memory model}\label{section:d-semantics-memory}
@@ -345,3 +345,12 @@ two arguments as it's left and right child, respectively.
   \left\langle p',x',\sigma'\right\rangle
 }
 \end{equation}
+
+\subsection{Deducing unary functions from multivariate functions}
+
+When performing termination analysis of programs it may prove tedious to
+consider a list of patterns rather than a single pattern, especially since a
+multivariate function can always be encoded as a unary function with e.g. the
+patterns \mono{a}, \mono{b}, \mono{c}, and d encoded as \mono{a.b.c.d}. The
+same ``encoding'' would have to be applied to each call to the function as
+well. Hence, we can limit ourselves to termination proofs of unary functions.
