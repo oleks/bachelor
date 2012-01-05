@@ -1,13 +1,5 @@
 \subsection{Size}
 
-Althought the language is already complete, it would prove useful for further
-analysis to define the notion of \emph{size}, and hence the equality and order
-of relations on data values. Without further a-do, we define the size of a
-value to be \emph{the number of nodes in the binary tree}.
-
-The euqality and order relations are a bit more complicated though, as that
-there is seemingly no \emph{elegant} way to decide whether one arbitrary binary
-tree has the same or ..
 
 Hence, the tree \mono{0} has the value $0$, the tree \mono{0.0} has the value
 $1$, and the tree \mono{0.0.0} has the value $2$ as does it's symmetrical
@@ -55,64 +47,4 @@ sum of the absolute values of the constituents.\end{lemma}
 values are strictly less than the absolute value of the original
 value.\end{lemma}
 
-\subsection{Programs}
 
-Programs are defined in a conventional functional context and without mutual
-recursion, namely:
-
-\begin{align}
-\nonterm{program}\ ::=&\ \nonterm{function}^*\ \nonterm{expression}
-\end{align}
-
-The order of the function definitions does matter wrt. pattern matching in so
-far as those defined before are attempted first, if the match fails, the next
-function with the same signature\footnote{In this case comprising of the name
-of the function and it's arity.} is attempted.
-
-Note, that we let the number of function definitions be zero as an
-$\nonterm{expression}$ is a valid program as well. More generally, the program
-can be thought of as a constant function, where the actual
-$\nonterm{expression}$ simply has access to some predefined functions defined
-by the function definitions in the program.
-
-\subsection{Built-in high-order
-functions}\label{section:language-higher-order-built-ins}
-
-Although \mono{D} is initially a first-order language, we will ignore that
-limitation for a bit and define a few higher-order functions to provide some
-syntactical sugar to the language. Beyond the discussion in this section, these
-higher-order functions should be regarded as \mono{D} built-ins.
-
-\subsubsection{Branching}
-
-In the following definition, the variable names \mono{true} and \mono{false}
-refer to expressions to be executed in either case.
-
-\begin{verbatim}
-if 0 _ false := false
-if _._ _ true := true
-\end{verbatim}
-
-As you can see, we employ the C convention that any value other than $0$ is a
-``truthy'' value, and the expression \mono{true} is returned.
-
-Although the call-by-value nature of the language does not allow for
-short-circuiting the if-statements defined in such a way, this shouldn't be any
-impediment to further analysis.
-
-\subsection{Sample programs}
-
-As an illustration of the language syntax, the following program reverses a tree:
-
-\begin{verbatim}
-reverse 0 := 0
-reverse left.right := (reverse right).(reverse left)
-\end{verbatim}
-
-The following program computes the Fibonacci number \mono{n}:
-
-\begin{verbatim}
-fibonacci 0 x y := 0
-fibonacci 0.0 x y := y
-fibonacci n x y := fibonacci (minus n 0.0) y (add x y)
-\end{verbatim}

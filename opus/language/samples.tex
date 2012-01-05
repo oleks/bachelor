@@ -1,0 +1,33 @@
+\section{Sample programs}\label{section:d-samples}
+
+As an illustration of the language syntax, take a look at the programs in
+\referToListing{reverse}, \referToListing{fibonacci} and
+\referToListing{ackermann}.
+
+\begin{lstlisting}[label=listing:reverse,
+  caption={A program that reverses the order of the nodes of some supplied tree.}]
+reverse 0 := 0
+reverse left.right := (reverse right).(reverse left)
+
+reverse input
+\end{lstlisting}
+
+\begin{lstlisting}[label=listing:fibonacci,
+  caption={A program that computes the $n^{th}$ fibonacci when supplied with some $n$.}] 
+fibonacci n = fibonacci-aux (normalize n) 0 0
+
+fibonacci-aux 0 x y := 0
+fibonacci-aux 0.0 x y := y
+fibonacci-aux 0.n x y := fibonacci-aux n y (add x y)
+
+fibonacci input
+\end{lstlisting}
+
+\begin{lstlisting}[label=listing:ackermann,
+  caption={The Ackermann-P\'eter function.}]
+ackermann 0 n := 0.n
+ackermann a.b 0 := ackermann (decrease a.b) 1
+ackermann a.b c.d := ackermann (decrease a.b) (ackermann a.b (decrease c.d))
+
+ackermann input input
+\end{lstlisting}

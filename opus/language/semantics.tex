@@ -19,16 +19,8 @@ slightly\footnote{The syntax applied here is described in further detail in
 \subsection{The memory model}\label{section:d-semantics-memory}
 
 \begin{definition}\label{definition:memory} The memory is a binary relation
-$\sigma$, which is the set $\{(n,b)\mid n\in\mathbb{N} \wedge
+$\sigma$, which is the set $\{(v,b)\mid v\in\mathbb{V} \wedge
 b\in\mathbb{B}\}$.\end{definition}
-
-% For simplicity, we would like for \D{} to be a statically scoped language.
-
-%\begin{definition} For any given clause $c=(n_c,P_c,x_c)$ the expression $x_c$
-%is evaluated with the memory space $\sigma_c$.\end{definition}
-
-% This renders $\sigma$ countably infinite since $\mathbb{V}$ is countably
-% infinite.
 
 To keep \D{} first order we distinguish between the function space and variable
 space.
@@ -38,24 +30,6 @@ let $\beta\subseteq\sigma$ represent the variable space, what's more,
 $\phi\cup\beta=\sigma$. When we refer to $\sigma$, $\phi$ or $\beta$ in set
 notation, we refer merely to the names of the variables, hence to keep \D{}
 first order, let $\phi\cap\beta=\emptyset$.\end{definition}
-
-%\begin{definition} For any given $(n,b)\in\sigma_c$, we say that in the scope
-%of $c$, the variable $n$, is bound to $b$.\end{definition}
-
-%\begin{lemma}\label{lemma:init-empty-scope} Variables are bound when arguments
-%are matched to clause patterns, and only if the argument matches the pattern,
-%hence before pattern matching succeeds, for any given clause $c$,
-%$\sigma_c=\emptyset$.\end{lemma}
-
-%\begin{proof} Refer to the semantics of pattern matching below.\end{proof}
-
-%\referToDefinition{memory} and \referToLemma{init-empty-scope} indicate that
-%\D{} is \emph{statically scoped}.  Furthermore, \referToDefinition{memory} may
-%prove hampering if we were ever to extend \D{} with lambda calculus, but there
-%are initially no plans to do so.
-
-
-%\begin{corollary} $\sigma_{c_{main}}=\emptyset$. \end{corollary}
 
 \subsubsection{Making \D{} higher order}
 
@@ -98,9 +72,9 @@ following semantics:
   \right)
   \vee
   \left(
-      F_{head}=\left\langle n,C\right\rangle
+      F_{head}=\left\langle v,C\right\rangle
     \wedge
-      \phi_2=\phi[n]\mapsto \left\langle C,\phi\right\rangle
+      \phi_2=\phi[v]\mapsto \left\langle C,\phi\right\rangle
     \wedge
       \left\langle F_{tail},\phi_2\right\rangle
       \rightarrow
@@ -114,7 +88,8 @@ following semantics:
 \end{equation}
 
 The fact that the active function space is saved together with the list of
-clauses for any given function should indicate that \D{} is statically scoped.
+clauses for any given function should intentionally indicate that \D{} is
+\emph{statically scoped}.
 
 \subsection{Expression evaluation}
 
@@ -128,15 +103,15 @@ is right-associative, and has the following operational semantics:
 {\displaystyle
   \left\langle \proc{Single}, x,\sigma\right\rangle
   \rightarrow
-  \left\langle b,\sigma\right\rangle
+  b
 \vee
   \left\langle \proc{Chain}, x,\sigma\right\rangle
   \rightarrow
-  \left\langle b,\sigma\right\rangle
+  b
 \over\displaystyle
   \left\langle x,\sigma\right\rangle
   \rightarrow
-  \left\langle b,\sigma\right\rangle
+  b
 }
 \end{equation}
 
@@ -146,11 +121,11 @@ is right-associative, and has the following operational semantics:
 \wedge
   \left\langle e,\sigma\right\rangle
   \rightarrow
-  \left\langle b,\sigma\right\rangle
+  b
 \over\displaystyle
   \left\langle \proc{Single}, x,\sigma\right\rangle
   \rightarrow
-  \left\langle b,\sigma\right\rangle
+  b
 }
 \end{equation}
 
@@ -160,15 +135,15 @@ is right-associative, and has the following operational semantics:
 \wedge
   \left\langle e_1,\sigma\right\rangle
   \rightarrow
-  \left\langle b_1,\sigma\right\rangle
+  b_1
 \wedge
   \left\langle x_1,\sigma\right\rangle
   \rightarrow
-  \left\langle b_2,\sigma\right\rangle
+  b_2
 \over\displaystyle
   \left\langle \proc{Chain}, x, \sigma\right\rangle
   \rightarrow
-  \left\langle b, \sigma\right\rangle
+  b
 }
 \quad(\text{where }b_1\cdot b_2=b)
 \end{equation}
@@ -190,7 +165,7 @@ be the atom $0$, a variable, an expression (in parentheses), or an application.
 \over\displaystyle
   \left\langle e,\sigma\right\rangle
   \rightarrow
-  \left\langle v,\sigma\right\rangle
+  \left\langle b,\sigma\right\rangle
 }
 \end{equation}
 
@@ -202,7 +177,7 @@ be the atom $0$, a variable, an expression (in parentheses), or an application.
 \over\displaystyle
   \left\langle \proc{Zero}, e,\sigma\right\rangle
   \rightarrow
-  \left\langle b,\sigma\right\rangle
+  b
 }
 \end{equation}
 
@@ -212,261 +187,98 @@ be the atom $0$, a variable, an expression (in parentheses), or an application.
 \wedge
   \left\langle x,\sigma\right\rangle
   \rightarrow
-  \left\langle b,\sigma\right\rangle
+  b
 \over\displaystyle
   \left\langle \proc{Expression}, e,\sigma\right\rangle
   \rightarrow
-  \left\langle b,\sigma\right\rangle
+  b
 }
 \end{equation}
 
 \begin{equation}
 {\displaystyle
-  e = n
+  e = v
 \wedge
-  \beta[n]=b
+  \beta[v]=b
 \over\displaystyle
   \left\langle \proc{Variable}, e,\sigma\right\rangle
   \rightarrow
-  \left\langle b,\sigma\right\rangle
+  b
 }
 \end{equation}
 
 \begin{equation}
 {\displaystyle
-  e = \left\langle n, X\right\rangle
+  e = \left\langle v, x\right\rangle
 \wedge
-  \phi[n]=\left\langle C,\phi_1 \right\rangle
+  \phi[v]=\left\langle C,\phi_1 \right\rangle
 \wedge
-  \left\langle C,X,\phi_1\right\rangle
+  \left\langle x,\sigma\right\rangle
+  \rightarrow
+  b_{arg}
+\wedge
+  \left\langle C,b_{arg},0,\phi_1\right\rangle
   \rightarrow
   b
 \over\displaystyle
   \left\langle \proc{Application}, e,\sigma\right\rangle
   \rightarrow
-  \left\langle b,\sigma\right\rangle
+  b
 }
 \end{equation}
 
 \subsection{Clause matching}
 
-Clauses and their respective patterns get some special treatment in \D{}. In
-particular, there are a few properties that all valid \D{} programs must
-adhere to in order to aid the discussion in latter chapters.
+Clauses get some special get some special treatment in \D{}. In particular,
+according to \referToDefinition{clause-tuple}, the clauses of a function are
+ordered by their occurrence in the program text. This is intentional, as we
+would like to declare the following requirement:
 
-First and foremost, as already has been declared in
-\referToDefinition{clause-tuple} and \referToDefinition{function-tuple}, both
-clauses and patterns are ordered by their occurrence in the program text. In
-both cases, this order superimposes an evaluation order. For patterns, however,
-this order matters rather little due to \referToTheorem{multivariate-to-unary}.
-In latter discussions, this particular theorem also allows us to keep to unary
-functions, and regard the extension to multivariate functions as a fairly
-simple matter.
+\begin{definition} Given a function $f= \left\langle v, C \right\rangle$, it
+must hold that $\forall\ i,j\in\{(i,j)\mid i,j\in\mathbb{Z}^+ \wedge 0 > i \leq
+|C| \wedge i > j \leq |C|\}\ c_i \curlyvee c_j$, where the binary relation
+$\curlyvee$ is overloaded with the set $\{(c_1,c_2)\mid c_1\in\mathbb{C} \wedge
+c_2\in\mathbb{C} \wedge c_1= \left\langle v_1,p_1,x_1 \right\rangle \wedge c_2=
+\left\langle v_2,p_2,x_2 \right\rangle \wedge p_1\curlyvee
+p_2\}$.\end{definition}
 
-\begin{theorem}\label{theorem:multivariate-to-unary} Any multivariate function
-in \D{} can be represented with a unary function.\end{theorem}
+Furthermore, we would like to ensure that pattern matching is exhaustive for
+any function definition. This is to avoid programs that terminate due to
+inexhaustive pattern matching.
 
-\begin{proof}
+\begin{definition} Given a function $f=\left\langle v, C\right\rangle$, it must
+hold that $\exists c\in C$ s.t. $a\succ c$ where $a$ is any valid \D{}
+value.\end{definition}
 
-Given a multivariate function $f= \left\langle n,C \right\rangle$:
-
-\begin{enumerate}
-
-\item For each clause $c\in C$, where $c=\left\langle n,P,x \right\rangle$,
-replace the pattern list $P$ with $P'=\{p\}$. Construct $p$ by initially
-letting $p=0$, and folding left-wise over $P$, performing $p=p\cdot p'$ for
-each $p'\in P$. 
-
-\item For each call $\left\langle n, X\right\rangle$ to function $f$, replace
-$X$ with the set $X'=\{x\}$, where $x$ has been constructed in a manner
-equivalent to the pattern $p$ above.
-
-\end{enumerate}
-
-It is easy to see that both the constructed patterns and expressions are indeed
-valid patterns and expressions, and that $f$ hence becomes a unary
-function.\end{proof}
-
-As this transformation is relatively simple to perform, we redefine the generic
-clause tuple to have but one pattern in place of a list. 
-
-\begin{definition} We redefine the clause $c$ to be the tuple $\left\langle
-n,p,x\right\rangle$, where $n$ is the name of clause $c$, $p$ is the pattern of
-clause $c$, and $x$ is the expression of clause $c$.\end{definition}
-
-For clauses, their order has higher importance. In particular, we would like to
-declare the requirement that any subsequent clause accepts any argument an
-antecedent clause could accept.
-
-\begin{definition} Given a function $f= \left\langle n, C \right\rangle$, it
-must hold for the finite clause list $C$ that $p_1\succ p_2$ for any clause
-$c_1= \left\langle n_1, p_1, x_1 \right\rangle$ occurring before clause $c_2=
-\left\langle n_2, p_2, x_2 \right\rangle$. We define the binary relation
-$\curlyvee$ to be the set $\{(c_1,c_2)\mid c_1\in\mathbb{C} \wedge
-c_2\in\mathbb{C} \wedge c_1= \left\langle n_1,p_1,x_1 \right\rangle \wedge c_2=
-\left\langle n_2,p_2,x_2 \right\rangle \wedge p_1\succ p_2\}$. Given any
-$c_1\curlyvee c_2$ we say that $c_1$ consumes $c_2$.\end{definition}
+These definitions allow us to define the following semantics for clause
+evaluation and pattern matching:
 
 \begin{equation}
 {\displaystyle
-{\displaystyle
-{\displaystyle
-  \left\langle n, \phi\right\rangle
-  \Rightarrow
-  \left\langle P, x, \phi\right\rangle
+  \left(
+      C=\emptyset
+    \wedge
+      b=b_{acc}
+  \right)
+  \vee
+  \left(
+      C_{head}=\left\langle v,p,x\right\rangle
+    \wedge
+      b_{arg}\succ p
+    \wedge
+      \left\langle x,\phi\right\rangle
+      \rightarrow
+      \left\langle b,\phi\right\rangle
+  \right)
+  \vee
+  \left(
+      \left\langle C_{tail},b_{arg},0,\phi\right\rangle
+      \rightarrow
+      b
+  \right)
 \over\displaystyle
-  \left\langle P, X, \sigma\right\rangle
-  \Rightarrow
-  \sigma'
-}
-\over\displaystyle
-  \left\langle x, \sigma'\right\rangle
-  \Rightarrow
-  \left\langle v,\sigma'\right\rangle
-}
-\over\displaystyle
-    \left\langle n,X,\sigma\right\rangle
-    \Rightarrow
-    \left\langle v,\sigma\right\rangle
+  \left\langle C,b_{arg},b_{acc},\phi\right\rangle
+  \rightarrow
+  b
 }
 \end{equation}
-
-\subsection{Pattern matching}
-
-\begin{equation}
-{\displaystyle
-{\displaystyle
-  \left\langle P_{head}, X_{head}, \sigma\right\rangle
-  \Rightarrow
-  \sigma''
-\over\displaystyle
-  \left\langle P_{tail}, X_{tail}, \sigma''\right\rangle
-  \Rightarrow
-  \sigma'
-}
-\over\displaystyle
-  \left\langle P, X, \sigma\right\rangle
-  \Rightarrow
-  \sigma'
-}
-\end{equation}
-
-\begin{equation}
-{
-  \left\langle\proc{I}, p,x,\sigma\right\rangle
-  \Rightarrow
-  \left\langle p',x',\sigma'\right\rangle
-\vee
-  \left\langle\proc{Z}, p,x,\sigma\right\rangle
-  \Rightarrow
-  \left\langle p',x',\sigma'\right\rangle
-\vee
-  \left\langle\proc{N}, p,x,\sigma\right\rangle
-  \Rightarrow
-  \left\langle p',x',\sigma'\right\rangle
-\vee
-  \left\langle\proc{P}, p,x,\sigma\right\rangle
-  \Rightarrow
-  \left\langle p',x',\sigma'\right\rangle
-}\over{
-  \left\langle p, x, \sigma\right\rangle
-  \Rightarrow
-  \left\langle p', x', \sigma'\right\rangle
-}
-\end{equation}
-
-For the sake of an elegant notation, we'll override the function $\cdot$ for
-patterns.
-
-\begin{definition}
-
-A pattern is an unlabeled of binary tree which is either empty or consists of
-an unlabeled node with a $0$, $\_$, name, or a pattern as it's left and right
-child. 
-
-\end{definition}
-
-\begin{definition}
-
-Let the set of all possible patterns be denoted by $\mathbb{P}$.
-
-\end{definition}
-
-\begin{definition}
-
-The function $\cdot
-:\mathbb{P}\times\mathbb{P}\rightarrow\mathbb{P}$ constructs a pattern node with the
-two arguments as it's left and right child, respectively. 
-
-\end{definition}
-
-\begin{equation}
-{
-    p\Rightarrow \_\cdot p'
-  \wedge
-    x\Rightarrow e\cdot x'
-  \wedge
-    \sigma\Rightarrow\sigma'
-}\over{
-  \left\langle\proc{Underscore}, p,x,\sigma\right\rangle
-  \Rightarrow
-  \left\langle p',x',\sigma'\right\rangle
-}
-\end{equation}
-
-\begin{equation}
-{
-    p\Rightarrow 0\cdot p'
-  \wedge
-    x\Rightarrow e\cdot x'
-  \wedge
-    \sigma\Rightarrow\sigma'
-}\over{
-  \left\langle\proc{Zero}, p,x,\sigma\right\rangle
-  \Rightarrow
-  \left\langle p',x',\sigma'\right\rangle
-}
-\end{equation}
-
-
-\begin{equation}
-{\displaystyle
-{\displaystyle
-{\displaystyle
-    p\Rightarrow n\cdot p'
-  \wedge
-    x\Rightarrow e\cdot x'
-\over\displaystyle
-    \left\langle e,\sigma\right\rangle
-    \Rightarrow
-    \left\langle v,\sigma\right\rangle
-}\over\displaystyle
-    \left\langle\sigma(n)\leftarrow v\right\rangle
-    \Rightarrow
-    \sigma'
-}\over\displaystyle
-  \left\langle\proc{Name}, p,x,\sigma\right\rangle
-  \Rightarrow
-  \left\langle p',x',\sigma'\right\rangle
-}
-\end{equation}
-
-\begin{equation}
-{\displaystyle
-{\displaystyle
-    p\Rightarrow p''\cdot p'  
-  \wedge
-    x\Rightarrow x''\cdot x'
-\over\displaystyle
-  \left\langle p'', x'', \sigma\right\rangle
-  \Rightarrow
-  \sigma'
-}
-\over\displaystyle
-  \left\langle\proc{Pattern}, p,x,\sigma\right\rangle
-  \Rightarrow
-  \left\langle p',x',\sigma'\right\rangle
-}
-\end{equation}
-
-

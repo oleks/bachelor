@@ -1,0 +1,135 @@
+\section{Built-in functions}\label{section:language-higher-order-built-ins}
+
+In the following section we define a few built-in \D{} functions. Some of them
+will be defined in terms of \D{} itself.
+
+\subsection{Input}
+
+To be able to write more interesting programs, we'll define the primitive
+function \mono{input/0} that can yield any valid \D{} value. This is the only
+non-deterministic, 0-ary function in \D{}.
+
+\subsection{Boolean operations}
+
+\begin{definition} We'll adopt the C-convention of letting any non-zero value
+represent a true value, and any zero value to represent a false
+value.\end{definition}
+
+Given the definition above, we define the often useful functions \mono{and/2},
+\mono{or/2} and \mono{not/1} in \referToListing{and}, \referToListing{or} and
+\referToListing{not}, respectively. Note, that due to \D{} being a
+call-by-value language, \mono{or/2} is \emph{not} shortcircuited as
+conventionally is the case.
+
+\begin{lstlisting}[label=listing:and,
+  caption={The function \mono{and/2}.}]
+and _._ _._ := 0.0
+and _ _ = 0
+\end{lstlisting}
+
+\begin{lstlisting}[label=listing:or,
+  caption={The function \mono{or/2}.}]
+or 0 0 := 0
+or _ _ := 0.0
+\end{lstlisting}
+
+\begin{lstlisting}[label=listing:not,
+  caption={The function \mono{not/1}.}]
+not 0 := 0.0
+not _._ := 0
+\end{lstlisting}
+
+\subsection{Comparison}
+
+There are many imaginable programs that rely on some value being less, more, or
+equal to some other value. Since no such primitives are available we have to
+define such comparisons ourselves. However, there is seemingly no
+\emph{elegant} way of figuring out how the sizes of two arbitrary values in
+\D{} differ, using \D{} itself. For this purpose we define the concept of a
+\emph{normalized} value.
+
+\begin{definition}\label{definition:normal-form} A binary tree in normalized
+form is a binary tree that either is a leaf, or a node having a leaf as it's
+left child and a binary tree in standard representation as it's right
+child.\end{definition}
+
+Visually, a binary tree in standard representation is just a tree that only
+descends along the right-hand side. Refer to \referToFigure{normalize-example}
+for an example of a value in \D{} and its normalized form.
+
+\includeFigure{normalize-example}{A sample value $b\in\mathbb{B}$ to the left,
+and its normalized form to the right.}
+
+\referToDefinition{normal-form} allows us to define the function
+\mono{normalize/1} that normalizes a value. We've done this
+\referToListing{normalize}.
+
+\begin{lstlisting}[label=listing:normalize,
+  caption={The function \mono{normalize/1} turns any value $b\in\mathbb{B}$ into its normal form.}]
+normalize a = normalize-aux a 0 0
+
+normalize-aux 0     0     an := an
+normalize-aux 0     bl.br an := normalize-aux bl br    an
+normalize-aux 0.ar  b     an := normalize-aux ar b     0.an
+normalize-aux al.0  b     an := normalize-aux al b     0.an
+normalize-aux al.ar b     an := normalize-aux ar al.b  0.an
+\end{lstlisting}
+
+Comparing the sizes of two trees in this representation is just a matter of
+walking down two normalized trees simultaneously, until one of them, or both,
+bottoms out. If there is a tree that bottoms out strictly before another, that
+is the lesser value by \referToDefinition{size}. This allows us to define the
+functions \mono{less/2} and \mono{equal-size/2}\footnote{We add the
+\mono{-size} suffix in order to reserve the name \mono{equal} for a function
+that compares two values in \D{} by their actual tree structure rather than the
+number of nodes.} which we do in \referToListing{less} and
+\referToListing{equal-size}, respectively.
+
+\begin{lstlisting}[label=listing:less,
+  caption={The function \mono{less/2} yields true if the first argument 
+    is less than the second and false otherwise.}]
+less a b := normalized-less (normalize a) (normalize b)
+
+normalized-less 0 b := b
+normalized-less _ 0 := 0
+normalized-less _.a _.b := normalized-less a b
+\end{lstlisting}
+
+\begin{lstlisting}[label=listing:equal-size,
+  caption={The function \mono{equal-size/2} function.}]
+equal-size a b := normalized-equal-size (normalize a) (normalize b)
+
+normalized-equal-size 0 0 := 0.0
+normalized-equal-size _ 0 := 0
+normalized-equal-size 0 _ := 0
+normalized-equal-size _.a _.b := normalized-equal-size a b
+\end{lstlisting}
+
+\subsection{Increase \& decrease}
+
+As with comparison, there are many imaginable programs that increase or
+decrease values. An increase in the number of nodes is trivial, as shown by the
+function \mono{increase/1} in \referToListing{increase}. 
+
+\begin{lstlisting}[label=listing:increase,
+  caption={The function \mono{increase/1} increases a value by 1.}]
+increase a := 0.a
+\end{lstlisting}
+
+A decrease of a value on the other hand, requires normalization of the value
+and a right-wise walk down the tree until the bottom-most node is reached,
+after which the node is removed.  What's more, \D{} has no overflow and no
+negative values, so we must take care of what we do with the value $0$, which
+hence cannot be decreased. We decide to let \mono{decrease 0} yield \mono{0}.
+All this is summarized in \referToListing{decrease}.
+
+\begin{lstlisting}[label=listing:decrease,
+  caption={The function \mono{decrease/1} decreases a value 1,
+    unless that value is 0, in which case nothing is done.}]
+decrease 0 := 0
+decrease a := normalized-decrease (normalize a)
+
+normalized-decrease 0.0 := 0
+normalized-decrease a.b := a.(normalized-decrease b)
+\end{lstlisting}
+

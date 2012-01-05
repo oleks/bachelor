@@ -56,32 +56,61 @@ Program & $r$ & $R$ & $\mathbb{R}$
 %be considered as the main clause of a program, which we'll refer to as
 %$c_{main}$.\end{definition}
 
-\begin{definition} For any given $n\in\mathbb{N}$ and $P\subset\mathbb{P}$,
-we say that $n\in P$ if $n$ occurs in some $p\in P$.\end{definition}
+\begin{definition} The finite lists in \referToTable{sos-definitions} are
+formally speaking merely ordered sequences. For simplicity, we'll refer to them
+merely as ``lists'' and adopt a few common operators from set notation:
+
+\begin{enumerate}
+
+\item Given a list $L$ and a (possibly infinite) set $S$, we say that $L\subset
+S$, if $L$ consists solely of elements also contained in $S$. Hence, e.g.
+$C\subset\mathbb{C}$.
+
+\item Given a list $L$ and an element $l$, we say that $l\in L$ if $l$ indeed
+is contained in $L$.
+
+\item $\emptyset$ denotes the empty list.
+
+\item Given a list $L$, $|L|\in\mathbb{Z}^*$ and denotes the length of $L$.
+
+\item Any given list $L$ contains the elements $l_1,l_2,\cdots,l_{|L|}$, in that order.
+
+\item Given the lists $L$ and $L'$ we say that $L=L'$ iff $|L|=|L'|$ and
+$\forall\ i\in \{i\mid i\in\mathbb{Z}^+ \wedge 0 < i \leq |L|\}\ l_i=l'_i$.
+
+\item Given a list $L=l_1,l_2,\cdots,l_{|L|}$, $L_{head}$ refers to $l_1$, and
+$L_{tail}$ refers to the list $l_2,l_3,\cdots,l_{|L|}$.
+
+\end{enumerate}
+
+\end{definition}
+
+\begin{definition} For any given $v\in\mathbb{V}$ and $P\subset\mathbb{P}$,
+we say that $v\in P$ if $v$ occurs in some $p\in P$.\end{definition}
 
 \begin{definition}\label{definition:clause-tuple} A clause $c\in\mathbb{C}$ is
-a tuple $\left\langle n,P,x \right\rangle$, where $n\in\mathbb{N}$ is the name
+a tuple $\left\langle v,P,x \right\rangle$, where $v\in\mathbb{V}$ is the name
 of the clause, $P\subset\mathbb{P}$ is a non-empty list of patterns of the
 clause, and $x\in\mathbb{X}$ is the expression of the clause. $P$ is ordered by
 occurrence of the patterns in the program text.\end{definition}
 
-\begin{definition} We say that a clause $c= \left\langle n,P,x \right\rangle$
-``accepts'' an argument list $B$ iff $\forall\ \{i\mid 0\geq i < |P|\}\ b_i\in
-B \wedge p_i\in P \wedge b_i\succ p_i$.\end{definition}
+\begin{definition} We say that a clause $c= \left\langle v,P,x \right\rangle$
+``accepts'' an argument list $B$ iff $|P|=|B|$ and $\forall\ \{i\mid 0\geq i <
+|P|\}\ b_i\in B \wedge p_i\in P \wedge b_i\succ p_i$.\end{definition}
 
 \begin{definition}\label{definition:function-tuple} A function $f\in\mathbb{F}$
-is a tuple $\left\langle n_f,C \right\rangle$, where $n_f \in \mathbb{N}$ is
-the name of the function, and $C\subset\mathbb{C}$ is the non-empty list of
-clauses of the function. It must hold for $C$ that  $\forall\ c\in C\
-\left(c=\left\langle n_c, P_c, x_c \right\rangle \wedge n_c=n_f\right)$ and
-$\forall\ c_1,c_2\in C\ \left(c_1=\left\langle n_1, P_1, x_1 \right\rangle
-\wedge c_2=\left\langle n_2, P_2, x_2 \right\rangle \wedge |P_1|=|P_2|\right)$.
+is a tuple $\left\langle v,C \right\rangle$, where $v \in \mathbb{V}$ is the
+name of the function, and $C\subset\mathbb{C}$ is the non-empty list of clauses
+of the function. It must hold for $C$ that $\forall\ c\in C\
+\left(c=\left\langle v_c, P_c, x_c \right\rangle \wedge v_c=v\right)$ and
+$\forall\ c_1,c_2\in C\ \left(c_1=\left\langle v_1, P_1, x_1 \right\rangle
+\wedge c_2=\left\langle v_2, P_2, x_2 \right\rangle \wedge |P_1|=|P_2|\right)$.
 $C$ is ordered by occurrence of the clauses in the program
 text.\end{definition}
 
-\begin{definition} A signature of some function $f=\left\langle n_f,C_f
-\right\rangle$ is the tuple $\left\langle n_f,|P| \right\rangle$, s.t.
-$\forall\ c\in C_f\ |P_c|=|P|$.  We'll adopt the Erlang notation when talking
+\begin{definition} A signature of some function $f=\left\langle v, C
+\right\rangle$ is the tuple $\left\langle v,|P| \right\rangle$, s.t.
+$\forall\ c\in C_f\ |P_c|=|P|$. We'll adopt the Erlang notation when talking
 about function signatures, i.e. if we have a function \mono{less} that takes in
 two parameters, we'll refer to it as \mono{less/2}.\end{definition}
 
@@ -90,13 +119,14 @@ program $r$ given the set of clauses $C$ derived during syntactic analysis of
 the program text.
 
 \begin{definition} A program $r$ is a tuple $\left\langle F,x \right\rangle$,
-where $F\subset\mathbb{F}$ is the list of functions defined in program $r$ and
+where $F\subset\mathbb{F}$ is the list of functions defined in program $r$, and
 $x$ is the expression of program $r$.\end{definition}
 
-\begin{definition} A function call is a tuple $\left\langle n, X
-\right\rangle$, where $n\in\mathbb{N}$ is the name of the callee, and
-$X\subset\mathbb{X}$ is a non-empty list of arguments for the function
-call.\end{definition}
+\begin{definition}\label{definition:function-call} A function call is a tuple
+$\left\langle v, X \right\rangle$, where $v\in\mathbb{V}$ is the name of the
+callee, and $X\subset\mathbb{X}$ is a non-empty list of arguments for the
+function call, ordered by occurrence of the expressions in the program
+text.\end{definition}
 
 0-ary clauses are disallowed to avoid having to deal with constants in general.
 The term $\term{\_}$ in $\nonterm{pattern-element}$ is the conventional
@@ -129,3 +159,53 @@ $s_1,s_2\in\mathbb{S}$, we say that $p_1\succ p_2$ if $s_1\succ s_2$. We hence
 overload the binary relation $\succ$ with the set $\left\{(p_1,p_2)\mid
 p_1\in\mathbb{P} \wedge p_2\in\mathbb{P} \wedge p_1\ \text{matches}\
 p_2\right\}$.\end{definition}
+
+\subsection{Unary functions from multivariate functions}
+
+The patterns of a clause as well as the arguments of a function call get
+special treatment in \D{} in that they according to
+\referToDefinition{clause-tuple} and \referToDefinition{function-call} are
+ordered by their occurrence in the program text. This order is important to
+make sure that the appropriate argument is matched against the appropriate
+pattern. 
+
+While this is setup is practical for the programmer, it is of no use to us due
+to \referToTheorem{multivariate-to-unary}. In latter discussions, this
+particular theorem allows us to keep to unary functions, and regard the
+extension to multivariate functions as a fairly simple matter.
+
+\begin{theorem}\label{theorem:multivariate-to-unary} Any multivariate function
+in \D{} can be represented with a unary function.\end{theorem}
+
+\begin{proof}
+
+Given a multivariate function $f= \left\langle v,C \right\rangle$:
+
+\begin{enumerate}
+
+\item For each clause $c\in C$, where $c=\left\langle v,P,x \right\rangle$,
+replace the pattern list $P$ with $P'=\{p\}$. Construct $p$ by initially
+letting $p=0$, and folding left-wise over $P$, performing $p=p\cdot p'$ for
+each $p'\in P$. 
+
+\item For each call $\left\langle v, X\right\rangle$ to function $f$, replace
+$X$ with the set $X'=\{x\}$, where $x$ has been constructed in a manner
+equivalent to the pattern $p$ above.
+
+\end{enumerate}
+
+It is easy to see that both the constructed patterns and expressions are indeed
+valid patterns and expressions, and that $f$ hence becomes a unary
+function.\end{proof}
+
+As this transformation is relatively simple to perform, we redefine the generic
+clause tuple to have but one pattern in place of a list. 
+
+\begin{definition} We redefine the clause $c$ to be the tuple $\left\langle
+v,p,x\right\rangle$, where $v\in\mathbb{V}$ is the name of the clause,
+$p\in\mathbb{P}$ is the pattern of the clause, and $x\in\mathbb{X}$ is the
+expression of the clause.\end{definition}
+
+\begin{definition} We redefine a function call to be the tuple $\left\langle
+v,x\right\rangle$, where $v\in\mathbb{V}$ is the name of the callee, and
+$x\in\mathbb{X}$ is the argument to the (always unary) callee.\end{definition}
