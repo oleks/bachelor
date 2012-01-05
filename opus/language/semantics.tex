@@ -18,64 +18,103 @@ slightly\footnote{The syntax applied here is described in further detail in
 
 \subsection{The memory model}\label{section:d-semantics-memory}
 
-\begin{definition}\label{definition:memory} Memory is considered in terms of a
-binary relation $\sigma$ which for any given clause $c$ is the set $\{(n,b)\mid
-n\in\mathbb{N} \wedge b\in\mathbb{B} \wedge n\in P_c\}$. For any given
-$(n,b)\in\sigma_c$, we say that in the scope of $c$, the variable $n$, is bound
-to $b$.\end{definition}
+\begin{definition}\label{definition:memory} The memory is a binary relation
+$\sigma$, which is the set $\{(n,b)\mid n\in\mathbb{N} \wedge
+b\in\mathbb{B}\}$.\end{definition}
 
-\begin{corollary}\label{corollary:init-empty-scope} Variables are bound when
-arguments are matched to clause patterns, and if the argument matches a
-pattern, hence before pattern matching the arguments for any given clause $c$,
-$\sigma_c=\emptyset$.\end{corollary}
+% For simplicity, we would like for \D{} to be a statically scoped language.
 
-\referToDefinition{memory} and \referToCorollary{init-empty-scope} indicate
-that \D{} is \emph{statically scoped}.  Furthermore, \referToDefinition{memory}
-may prove hampering if we were ever to extend \D{} with lambda calculus, but
-there are initially no plans to do so.
-
-\begin{definition} The \nonterm{expression} at the end of \nonterm{program} can
-be considered as the main clause of a program, which we'll refer to as
-$c_{main}$.\end{definition}
-
-\begin{corollary} $\sigma_{c_{main}}=\emptyset$. \end{corollary}
+%\begin{definition} For any given clause $c=(n_c,P_c,x_c)$ the expression $x_c$
+%is evaluated with the memory space $\sigma_c$.\end{definition}
 
 % This renders $\sigma$ countably infinite since $\mathbb{V}$ is countably
 % infinite.
 
-\subsubsection{Functions and variables}
+To keep \D{} first order we distinguish between the function space and variable
+space.
 
-Due to \D{} being a first-order language, we should make sure to separate the
-function and variable spaces. We'll represent these by $\phi$ and $\gamma$,
-respectively.
+\begin{definition} Let $\phi\subseteq\sigma$ represent the function space and
+let $\beta\subseteq\sigma$ represent the variable space, what's more,
+$\phi\cup\beta=\sigma$. When we refer to $\sigma$, $\phi$ or $\beta$ in set
+notation, we refer merely to the names of the variables, hence to keep \D{}
+first order, let $\phi\cap\beta=\emptyset$.\end{definition}
 
-Whenever we use $\sigma$, $\phi$ or $\gamma$ in set notation, we imply the sets
-of the names of functions and variables, and not the stacks themselves
-corresponding to those names.  Hence, $\sigma=\phi\cup\gamma$, and to keep \D{}
-first-order we add the limitation that $\phi\cap\gamma=\emptyset$.
+%\begin{definition} For any given $(n,b)\in\sigma_c$, we say that in the scope
+%of $c$, the variable $n$, is bound to $b$.\end{definition}
+
+%\begin{lemma}\label{lemma:init-empty-scope} Variables are bound when arguments
+%are matched to clause patterns, and only if the argument matches the pattern,
+%hence before pattern matching succeeds, for any given clause $c$,
+%$\sigma_c=\emptyset$.\end{lemma}
+
+%\begin{proof} Refer to the semantics of pattern matching below.\end{proof}
+
+%\referToDefinition{memory} and \referToLemma{init-empty-scope} indicate that
+%\D{} is \emph{statically scoped}.  Furthermore, \referToDefinition{memory} may
+%prove hampering if we were ever to extend \D{} with lambda calculus, but there
+%are initially no plans to do so.
+
+
+%\begin{corollary} $\sigma_{c_{main}}=\emptyset$. \end{corollary}
 
 \subsubsection{Making \D{} higher order}
 
-The only change that this would require is to let $\phi=\gamma=\sigma$.
+The only change that this would require is to let $\phi=\beta=\sigma$.
 
-\subsection{Function declarations}
+\subsection{Program evaluation}
 
-Assuming that as a part of the semantic analysis all $\nonterm{declaration}$ with the same name are grouped into the set $\left\langle n F\right\rangle$
-
-A declaration with a name $n$, a \emph{non-empty} pattern
-list $P$ and an expression $e$ is stored in the function space $\phi$:
+Given a program $r=\left\langle F,x \right\rangle$, we apply the following
+semantics:
 
 \begin{equation}\label{sem:declaration}
 {\displaystyle
-  \left\langle \phi(n)\mapsto \left\langle P, x, \phi\right\rangle\right\rangle
-  \rightarrow
-  \phi'
+    \left\langle F,\emptyset\right\rangle
+    \rightarrow
+    \phi_1
+  \wedge
+    \sigma=\phi_1
+  \wedge
+    \left\langle x,\sigma\right\rangle
+    \rightarrow
+    \left\langle b,\sigma\right\rangle
 \over\displaystyle
-  \left\langle n, P, x, \phi\right\rangle
+  \left\langle F, x\right\rangle
   \rightarrow
-  \phi'
+  b
 }
 \end{equation}
+
+\subsection{Function declarations}
+
+Given a list of functions $F$, and some function space $\phi$, we apply the
+following semantics:
+
+\begin{equation}\label{sem:declaration}
+{\displaystyle
+  \left(
+      F=\emptyset
+    \wedge
+      \phi=\phi_1
+  \right)
+  \vee
+  \left(
+      F_{head}=\left\langle n,C\right\rangle
+    \wedge
+      \phi_2=\phi[n]\mapsto \left\langle C,\phi\right\rangle
+    \wedge
+      \left\langle F_{tail},\phi_2\right\rangle
+      \rightarrow
+      \phi_1
+  \right)
+\over\displaystyle
+  \left\langle F, \phi\right\rangle
+  \rightarrow
+  \phi_1
+}
+\end{equation}
+
+The fact that the active function space is saved together with the list of
+clauses for any given function should indicate that \D{} is statically scoped.
 
 \subsection{Expression evaluation}
 
@@ -89,86 +128,184 @@ is right-associative, and has the following operational semantics:
 {\displaystyle
   \left\langle \proc{Single}, x,\sigma\right\rangle
   \rightarrow
-  \left\langle v,\sigma\right\rangle
+  \left\langle b,\sigma\right\rangle
 \vee
   \left\langle \proc{Chain}, x,\sigma\right\rangle
   \rightarrow
-  \left\langle v,\sigma\right\rangle
+  \left\langle b,\sigma\right\rangle
 \over\displaystyle
   \left\langle x,\sigma\right\rangle
   \rightarrow
-  \left\langle v,\sigma\right\rangle
+  \left\langle b,\sigma\right\rangle
 }
 \end{equation}
 
 \begin{equation}
 {\displaystyle
-  x\rightarrow e
+  x = e
 \wedge
   \left\langle e,\sigma\right\rangle
   \rightarrow
-  \left\langle v,\sigma\right\rangle
+  \left\langle b,\sigma\right\rangle
 \over\displaystyle
   \left\langle \proc{Single}, x,\sigma\right\rangle
   \rightarrow
-  \left\langle v,\sigma\right\rangle
+  \left\langle b,\sigma\right\rangle
 }
 \end{equation}
 
 \begin{equation}
 {\displaystyle
-  x\Rightarrow e_1\cdot x_1
+  x = e_1\cdot x_1
 \wedge
   \left\langle e_1,\sigma\right\rangle
   \rightarrow
-  \left\langle v_1,\sigma\right\rangle
+  \left\langle b_1,\sigma\right\rangle
 \wedge
   \left\langle x_1,\sigma\right\rangle
   \rightarrow
-  \left\langle v_2,\sigma\right\rangle
+  \left\langle b_2,\sigma\right\rangle
 \over\displaystyle
   \left\langle \proc{Chain}, x, \sigma\right\rangle
   \rightarrow
-  \left\langle v, \sigma\right\rangle
+  \left\langle b, \sigma\right\rangle
 }
-\quad(\text{where }v_1\cdot v_2=v)
+\quad(\text{where }b_1\cdot b_2=b)
 \end{equation}
 
 \subsection{Element evaluation}
 
 According to the syntax specification, an element of an expression can either
-be the atom $0$, or an application. We'd like to distinguish between variables
-and functions, and we do that  
+be the atom $0$, a variable, an expression (in parentheses), or an application. 
 
 \begin{equation}
 {\displaystyle
-\left(
-    e\Rightarrow 0
-  \wedge
-    v\equiv 0
-\right)
+  \left\langle \proc{Zero}, e,\sigma\right\rangle
+\vee 
+  \left\langle \proc{Expression}, e,\sigma\right\rangle
 \vee
-{\displaystyle
-    e\Rightarrow n
-\over\displaystyle
-    \beta(n)\Rightarrow v
-}
+  \left\langle \proc{Variable}, e,\sigma\right\rangle
 \vee
-{\displaystyle
-    e\Rightarrow \left\langle n, X\right\rangle
+  \left\langle \proc{Application}, e,\sigma\right\rangle
 \over\displaystyle
-    \left\langle n,X,\sigma\right\rangle
-    \Rightarrow
-    \left\langle v,\sigma\right\rangle
-}
-\over\displaystyle
-\left\langle e,\sigma\right\rangle
-\Rightarrow
-\left\langle v,\sigma\right\rangle
+  \left\langle e,\sigma\right\rangle
+  \rightarrow
+  \left\langle v,\sigma\right\rangle
 }
 \end{equation}
 
-\subsection{Function application}
+\begin{equation}
+{\displaystyle
+  e = 0
+\wedge
+  b = 0
+\over\displaystyle
+  \left\langle \proc{Zero}, e,\sigma\right\rangle
+  \rightarrow
+  \left\langle b,\sigma\right\rangle
+}
+\end{equation}
+
+\begin{equation}
+{\displaystyle
+  e = x
+\wedge
+  \left\langle x,\sigma\right\rangle
+  \rightarrow
+  \left\langle b,\sigma\right\rangle
+\over\displaystyle
+  \left\langle \proc{Expression}, e,\sigma\right\rangle
+  \rightarrow
+  \left\langle b,\sigma\right\rangle
+}
+\end{equation}
+
+\begin{equation}
+{\displaystyle
+  e = n
+\wedge
+  \beta[n]=b
+\over\displaystyle
+  \left\langle \proc{Variable}, e,\sigma\right\rangle
+  \rightarrow
+  \left\langle b,\sigma\right\rangle
+}
+\end{equation}
+
+\begin{equation}
+{\displaystyle
+  e = \left\langle n, X\right\rangle
+\wedge
+  \phi[n]=\left\langle C,\phi_1 \right\rangle
+\wedge
+  \left\langle C,X,\phi_1\right\rangle
+  \rightarrow
+  b
+\over\displaystyle
+  \left\langle \proc{Application}, e,\sigma\right\rangle
+  \rightarrow
+  \left\langle b,\sigma\right\rangle
+}
+\end{equation}
+
+\subsection{Clause matching}
+
+Clauses and their respective patterns get some special treatment in \D{}. In
+particular, there are a few properties that all valid \D{} programs must
+adhere to in order to aid the discussion in latter chapters.
+
+First and foremost, as already has been declared in
+\referToDefinition{clause-tuple} and \referToDefinition{function-tuple}, both
+clauses and patterns are ordered by their occurrence in the program text. In
+both cases, this order superimposes an evaluation order. For patterns, however,
+this order matters rather little due to \referToTheorem{multivariate-to-unary}.
+In latter discussions, this particular theorem also allows us to keep to unary
+functions, and regard the extension to multivariate functions as a fairly
+simple matter.
+
+\begin{theorem}\label{theorem:multivariate-to-unary} Any multivariate function
+in \D{} can be represented with a unary function.\end{theorem}
+
+\begin{proof}
+
+Given a multivariate function $f= \left\langle n,C \right\rangle$:
+
+\begin{enumerate}
+
+\item For each clause $c\in C$, where $c=\left\langle n,P,x \right\rangle$,
+replace the pattern list $P$ with $P'=\{p\}$. Construct $p$ by initially
+letting $p=0$, and folding left-wise over $P$, performing $p=p\cdot p'$ for
+each $p'\in P$. 
+
+\item For each call $\left\langle n, X\right\rangle$ to function $f$, replace
+$X$ with the set $X'=\{x\}$, where $x$ has been constructed in a manner
+equivalent to the pattern $p$ above.
+
+\end{enumerate}
+
+It is easy to see that both the constructed patterns and expressions are indeed
+valid patterns and expressions, and that $f$ hence becomes a unary
+function.\end{proof}
+
+As this transformation is relatively simple to perform, we redefine the generic
+clause tuple to have but one pattern in place of a list. 
+
+\begin{definition} We redefine the clause $c$ to be the tuple $\left\langle
+n,p,x\right\rangle$, where $n$ is the name of clause $c$, $p$ is the pattern of
+clause $c$, and $x$ is the expression of clause $c$.\end{definition}
+
+For clauses, their order has higher importance. In particular, we would like to
+declare the requirement that any subsequent clause accepts any argument an
+antecedent clause could accept.
+
+\begin{definition} Given a function $f= \left\langle n, C \right\rangle$, it
+must hold for the finite clause list $C$ that $p_1\succ p_2$ for any clause
+$c_1= \left\langle n_1, p_1, x_1 \right\rangle$ occurring before clause $c_2=
+\left\langle n_2, p_2, x_2 \right\rangle$. We define the binary relation
+$\curlyvee$ to be the set $\{(c_1,c_2)\mid c_1\in\mathbb{C} \wedge
+c_2\in\mathbb{C} \wedge c_1= \left\langle n_1,p_1,x_1 \right\rangle \wedge c_2=
+\left\langle n_2,p_2,x_2 \right\rangle \wedge p_1\succ p_2\}$. Given any
+$c_1\curlyvee c_2$ we say that $c_1$ consumes $c_2$.\end{definition}
 
 \begin{equation}
 {\displaystyle
@@ -332,11 +469,4 @@ two arguments as it's left and right child, respectively.
 }
 \end{equation}
 
-\subsection{Deducing unary functions from multivariate functions}
 
-When performing termination analysis of programs it may prove tedious to
-consider a list of patterns rather than a single pattern, especially since a
-multivariate function can always be encoded as a unary function with e.g. the
-patterns \mono{a}, \mono{b}, \mono{c}, and d encoded as \mono{a.b.c.d}. The
-same ``encoding'' would have to be applied to each call to the function as
-well. Hence, we can limit ourselves to termination proofs of unary functions.

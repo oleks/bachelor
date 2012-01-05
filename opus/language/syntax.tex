@@ -17,8 +17,10 @@ non-terminal is $\nonterm{program}$.
 \ \nonterm{expression}^+\\
 \nonterm{clause}\ ::=&\ \nonterm{name}\ \nonterm{pattern}^+
 \ \term{:=}\ \nonterm{expression}\\
+\label{nonterm-pattern}
 \nonterm{pattern}\ ::=&\ \nonterm{pattern-element}\ (\ \term{.}
 \ \nonterm{pattern}\ )\ ?\\
+\label{nonterm-pattern-element}
 \nonterm{pattern-element}\ ::=&\ \term{0}\ |\ \term{\_}\ |\ \term{(}
 \ \nonterm{pattern}\ \term{)}\ |\ \nonterm{name}\\
 \nonterm{name}\ ::=&\ [\term{a}\mathmono{-}\term{z}]
@@ -38,7 +40,7 @@ provide shorthands for an instance, a list, and the space of a construct. For
 instance, $x$ is some particular expression, $X$ is some particular list of
 expressions, and $\mathbb{X}$ is the set of all possible expressions.}
 {|l|c|c|c|}
-{\textbf{Description}&\textbf{Instance}&\textbf{List}&\textbf{Space}}
+{\textbf{Description}&\textbf{Instance}&\textbf{Finite list}&\textbf{Space}}
 {
 Expression & $x$ & $X$ & $\mathbb{X}$\\
 Element (of an expression) & $e$ & $E$ & $\mathbb{E}$\\
@@ -46,25 +48,55 @@ Function & $f$ & $F$ & $\mathbb{F}$\\
 Clause & $c$ & $C$ & $\mathbb{C}$\\
 Pattern & $p$ & $P$ & $\mathbb{P}$\\
 Value & $b$ & $B$ & $\mathbb{B}$\\
-Name & $v$ & $V$ & $\mathbb{V}$
+Name & $v$ & $V$ & $\mathbb{V}$\\
+Program & $r$ & $R$ & $\mathbb{R}$
 }
 
-\begin{definition} For any given $n\in\mathbb{N}$ and $P\subseteq\mathbb{P}$,
+%\begin{definition} The \nonterm{expression} at the end of \nonterm{program} can
+%be considered as the main clause of a program, which we'll refer to as
+%$c_{main}$.\end{definition}
+
+\begin{definition} For any given $n\in\mathbb{N}$ and $P\subset\mathbb{P}$,
 we say that $n\in P$ if $n$ occurs in some $p\in P$.\end{definition}
 
-\begin{definition} A clause $c$ is a tuple $(n_c,P_c,x_c)$, where $n_c$ is the
-name of the clause, $P_c$ is the list of patterns of the clause, and $x_c$ is
-the expression of the clause.\end{definition}
+\begin{definition}\label{definition:clause-tuple} A clause $c\in\mathbb{C}$ is
+a tuple $\left\langle n,P,x \right\rangle$, where $n\in\mathbb{N}$ is the name
+of the clause, $P\subset\mathbb{P}$ is a non-empty list of patterns of the
+clause, and $x\in\mathbb{X}$ is the expression of the clause. $P$ is ordered by
+occurrence of the patterns in the program text.\end{definition}
 
-\begin{definition} A function $f$ is a non-empty set of clauses $C$, s.t.
-$\forall\ c_1,c_2\in C \left(|P_{c_1}|=|P_{c_2}|\wedge n_{c_1}=n_{c_2}\right)$,
-where $|P_{c_1}|$ and $|P_{c_2}|$ are the respective sizes of the pattern lists
-of the clauses $c_1$ and $c_2$, and $n_{c_1}$ and $n_{c_2}$ are their
-respective names. A function signature for the set of clauses $C$ is hence the
-tuple $(n,|P|)$, s.t. $\forall\ c\in C (|P_c|=|P|\wedge n_c=n)$.  We'll adopt
-the Erlang notation when talking about function signatures, i.e. if we have a
-function \mono{less} that takes in two parameters, we'll refer to it as
-\mono{less/2}.\end{definition}
+\begin{definition} We say that a clause $c= \left\langle n,P,x \right\rangle$
+``accepts'' an argument list $B$ iff $\forall\ \{i\mid 0\geq i < |P|\}\ b_i\in
+B \wedge p_i\in P \wedge b_i\succ p_i$.\end{definition}
+
+\begin{definition}\label{definition:function-tuple} A function $f\in\mathbb{F}$
+is a tuple $\left\langle n_f,C \right\rangle$, where $n_f \in \mathbb{N}$ is
+the name of the function, and $C\subset\mathbb{C}$ is the non-empty list of
+clauses of the function. It must hold for $C$ that  $\forall\ c\in C\
+\left(c=\left\langle n_c, P_c, x_c \right\rangle \wedge n_c=n_f\right)$ and
+$\forall\ c_1,c_2\in C\ \left(c_1=\left\langle n_1, P_1, x_1 \right\rangle
+\wedge c_2=\left\langle n_2, P_2, x_2 \right\rangle \wedge |P_1|=|P_2|\right)$.
+$C$ is ordered by occurrence of the clauses in the program
+text.\end{definition}
+
+\begin{definition} A signature of some function $f=\left\langle n_f,C_f
+\right\rangle$ is the tuple $\left\langle n_f,|P| \right\rangle$, s.t.
+$\forall\ c\in C_f\ |P_c|=|P|$.  We'll adopt the Erlang notation when talking
+about function signatures, i.e. if we have a function \mono{less} that takes in
+two parameters, we'll refer to it as \mono{less/2}.\end{definition}
+
+We assume for it to be fairly simple to construct the set $F$ of a given
+program $r$ given the set of clauses $C$ derived during syntactic analysis of
+the program text.
+
+\begin{definition} A program $r$ is a tuple $\left\langle F,x \right\rangle$,
+where $F\subset\mathbb{F}$ is the list of functions defined in program $r$ and
+$x$ is the expression of program $r$.\end{definition}
+
+\begin{definition} A function call is a tuple $\left\langle n, X
+\right\rangle$, where $n\in\mathbb{N}$ is the name of the callee, and
+$X\subset\mathbb{X}$ is a non-empty list of arguments for the function
+call.\end{definition}
 
 0-ary clauses are disallowed to avoid having to deal with constants in general.
 The term $\term{\_}$ in $\nonterm{pattern-element}$ is the conventional
@@ -79,3 +111,21 @@ to be in place for each \term{\_}.
 % Multiple wildcards in the parameter list indicate possibly different value
 % arguments, while multiple occurances of the same variable name in the parameter
 % list are disallowed.
+
+\subsection{Patterns constitute shapes}
+
+The nonterminal declarations for patterns, in particular \ref{nonterm-pattern}
+and \ref{nonterm-pattern-element}, indicate that a pattern declaration is
+indeed a shape specification. In particular, a value that matches a given
+pattern specification matches the corresponding shape specification.
+
+\begin{corollary} Patterns are shape specifications. In particular, a pattern
+is either a node, a tree (underscore or variable name), or a node with two
+patterns as children. This, together with \referToDefinition{shape} indicates
+that a pattern is indeed a shape specification.\end{corollary}
+
+\begin{definition} Given $p_1,p_2\in\mathbb{P}$, and their corresponding shapes
+$s_1,s_2\in\mathbb{S}$, we say that $p_1\succ p_2$ if $s_1\succ s_2$. We hence
+overload the binary relation $\succ$ with the set $\left\{(p_1,p_2)\mid
+p_1\in\mathbb{P} \wedge p_2\in\mathbb{P} \wedge p_1\ \text{matches}\
+p_2\right\}$.\end{definition}
