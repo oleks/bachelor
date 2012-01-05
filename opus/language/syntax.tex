@@ -149,10 +149,11 @@ and \ref{nonterm-pattern-element}, indicate that a pattern declaration is
 indeed a shape specification. In particular, a value that matches a given
 pattern specification matches the corresponding shape specification.
 
-\begin{corollary} Patterns are shape specifications. In particular, a pattern
-is either a node, a tree (underscore or variable name), or a node with two
-patterns as children. This, together with \referToDefinition{shape} indicates
-that a pattern is indeed a shape specification.\end{corollary}
+\begin{corollary}\label{corollary:pattern-shape} Patterns are shape
+specifications. In particular, a pattern is either a node, a tree (underscore
+or variable name), or a node with two patterns as children. This, together with
+\referToDefinition{shape} indicates that a pattern is indeed a shape
+specification.\end{corollary}
 
 \begin{definition} Given $p_1,p_2\in\mathbb{P}$, and their corresponding shapes
 $s_1,s_2\in\mathbb{S}$, we say that $p_1\succ p_2$ if $s_1\succ s_2$. We hence
@@ -201,11 +202,12 @@ function.\end{proof}
 As this transformation is relatively simple to perform, we redefine the generic
 clause tuple to have but one pattern in place of a list. 
 
-\begin{definition} We redefine the clause $c$ to be the tuple $\left\langle
-v,p,x\right\rangle$, where $v\in\mathbb{V}$ is the name of the clause,
-$p\in\mathbb{P}$ is the pattern of the clause, and $x\in\mathbb{X}$ is the
-expression of the clause.\end{definition}
+\begin{definition}\label{definition:unary-clause} We redefine the clause $c$ to
+be the tuple $\left\langle v,p,x\right\rangle$, where $v\in\mathbb{V}$ is the
+name of the clause, $p\in\mathbb{P}$ is the pattern of the clause, and
+$x\in\mathbb{X}$ is the expression of the clause.\end{definition}
 
-\begin{definition} We redefine a function call to be the tuple $\left\langle
-v,x\right\rangle$, where $v\in\mathbb{V}$ is the name of the callee, and
-$x\in\mathbb{X}$ is the argument to the (always unary) callee.\end{definition}
+\begin{definition}\label{definition:unary-function-call} We redefine a function
+call to be the tuple $\left\langle v,x\right\rangle$, where $v\in\mathbb{V}$ is
+the name of the callee, and $x\in\mathbb{X}$ is the argument to the (always
+unary) callee.\end{definition}

@@ -122,9 +122,9 @@ parentheses, e.g. a pattern like \mono{(a.b).c.d} is the same as
 
 Consider the function defined in \referToListing{deducing-zero}. If $f_0$ and
 $f_1$ both fail to accept some argument $b\in\mathbb{B}$, then $b$ must match
-the shape $0\cdot b'$ where $b'\geq 0$, that is, on entry to $f_2$, \mono{d} is
-\emph{always} bound to \mono{0}, and \mono{e} is always bound to some $b'\geq
-0$.
+the pattern $0\cdot b'$, where $b'\geq 0$, that is, on entry to $f_2$, \mono{d}
+is \emph{always} bound to \mono{0}, and \mono{e} is always bound to some
+$b'\geq 0$.
 
 \begin{proof} Otherwise, either $f_0$ or $f_1$ would've matched. \end{proof}
 
@@ -137,10 +137,9 @@ $f_2$: f d.e := 0
 
 Such a deduction is not always unambiguous as the function in
 \referToListing{deducing-zero-fail} exhibits. Here, if $g_0$ and $g_1$ both
-fail to accept some argument $b\in\mathbb{B}$, then the shape of the $b$ is
-either \mono{0.x} or \mono{x.0} where $\textt{x}\geq 0$. However, one thing is
-certain, and that is that $v$ can't have the shape \mono{y.z} where
-$\textt{y}>0$ and $\textt{z}>0$.
+fail to accept some argument $b\in\mathbb{B}$, then the shape of $b$ is either
+$0\cdot b'$ or $b'\cdot 0$ where $b\geq 0$. However, one thing is certain, and
+that is that $b$ can't have the shape $b'\cdot b''$ where $b'>0$ and $b''>0$.
 
 \begin{lstlisting}[label=listing:deducing-zero-fail,
   caption={A sample program where 0-deduction is ambiguous.}]
@@ -149,21 +148,31 @@ $g_1$: g (a.b).(c.d) := 0
 $g_2$: g e.f := 0
 \end{lstlisting}
 
-\subsection{Patterns and shapes}
+\section{Shape-change termination}
 
-In the following we shall regard only unary clauses, but the lemmas apply
-equally to multivariate clauses.
+By \referToCorollary{pattern-shape}, a pattern is a shape specification. By
+\referToDefinition{unary-clause}, all clauses are unary, and hence a clause can
+be said to specify a shape. By \referToDefinition{function-tuple}, a function
+call contains a finite list of clauses.
 
-\begin{lemma} Given a valid function definition, a value of any shape matches
-one and exactly one clause. \end{lemma}
+\begin{theorem} Any function specifies a finite number of disjoint
+shapes.\end{theorem}
 
-\begin{proof} We know that given two consecutive unary clauses $c_1$ and $c_2$,
-having the patterns $p_1$ and $p_2$, $p_1\curlyvee p_2$. This superimplies that
-any shape that can be matched by $p_1$ will also be matched by $p_2$, however,
-given the semantics of \D{}, $c_2$ will not be considered if $p_1$
-matches.\end{proof}
+\begin{proof} The shapes specified by a function are derived from the patterns
+of its clauses.\end{proof}
 
-\section{The extension}
+Instead of constructing a call graph with every clause in a program as a node,
+we construct a call graph with every shape of every function call as a node.
+This builds upon the idea that there is a finite number of disjoint shapes
+deducible from the clauses of any function definition, which renders the number
+of nodes in the graph finite. The number of shapes for any one clause may vary,
+and hence there will be multiple edges from caller to its callees, rather than
+one edge to the first clause of the callee as seen with regular size-change
+termination.
+
+The nodes are iteratively derived starting with the initial clause $c_{main}$,
+drawing the edges and callee shapes as function calls are encountered, i.e. we
+use an exploration technique to build the graph.
 
 \subsection{Annotation}
 
@@ -180,6 +189,9 @@ of a value is fairly evolved this clause may be deduced, in other cases, the
 success \& fail transitions will be regarded as one and the same. 
 
 \subsection{Patterns and shapes}
+
+By \referToDefinition{shape}, the only shape we may assume for any unknown
+$b\in\mathbb{B}$ is the triangle.
 
 For any unknown value, we may assume only one shape, the tree. Hence, given a
 program like the one in \referToListing{size-change-fail}, we start analyzing
