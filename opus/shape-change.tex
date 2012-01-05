@@ -2,12 +2,14 @@
 
 One trouble with size-change termination as described in the previous chapter
 is \referToLemma{cycle-reduce}. This lemma makes size-change termination weak
-in the sense that the overall ``shape shifting'' in a given call cycle is
-\emph{not} considered, and instead, the individual control transitions of a
-cycle are constrained to transitions that do not increase values. However,
-there may be programs that have control transitions, or even control transition
-cycles, that increase a value until some condition is met, after which they
-terminate.
+in the sense that the overall shape changes in a given call cycle are
+\emph{not} considered, and instead, the calls of any call cycle are constrained
+to nonincreasing calls. However, there may be programs that have calls, or even
+call cycles, that in terms of size, increase a value for a finite amount of
+time, until some condition is met, or as in the case of \D{}, it has some
+particular shape.
+
+% TODO: define nonincreasing call to be a call that does not increase a value.
 
 Consider the program in \referToListing{size-change-fail} as an example of a
 program for which regular size-change termination is unable to determine the
@@ -36,43 +38,40 @@ Before we can speak of extending size-change termination to determine the
 halting property for programs in the same class as
 \referToListing{size-change-fail}, we need to formally define that class.
 
-In particular, the idea behind this extension is to be able to deduce the
-halting property for programs that either decrease a value in each iteration of
-a call cycle, or increase it until a condition is met. Actual conditions in
-\D{} can only be expressed in terms of patterns in function clauses.
-
-Hence, we swiftly disregard programs that rely on equality or size comparison
-conditions for termination, since this type of programs will often already be
-covered by regular size-change termination, and if not, they at the very least
-come down to recursive pattern matching.
+Actual conditions in \D{} can only be expressed in terms of patterns in
+function clauses. Hence, we disregard programs that rely on equality or size
+comparison conditions for termination, since this type of programs will often
+already be covered by regular size-change termination, and if not, they at the
+very least come down to recursive pattern matching.
 
 As an example of a program where size-change termination is already prevalent,
 consider a program that finds the $n^{th}$ Fibonacci number as the one already
 presented in \referToSection{d-samples}. The function \mono{fibonacci-aux}
-seemingly increases a value until a condition is met, in particular, that we
-count down to \mono{0}. However, due to the fact that we count down by $1$ in
-\emph{every} recursive clause of the \mono{fibonacci-aux} function, the halting
-property is certainly already deducible by regular size-change termination.
+seemingly increases a value until a condition is met, in particular, until we
+count one of the arguments down to \mono{0}. However, due to the fact that we
+count that we decrease the value of that argument in \emph{recursive} clause of
+the \mono{fibonacci-aux} functions, the halting property is certainly already
+deducible by regular size-change termination.
 
 Instead, we turn our attention to simpler programs, ones that rely solely on
-conditions defined in patterns. Consider therefore the program in
-\referToListing{size-change-fail}. The main function of the program has only
-one terminal clause, the one that accepts a shape as in
-\referToFigure{size-change-fail-f0}. If the incoming value $v$ has any other
-shape, i.e. either a shape as in \referToFigure{size-change-fail-f1-0},
-\referToFigure{size-change-fail-f1-1} or \referToFigure{size-change-fail-f1-2},
-then the recursive clause $f_1$ is chosen. For any given value $v$, the clause
-$f_1$ replaces the right-most child of the value, which is always \mono{0},
-with a node.
+conditions defined in terms of patterns. Consider again the program in
+\referToListing{size-change-fail}. The function \mono{f} has only one terminal
+clause, the one that accepts a shape as in \referToFigure{size-change-fail-f0}.
+If the function argument has any other shape, i.e. either a shape as in
+\referToFigure{size-change-fail-f1-0}, \referToFigure{size-change-fail-f1-1} or
+\referToFigure{size-change-fail-f1-2}, then the recursive clause $f_1$ is
+chosen. For any argument $b\in\mathbb{B}$, the clause $f_1$ replaces the
+right-most child of the value, which is always \mono{0}, with a node.
 
-For instance, the smallest possible input value $v$ is \mono{0}. If passed such
-a value, $f_1$ transforms it into a value that has a shape that corresponds to
-\referToFigure{size-change-fail-f1-1}, which in turn transforms the value into
-one that matches \referToFigure{size-change-fail-f1-2}, which in turn
-transforms the value into one that matches \referToFigure{size-change-fail-f0},
-i.e. the terminal clause. What's more, there are infinitely many other values
-that will match the shape \referToFigure{size-change-fail-f1-1}, and for each
-of them, the clause $f_1$ will transform them into values that match
+For instance, the smallest possible argument $b\in\mathbb{B}$ is \mono{0}.  If
+passed such a value, $f_1$ transforms it into a value that has a shape that
+corresponds to \referToFigure{size-change-fail-f1-1}, which in turn transforms
+the value into one that matches \referToFigure{size-change-fail-f1-2}, which in
+turn transforms the value into one that matches
+\referToFigure{size-change-fail-f0}, i.e. the terminal clause. What's more,
+there are infinitely many other values that will match the shape
+\referToFigure{size-change-fail-f1-1}, and for each of them, the clause $f_1$
+will transform them into values that match
 \referToFigure{size-change-fail-f1-2}, which will transform them into values
 that match \referToFigure{size-change-fail-f0}.
 
@@ -100,11 +99,11 @@ that match \referToFigure{size-change-fail-f0}.
 \end{minipage}
 \end{figure}
 
-We shall henceforth say that a clause such as $f_1$ \emph{shape shifts} the
-input value $v$ to \emph{eventually} match the shape required by the terminal
-clause $f_0$. The task then becomes to determine for each call cycle in a
-program whether it shape shifts any given initial argument to eventually match
-a terminal clause.
+We shall henceforth say that a clause such as $f_1$ changes the shape of any
+argument $b$ to \emph{eventually} match the shape corresponding to a pattern of
+the terminal clause $f_0$. The task then becomes to determine for each call
+cycle in a program whether it changes the shape of the argument to eventually
+match some terminal clause.
 
 \section{Prerequisites}
 
@@ -118,13 +117,14 @@ right-associative. Hence, a pattern of the form \mono{a.b.c.d} is the same as
 \mono{a.(b.(c.d))}. This implies that we can always construct a parenthesized
 version of any valid pattern, indeed this is required to keep the syntax
 unambiguous. This associativity can be overridden by the conventional use of
-parentheses, s.t. a pattern like \mono{(a.b).c.d} is the same as
+parentheses, e.g. a pattern like \mono{(a.b).c.d} is the same as
 \mono{(a.b).(c.d)}. 
 
 Consider the function defined in \referToListing{deducing-zero}. If $f_0$ and
-$f_1$ fail to match some input value $v$, then $v$ must be of the shape
-\mono{0.x}, that is, on entry to $f_2$, \mono{d} is \emph{always} bound to
-\mono{0}, and \mono{e} is always bound to some value $v'\geq 0$.
+$f_1$ both fail to accept some argument $b\in\mathbb{B}$, then $b$ must match
+the shape $0\cdot b'$ where $b'\geq 0$, that is, on entry to $f_2$, \mono{d} is
+\emph{always} bound to \mono{0}, and \mono{e} is always bound to some $b'\geq
+0$.
 
 \begin{proof} Otherwise, either $f_0$ or $f_1$ would've matched. \end{proof}
 
@@ -136,10 +136,11 @@ $f_2$: f d.e := 0
 \end{lstlisting}
 
 Such a deduction is not always unambiguous as the function in
-\referToListing{deducing-zero-fail} exhibits. Here, if $g_0$ and $g_1$ fail to
-match some input value $v$, then the shape of the $v$ is either \mono{0.x} or
-\mono{x.0} where $\textt{x}\geq 0$. However, one thing is certain, and that is
-that $v$ can't have the shape \mono{y.z} where $\textt{y}>0$ and $\textt{z}>0$.
+\referToListing{deducing-zero-fail} exhibits. Here, if $g_0$ and $g_1$ both
+fail to accept some argument $b\in\mathbb{B}$, then the shape of the $b$ is
+either \mono{0.x} or \mono{x.0} where $\textt{x}\geq 0$. However, one thing is
+certain, and that is that $v$ can't have the shape \mono{y.z} where
+$\textt{y}>0$ and $\textt{z}>0$.
 
 \begin{lstlisting}[label=listing:deducing-zero-fail,
   caption={A sample program where 0-deduction is ambiguous.}]

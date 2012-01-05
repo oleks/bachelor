@@ -1,15 +1,5 @@
 \section{Semantics}\label{section:d-sos}
 
-% Revise the context of an expression within a function call, it should always be
-% the context upon entering the function call! Or even better, the context when
-% the function was defined!
-
-% \textbf{Allow mutual recursion}
-
-% \textbf{Perhaps pattern matching must be exhaustive in general.}
-
-% \textbf{Every subsequent definition must be strictly less specific than the former.}
-
 In the following section we describe the semantics of \D{} using a form of
 structured operational semantics. The syntax used to define the reduction rules
 is largely equivalent to the Aarhus report\cite{sos}, but differs
@@ -229,29 +219,34 @@ be the atom $0$, a variable, an expression (in parentheses), or an application.
 
 \subsection{Clause matching}
 
-Clauses get some special get some special treatment in \D{}. In particular,
-according to \referToDefinition{clause-tuple}, the clauses of a function are
-ordered by their occurrence in the program text. This is intentional, as we
-would like to declare the following requirement:
+%\begin{definition} We define the binary relation $\curlyvee$ to be the set
+%$$\left\{(c_1,c_2)\mid c_1,c_2\in\mathbb{C} \wedge B_1 = \left\{ b \mid
+%b\in\mathbb{B} \wedge b \succ c_1 \right\} \wedge B_2 = \left\{ b \mid
+%b\in\mathbb{B} \wedge b \succ c_2 \right\} \wedge |B_1 \cup B_2| >
+%|B_1|\right\}$$\end{definition}
 
-\begin{definition} Given a function $f= \left\langle v, C \right\rangle$, it
-must hold that $\forall\ i,j\in\{(i,j)\mid i,j\in\mathbb{Z}^+ \wedge 0 > i \leq
-|C| \wedge i > j \leq |C|\}\ c_i \curlyvee c_j$, where the binary relation
-$\curlyvee$ is overloaded with the set $\{(c_1,c_2)\mid c_1\in\mathbb{C} \wedge
-c_2\in\mathbb{C} \wedge c_1= \left\langle v_1,p_1,x_1 \right\rangle \wedge c_2=
-\left\langle v_2,p_2,x_2 \right\rangle \wedge p_1\curlyvee
-p_2\}$.\end{definition}
+%Clauses get some special get some special treatment in \D{}. In particular,
+%according to \referToDefinition{clause-tuple}, the clauses of a function are
+%ordered by their occurrence in the program text. This is intentional, as we
+%would like to declare the following requirement:
 
-Furthermore, we would like to ensure that pattern matching is exhaustive for
-any function definition. This is to avoid programs that terminate due to
-inexhaustive pattern matching.
+%\begin{definition} Given a function $f= \left\langle v, C \right\rangle$, it
+%must hold that $\forall\ i,j\in\{(i,j)\mid i,j\in\mathbb{Z}^+ \wedge 0 > i \leq
+%|C| \wedge i > j \leq |C|\}\ c_i \curlyvee c_j$, where the binary relation
+%$\curlyvee$ is overloaded with the set $\{(c_1,c_2)\mid c_1,c_2\in\mathbb{C}
+%\wedge c_1= \left\langle v_1,p_1,x_1 \right\rangle \wedge c_2= \left\langle
+%v_2,p_2,x_2 \right\rangle \wedge p_1\curlyvee p_2\}$.\end{definition}
+
+We would like to ensure that pattern matching is exhaustive for any function
+definition. This is to avoid programs that terminate due to inexhaustive
+pattern matching.
 
 \begin{definition} Given a function $f=\left\langle v, C\right\rangle$, it must
-hold that $\exists c\in C$ s.t. $a\succ c$ where $a$ is any valid \D{}
-value.\end{definition}
+hold that $\forall\ b\in\mathbb{B}\ \exists\ \left\langle v,p,x \right\rangle
+\in C\ b\succ p$.\end{definition}
 
-These definitions allow us to define the following semantics for clause
-evaluation and pattern matching:
+This definition allows us to define the following semantics for clause
+evaluation:
 
 \begin{equation}
 {\displaystyle

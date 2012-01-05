@@ -4,8 +4,8 @@ The automated termination analysis techniques discussed in latter chapters will
 rely heavily on the well-foundedness of the language's data types.
 
 \begin{definition}\label{definition:well-foundedness} Let $\mathbb{B}$ denote
-all the values of a data type $T$, and let $f:\mathbb{B}\rightarrow \mathbb{N}$
-be a surjective function, where $\mathbb{N}$ is the set of natural numbers. $T$
+all the values of a data type $T$, and let $f:\mathbb{B}\rightarrow \mathbb{Z}^*$
+be a surjective function, where $\mathbb{Z}^*$ is the set of natural numbers. $T$
 is well-founded if $$\forall B\subseteq \mathbb{B} \left( B \neq \emptyset
 \rightarrow \exists\ b' \in B \mid \forall\ b\in B\backslash\{b'\}\ f(b') <
 f(b)\right).$$\end{definition}
@@ -35,7 +35,7 @@ function, as well as the operator $\cdot$, as ``cons''.\end{definition}
 \subsection{Size}
 
 \referToDefinition{well-foundedness} made use of a surjective function $f :
-\mathbb{B}\rightarrow\mathbb{N}$. To ensure well-foundedness of \D{}'s data
+\mathbb{B}\rightarrow\mathbb{Z}^*$. To ensure well-foundedness of \D{}'s data
 values we need to define such a function or equivalently, define a notion of
 the size of a data value in \D{}.
 
@@ -46,15 +46,15 @@ number of nodes in the tree representing that value.\end{definition}
 \D{} is well-founded.\end{theorem}
 
 \begin{proof} The proof is two-fold, proving the existence of the surjective
-function $f:\mathbb{B}\rightarrow\mathbb{N}$. First, we prove by induction that
+function $f:\mathbb{B}\rightarrow\mathbb{Z}^*$. First, we prove by induction that
 any natural number can be represented in \D{}:
 
 \begin{description}[\setleftmargin{70pt}\setlabelstyle{\bf}]
 
 \item [Base case] A leaf has no nodes, and hence represents the value $0$.
 
-\item [Assumption] If we can represent $n\in\mathbb{N}$ in \D{}, then we can
-also represent $n+1\in\mathbb{N}$ in \D{}. 
+\item [Assumption] If we can represent $n\in\mathbb{Z}^*$ in \D{}, then we can
+also represent $n+1\in\mathbb{Z}^*$ in \D{}. 
 
 \item [Induction] Let $n$ be represented by some $b\in\mathbb{B}$, then $n+1$
 can be represented by $0\cdot b$. 
@@ -63,7 +63,11 @@ can be represented by $0\cdot b$.
 
 Second, by \referToDefinition{values}, any $b\in\mathbb{B}$ has one and only
 one number of nodes, hence it has one and only one representation in
-$\mathbb{N}$, indeed the number of nodes.\end{proof}
+$\mathbb{Z}^*$, indeed the number of nodes.\end{proof}
+
+\begin{definition} We overload the binary operators $=$, $<$, $>$, $\geq$ and
+$\leq$ defined over $\mathbb{Z}^*\times\mathbb{Z}^*$ for
+$\mathbb{B}\times\mathbb{B}$.\end{definition}
 
 \subsection{Visual representation}
 
