@@ -148,18 +148,61 @@ $g_1$: g (a.b).(c.d) := 0
 $g_2$: g e.f := 0
 \end{lstlisting}
 
+\subsection{Disjoint shapes}
+
+\begin{definition} Given two shapes, $s_1\in\mathbb{S}$ and $s_2\in\mathbb{S}$,
+we say that $s_1$ and $s_2$ are disjoint, or $s_1\cap s_2=\emptyset$, iff given
+$B_1=\{b\mid b\in\mathbb{B} \wedge b\succ s_1\}$ and $B_2=\{b\mid
+b\in\mathbb{B} \wedge b\succ s_2\}$ it holds that $B_1\cap
+B_2=\emptyset$.\end{definition}
+
+\begin{theorem}\label{lemma:extend-finite-converse} Given a shape
+$s'\in\mathbb{S}$, the set $\{s \mid s\in\mathbb{S} \wedge s\cap
+s'=\emptyset\}$, that is also pairwise disjoint, is finite.\end{theorem}
+
+\begin{proof} The proof is two-fold,
+
+\begin{enumerate}
+
+\item Given a shape $s'\in\mathbb{S}$, there is a shape $s\in\mathbb{S}$ for
+every leaf and every node in $s'$ s.t. $s\cap s'=\emptyset$. In particular, for
+every leaf in $s'$, there is a shape $s$, that is otherwise equal to $s'$, but
+in place of the particular leaf, it has a node with two triangles as children.
+Likewise, for every node in $s'$, there is a shape $s$, that is otherwise equal
+to $s'$, but in place of the particular node in $s'$, there is a leaf. Any
+other shapes wouldn't be disjoint with either $s'$ or the shapes already
+considered. It is easy to see that all such $s\in\mathbb{S}$ are pairwise
+disjoint.
+
+\item For any given shape $s'\in\mathbb{S}$ the number of nodes and leafs is
+finite by \referToDefinition{shape}.\end{enumerate}\end{proof} 
+
 \section{Shape-change termination}
 
-By \referToCorollary{pattern-shape}, a pattern is a shape specification. By
-\referToDefinition{unary-clause}, all clauses are unary, and hence a clause can
-be said to specify a shape. By \referToDefinition{function-tuple}, a function
-call contains a finite list of clauses.
+\begin{definition} We say that a value $b\in\mathbb{B}$ has a set of plausible
+shapes $S$ iff\\ $\exists\ s\in S\ b\succ s \wedge \left( \forall\ s'\in
+S\backslash\{s\}\ b \not{\succ} s'  \right)$.\end{definition}
+
+\begin{corollary} By \referToDefinition{shape}, given merely some value
+$b\in\mathbb{B}$, the set of plausible shapes $S=\{s\}$, where $s$ is the
+triangle shape.\end{corollary}
+
+\begin{corollary} Given any clause $\left\langle v,p,x
+\right\rangle\in\mathbb{C}$ and value $b\in\mathbb{B}$, if $b\succ p$, then
+$S=\{s\}$, where $s$ is the shape corresponding to pattern $p$, is certainly a
+plausible set of shapes for $b$.\end{corollary}
+
+By \referToDefinition{unary-clause}, all clauses are unary, and hence a clause
+can be said to specify a shape. By \referToDefinition{function-tuple}, a
+function call contains a finite list of clauses.
 
 \begin{theorem} Any function specifies a finite number of disjoint
 shapes.\end{theorem}
 
 \begin{proof} The shapes specified by a function are derived from the patterns
 of its clauses.\end{proof}
+
+If there is a finite number of shapes for any triangle, there is a finite number of shapes for any shape.
 
 Instead of constructing a call graph with every clause in a program as a node,
 we construct a call graph with every shape of every function call as a node.
@@ -190,8 +233,6 @@ success \& fail transitions will be regarded as one and the same.
 
 \subsection{Patterns and shapes}
 
-By \referToDefinition{shape}, the only shape we may assume for any unknown
-$b\in\mathbb{B}$ is the triangle.
 
 For any unknown value, we may assume only one shape, the tree. Hence, given a
 program like the one in \referToListing{size-change-fail}, we start analyzing
@@ -244,9 +285,6 @@ otherwise, $v$ wouldn't have matched $p$.\end{proof}
 
 The following are a few definitions and lemma are useful when talking about
 shapes.
-
-\begin{definition} Given two shapes, $A$ and $B$, we say that they are disjoint
-if the sets of values matched by $A$ and $B$ are disjoint.\end{definition}
 
 \begin{definition} Given two sets of shapes, $X$ and $Y$, we let the operation
 $X\Cup Y$ denote an operation where the two sets are joined into one, and the
