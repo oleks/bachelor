@@ -1,0 +1,14 @@
+\section{Turing-completeness of \D{}}
+
+We prove that \D{} is Turing complete by showing that any Turing machine can be
+written in \D{}.
+
+An arbitrary Turing machine can be described merely in terms of its transition
+table, which in \D{} can be expressed in terms of multiple clauses of a single
+function definition.
+
+We can describe a Turing machine in terms of a list of 4-tuples $\left\langle
+\lambda_0, \sigma, \lambda_1, \omega \right\rangle : \Lambda \times \Sigma
+\times \Lambda \times \Omega$, where $\Lambda$ is the finite set of states of
+the machine, $\Sigma$ is the alphabet of the machine, typically $\{0,1\}$, and
+$\Omega$ is the action table of the machine.

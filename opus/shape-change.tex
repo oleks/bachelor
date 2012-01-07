@@ -179,28 +179,64 @@ finite by \referToDefinition{shape}.\end{enumerate}\end{proof}
 
 \section{Shape-change termination}
 
-\begin{definition} We say that a value $b\in\mathbb{B}$ has a set of plausible
-shapes $S$ iff\\ $\exists\ s\in S\ b\succ s \wedge \left( \forall\ s'\in
-S\backslash\{s\}\ b \not{\succ} s'  \right)$.\end{definition}
+\begin{definition} We say that a variable $v\in\mathbb{V}$ with some value
+$b\in\mathbb{B}$ has a set of plausible shapes $S_v$ iff $\exists\ s\in S_v\
+b\succ s \wedge \left( \forall\ s'\in S_v\backslash\{s\}\ b \not{\succ} s'
+\right)$.\end{definition}
 
-\begin{corollary} By \referToDefinition{shape}, given merely some value
-$b\in\mathbb{B}$, the set of plausible shapes $S=\{s\}$, where $s$ is the
-triangle shape.\end{corollary}
+\begin{corollary} By \referToDefinition{shape}, given a variable
+$v\in\mathbb{V}$ with some unknown value $b\in\mathbb{B}$, the set of plausible
+shapes $S_v=\{\any\}$.\end{corollary}
 
 \begin{corollary} Given any clause $\left\langle v,p,x
-\right\rangle\in\mathbb{C}$ and value $b\in\mathbb{B}$, if $b\succ p$, then
-$S=\{s\}$, where $s$ is the shape corresponding to pattern $p$, is certainly a
-plausible set of shapes for $b$.\end{corollary}
+\right\rangle\in\mathbb{C}$ and a value $b\in\mathbb{B}$, if $b\succ p$, then
+$S=\{s\}$ is a plausible set of shapes for $b$, where $s$ is the shape
+corresponding to pattern $p$.\end{corollary}
+
+\begin{corollary} Consider any pair of clauses $c_1=\left\langle v_1,p_1,x_1
+\right\rangle, c_2=\left\langle v_2,p_2,x_2 \right\rangle \in\mathbb{C}$, with
+the plausible value sets $S_1=\{b\mid b\in\mathbb{B} \wedge b \succ p_1\}$ and
+$S_2=\{b\mid b\in\mathbb{B} \wedge b \succ p_2\}$. If for some
+$b\in\mathbb{B}$, $c_1$ is considered before $c_2$, and $c_1$ fails to accept
+$b$, then the set of plausible shapes for $b$ can be said to be
+$S_1$\end{corollary}
 
 By \referToDefinition{unary-clause}, all clauses are unary, and hence a clause
 can be said to specify a shape. By \referToDefinition{function-tuple}, a
 function call contains a finite list of clauses.
 
-\begin{theorem} Any function specifies a finite number of disjoint
-shapes.\end{theorem}
+\begin{theorem} Given a function $f=\left\langle v,C\right\rangle$, \end{theorem}
 
 \begin{proof} The shapes specified by a function are derived from the patterns
 of its clauses.\end{proof}
+
+\section{Nice}
+
+Every function can be defined in terms of clauses with disjoint shapes (perhaps
+duplicating some clauses).
+
+Let the set $S_{f_{init}}$ denote the initial (finite) set of shapes that the
+function $f\in\mathbb{F}$ considers. We say that a function considers a set of
+shapes $S\subset\mathbb{S}$, if the clauses of the function (now disjoint) use
+exactly the patterns that would constitute $S$.
+
+We define a program $r= \left\langle F,x \right\rangle$ as a network of nodes
+with the node set $\left\{ s \mid f\in F \wedge s\in S_{f_{init}}\right\}$.
+
+We define an explorative algorithm that at any given stage is in one of the nodes of the program. At any given  
+
+Let $s\in\mathbb{S}$ be some current variable shape. For any call from $s_f\in
+S_{f_{init}}$ to some function $g\in\mathbb{F}$, draw edges from $s_f$ to every
+shape in $\left\{ s_g\mid s_g\in S_{g_{init}} \wedge s\succ s_g \right\}$.
+Extend the present variable shape if applicable. If we're in shape $s_f\in
+S_{f_{init}}$ and follow a transition to shape $s_g\in S_{g_{init}}$, we must
+check back with the path taken to get to this $s'$, whether it has previously
+already been in the $s_g$ shape. If so, the question merely is whether 
+
+
+
+
+\section{Rest}
 
 If there is a finite number of shapes for any triangle, there is a finite number of shapes for any shape.
 

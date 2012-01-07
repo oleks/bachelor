@@ -83,8 +83,54 @@ In summary, the following concepts are used without definition:
 
 \end{itemize}
 
-\begin{definition} Let $\mathbb{Z}^*$ denote the set of nonnegative integers
-and $\mathbb{Z}^+$ denote the set of positive integers.\end{definition}
+\section{Preliminaries}
+
+To avoid ambiguity and to aid some of the discussions below, we provide the
+following definitions.
+
+\begin{definition} Let $\mathbb{N}^0$ denote the set of nonnegative integers
+and let $\mathbb{N}$ denote the set of positive integers.\end{definition}
+
+\begin{definition} When dealing with lists, aka. finite ordered sequences,
+we'll adopt the following notation:
+
+\begin{enumerate}
+
+\item Given a list $L$ and a possibly infinite set $S$, we say that $L\subset
+S$, if $L$ consists solely of elements also contained in $S$.
+
+\item Given a list $L$, $|L|\in\mathbb{N}^0$ and denotes the length of $L$.
+
+\item Any given list $L$ is the ordered sequence $l_1,l_2,\cdots,l_{|L|}$.
+
+\item Given a list $L$ and an element $l$, we say that $l\in L$ if $l$ is one
+of $l_1,l_2,\cdots,l_{|L|}$.
+
+\item Given the lists $L$ and $L'$ we say that $L=L'$ iff $|L|=|L'|$ and
+$\forall\ i\in \{i\mid i\in\mathbb{N} \wedge i \leq |L|\}\ l_i=l'_i$.
+
+\item Given a list $L=l_1,l_2,\cdots,l_{|L|}$, $L_{head}$ refers to $l_1$, and
+$L_{tail}$ refers to the sequence $l_2,l_3,\cdots,l_{|L|}$.
+
+\item $\emptyset$ denotes the empty list.
+
+\item $\left[ term \mid variable \in space, precondition \right]$ denotes a
+finite sequence where each element is constructed from evaluating the ``term'',
+containing the given ``variables'' in the given ``space'', and fulfilling the
+``precondition''. This is reminisce of Haskell's list comprehensions.
+
+\end{enumerate}
+
+\end{definition}
+
+For lists, we need not necessarily know the size, hence we often refer to lists
+of some particular known size as tuples.
+
+\begin{definition} A tuple is a sequence of a known size, represented as a
+comma-separated list enclosed in $\left\langle \right\rangle$. A tuple
+definition has the form $\left\langle x_1,x_2,\ldots,x_n \right\rangle : S_1,
+S_2, \ldots, S_n$, meaning $x_1\in S_1, x_2\in S_2, \ldots, x_n\in S_n$, where
+$n\in\mathbb{N}^0$.\end{definition}
 
 \section{Chapter overview}
 

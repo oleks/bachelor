@@ -56,35 +56,6 @@ Program & $r$ & $R$ & $\mathbb{R}$
 %be considered as the main clause of a program, which we'll refer to as
 %$c_{main}$.\end{definition}
 
-\begin{definition} The finite lists in \referToTable{sos-definitions} are
-formally speaking merely ordered sequences. For simplicity, we'll refer to them
-merely as ``lists'' and adopt a few common operators from set notation:
-
-\begin{enumerate}
-
-\item Given a list $L$ and a (possibly infinite) set $S$, we say that $L\subset
-S$, if $L$ consists solely of elements also contained in $S$. Hence, e.g.
-$C\subset\mathbb{C}$.
-
-\item Given a list $L$ and an element $l$, we say that $l\in L$ if $l$ indeed
-is contained in $L$.
-
-\item $\emptyset$ denotes the empty list.
-
-\item Given a list $L$, $|L|\in\mathbb{Z}^*$ and denotes the length of $L$.
-
-\item Any given list $L$ contains the elements $l_1,l_2,\cdots,l_{|L|}$, in that order.
-
-\item Given the lists $L$ and $L'$ we say that $L=L'$ iff $|L|=|L'|$ and
-$\forall\ i\in \{i\mid i\in\mathbb{Z}^+ \wedge 0 < i \leq |L|\}\ l_i=l'_i$.
-
-\item Given a list $L=l_1,l_2,\cdots,l_{|L|}$, $L_{head}$ refers to $l_1$, and
-$L_{tail}$ refers to the list $l_2,l_3,\cdots,l_{|L|}$.
-
-\end{enumerate}
-
-\end{definition}
-
 \begin{definition} For any given $v\in\mathbb{V}$ and $P\subset\mathbb{P}$,
 we say that $v\in P$ if $v$ occurs in some $p\in P$.\end{definition}
 
@@ -145,21 +116,24 @@ to be in place for each \term{\_}.
 \subsection{Patterns constitute shapes}
 
 The nonterminal declarations for patterns, in particular \ref{nonterm-pattern}
-and \ref{nonterm-pattern-element}, indicate that a pattern declaration is
-indeed a shape specification. In particular, a value that matches a given
-pattern specification matches the corresponding shape specification.
+and \ref{nonterm-pattern-element}, indicate that a pattern are equatable to
+shapes.
 
-\begin{corollary}\label{corollary:pattern-shape} Patterns are shape
-specifications. In particular, a pattern is either a node, a tree (underscore
-or variable name), or a node with two patterns as children. This, together with
-\referToDefinition{shape} indicates that a pattern is indeed a shape
-specification.\end{corollary}
+\begin{definition}\label{definition:pattern-corresponds-shape} The pattern
+\term{0} corresponds to the leaf shape. The patterns \term{\_} and
+\nonterm{name} correspond to triangle shapes. Any pattern \mono{a.b}
+corresponds to the shape $a\cdot b$ iff the pattern \mono{a} corresponds to the
+shape $a$ and the pattern \mono{b} corresponds to the shape
+$b$.\end{definition}
 
-\begin{definition} Given $p_1,p_2\in\mathbb{P}$, and their corresponding shapes
-$s_1,s_2\in\mathbb{S}$, we say that $p_1\succ p_2$ if $s_1\succ s_2$. We hence
-overload the binary relation $\succ$ with the set $\left\{(p_1,p_2)\mid
-p_1\in\mathbb{P} \wedge p_2\in\mathbb{P} \wedge p_1\ \text{matches}\
-p_2\right\}$.\end{definition}
+\begin{definition}\label{definition:pattern-is-shape} $\forall\ p\in\mathbb{P}\
+\forall\ s\in\mathbb{S}\ p=s$ iff $p$ corresponds to $s$ as by
+\referToDefinition{pattern-corresponds-shape}.\end{definition}
+
+\begin{definition} We overload the binary relation $\succ$ with the set\\
+$\left\{ \left\langle p_1,p_2 \right\rangle\mid p_1,p_2\in\mathbb{P},
+s_1,s_2\in\mathbb{S} \wedge p_1=s_1 \wedge p_2=s_2
+\right\}$.\end{definition}
 
 \subsection{Unary functions from multivariate functions}
 
