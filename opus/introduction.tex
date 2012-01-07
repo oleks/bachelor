@@ -106,6 +106,9 @@ S$, if $L$ consists solely of elements also contained in $S$.
 \item Given a list $L$ and an element $l$, we say that $l\in L$ if $l$ is one
 of $l_1,l_2,\cdots,l_{|L|}$.
 
+\item Lists may be nested, hence, given an element $e$ and a list $l$, we say
+that $e\Subset l$ if $e$ is contained in either $l$ or one of its nested lists.
+
 \item Given the lists $L$ and $L'$ we say that $L=L'$ iff $|L|=|L'|$ and
 $\forall\ i\in \{i\mid i\in\mathbb{N} \wedge i \leq |L|\}\ l_i=l'_i$.
 
@@ -114,10 +117,10 @@ $L_{tail}$ refers to the sequence $l_2,l_3,\cdots,l_{|L|}$.
 
 \item $\emptyset$ denotes the empty list.
 
-\item $\left[ term \mid variable \in space, precondition \right]$ denotes a
+\item $\left[ term \mid variables \in spaces, precondition \right]$ denotes a
 finite sequence where each element is constructed from evaluating the ``term'',
-containing the given ``variables'' in the given ``space'', and fulfilling the
-``precondition''. This is reminisce of Haskell's list comprehensions.
+containing the given ``variables'' are in the given ``spaces'', and fulfilling
+the ``precondition''. This is reminiscent of conventional list comprehension.
 
 \end{enumerate}
 

@@ -14,13 +14,12 @@ condition branch would usually have two possible transfers of control depending
 on the outcome of the condition. Hence, it serves useful to label arcs
 depending on when they are taken.
 
-Such graphs are referred to as \emph{control flow graphs}.
+Such graphs are referred to as \emph{control flow graphs}. With a control flow
+graph at hand, various optimization algorithms can be devised to traverse the
+graph and deduce certain properties, such as e.g.  reoccurring primitive
+operations on otherwise static variables\cite{kildall}.
 
-With a control flow graph at hand, various optimization algorithms can be
-devised to traverse the graph and deduce certain properties, such as e.g.
-reoccurring primitive operations on otherwise static variables\cite{kildall}.
-
-\section{Control flow graphs in \D{}}
+\section{Control flow graphs (or call graphs) in \D{}}
 
 \subsection{Start and end nodes}
 
@@ -28,22 +27,39 @@ Conventionally, a control flow graph has a start and an end node. These nodes
 do not explicitly represent control primitives, but rather the start and end of
 a program. Clearly, a program cannot be started nor ended more than once, and
 hence the start node, has out-degree $1$ and in-degree $0$, while the end node
-has out-degree $0$, and initially, variable in-degree since a program can be
-ended in more than one way. For reasons that will become apparent in a bit, we
-chose to disregard start and end nodes completely.
+has out-degree $0$, and (initially) variable in-degree since a program can be
+ended in more than one way. For reasons that will become apparent in later on,
+we chose to disregard the start and end nodes completely.
 
 \subsection{Function clauses}
 
 While node construction and destruction are primitive operations in \D{}, we'll
 refrain ourselves from delving into such details in the control flow graphs of
-our programs. Indeed because \emph{node construction and destruction always
-terminates}. Instead, we'll let a \emph{function clause} define a point in a
-program.
+our programs. Indeed because by the semantics of \D{}, node construction and
+destruction always terminates. Instead, we'll let function clauses define
+primitive program points. The expression of a given clause can make calls to
+its enclosing, or some other function. Such calls are represented by transfer
+of control, that is, arcs.
 
-The expression of the clause can thereafter make calls to its
-enclosing\footnote{We say that a function \emph{consists} of function clauses
-and a function clause is \emph{enclosed} in a function.}, or some other
-function. Such calls are represented by transfer of control, that is, arcs.
+\begin{definition} A control flow graph for a given program $r=\left\langle F,x
+\right\rangle$, with the set of clauses $$C= \left\{ c \mid f= \left\langle v,C
+\right\rangle \in F \wedge c\in C \right\},$$ is a graph with the set of nodes
+$C$, and the set of directed edges 
+
+\begin{align*}
+E=\{ \left\langle c_1,c_2,x\right\rangle \mid\ 
+& c_1 = \left\langle v_1, p_1, x_1 \right\rangle \in C \wedge\\
+& c_2 = \left\langle v_2, \_, \_ \right\rangle \in C \wedge\\
+& x\in\mathbb{X} \wedge \left\langle v_2, x \right\rangle \Subset x_1\}
+.\end{align*}
+
+\end{definition}
+
+Control flow graphs of this sort can more intuitively be referred to as
+\emph{call graphs}.
+
+We use a triplet to ensure that calls with different arguments get different edges.
+
 Disregarding the cases where a function clause expression makes multiple calls
 to the same function with different arguments, these arcs need not be
 disjunctively labelled since all of these transitions happen unconditionally as
