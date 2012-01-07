@@ -17,24 +17,20 @@ depending on when they are taken.
 Such graphs are referred to as \emph{control flow graphs}.
 
 With a control flow graph at hand, various optimization algorithms can be
-devised to traverse the graph and deduce certain properties, such as
-reoccurring primitive operations on otherwise static variables, see e.g.
-\cite{kildall}.
+devised to traverse the graph and deduce certain properties, such as e.g.
+reoccurring primitive operations on otherwise static variables\cite{kildall}.
 
 \section{Control flow graphs in \D{}}
 
 \subsection{Start and end nodes}
 
-Every control flow graph has a start and an end node. These nodes do not
-explicitly represent control primitives, but rather the start and end of a
-program. \emph{A program cannot be started nor ended more than once}. The start
-node is labelled $S$ and has out-degree $1$ and in-degree $0$. The end node is
-labelled $E$ and has out-degree $0$, but variable in-degree, i.e. a program can
-be ended in more than one way.
-
-The control-flow graph for the empty program is hence:
-
-\input{figures/cfg-empty}
+Conventionally, a control flow graph has a start and an end node. These nodes
+do not explicitly represent control primitives, but rather the start and end of
+a program. Clearly, a program cannot be started nor ended more than once, and
+hence the start node, has out-degree $1$ and in-degree $0$, while the end node
+has out-degree $0$, and initially, variable in-degree since a program can be
+ended in more than one way. For reasons that will become apparent in a bit, we
+chose to disregard start and end nodes completely.
 
 \subsection{Function clauses}
 
