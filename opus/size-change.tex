@@ -3,23 +3,23 @@
 The size-change termination analysis builds upon the idea of flow analysis of
 programs. In general, flow analysis aims to answer the question, ``What can we
 say about a given point in a program without regard to the execution path taken
-to that point?''. A ``point'' in a computer program is in this case a primitive
+to that point?''. A ``point'' in a computer program, is in this case a primitive
 operation such as an assignment, a condition branch, etc.
 
 The idea is then to construct a graph where such points are nodes, and the arcs
 in between them represent a transfer of control between the primitive
 operations, that would otherwise occur under the execution of the program.
-Such a node may have variable in-degree and out-degree from one given
-primitive. For instance, a condition branch would usually have two possible
-transfers of control depending on the outcome of the condition. Hence, it
-serves useful to label arcs depending on when they are taken. The conditions
-should clearly not overlap to avoid non-determination.
+Such a node may have variable in-degree and out-degree. For instance, a
+condition branch would usually have two possible transfers of control depending
+on the outcome of the condition. Hence, it serves useful to label arcs
+depending on when they are taken.
 
 Such graphs are referred to as \emph{control flow graphs}.
 
-With such a graph at hand, various optimization algorithms can be devised to
-traverse the graph and deduce certain properties, such as reoccurring primitive
-operations on otherwise static variables\cite{kildall}, etc.
+With a control flow graph at hand, various optimization algorithms can be
+devised to traverse the graph and deduce certain properties, such as
+reoccurring primitive operations on otherwise static variables, see e.g.
+\cite{kildall}.
 
 \section{Control flow graphs in \D{}}
 
