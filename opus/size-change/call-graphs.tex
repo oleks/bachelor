@@ -1,0 +1,260 @@
+\section{Control flow graphs (or call graphs) in \D{}}
+
+\subsection{Start and end nodes}
+
+Conventionally, a control flow graph has a start and an end node. These nodes
+do not explicitly represent control primitives, but rather the start and end of
+a program. Clearly, a program cannot be started nor ended more than once, and
+hence the start node, has out-degree $1$ and in-degree $0$, while the end node
+has out-degree $0$, and (initially) variable in-degree since a program can be
+ended in more than one way. For reasons that will become apparent in later on,
+we chose to disregard the start and end nodes completely.
+
+\subsection{Function clauses}
+
+While node construction and destruction are primitive operations in \D{}, we'll
+refrain ourselves from delving into such details in the control flow graphs of
+our programs. This is because by the semantics of \D{}, node construction and
+destruction always terminates. Instead, we'll let function clauses define
+primitive program points. The expression of a given clause can make calls to
+its enclosing, or some other function. Such calls are represented by transfer
+of control, that is, edges between clauses.
+
+\begin{definition}\label{definition:size-change-first-graph} Given a program
+$r=\left\langle F,x \right\rangle$ we define a control flow graph $G =
+\left\langle C, E \right\rangle$, where
+
+$$C= \left\{ c \mid f= \left\langle v,C_f \right\rangle \in F \wedge c\in C_f
+\right\},$$
+
+and
+
+$$E=\{ \left\langle c_s,c_t,x\right\rangle \mid c_s = \left\langle v_s, p_s,
+x_s \right\rangle \in C \wedge c_t = \left\langle v_t, \_, \_ \right\rangle \in
+C \wedge x\in\mathbb{X} \wedge \left\langle v_t, x \right\rangle \Subset x_s\}
+.$$
+
+\end{definition}
+
+\begin{definition} Given a control transition graph $G= \left\langle C,E
+\right\rangle$, we refer to a directed edge $e\in E$ as a call. We refer to $G$
+as a call graph and given any call $\left\langle c_s,c_t,x \right\rangle \in
+C$, we say that $c_s$ is the \emph{source} clause, $c_t$ is the \emph{target}
+clause, and $x$ is the call argument.  \end{definition}
+
+\begin{lemma}\label{lemma:first-call-graph-finite} Given a call graph $G=
+\left\langle C,E \right\rangle$, $C$ and $E$ are both finite.\end{lemma}
+
+\begin{proof} Follows from the semantics of \D{} and
+\referToDefinition{size-change-first-graph}.\end{proof}
+
+\begin{definition} Given a call graph $G = \left\langle C,E \right\rangle$ we
+refer to the list $c_1,c_2,\ldots,c_n$ as a path in $G$ iff\\ $\left\langle
+c_1,c_2,\_ \right\rangle, \left\langle c_2,c_3,\_ \right\rangle,
+\ldots,\left\langle c_{n-1}, c_n,\_ \right\rangle \in E$.\end{definition}
+
+\referToDefinition{size-change-first-graph} might strike you as odd, since by
+the semantics of \D{}, when we make a function call to some function $f$, we
+will iteratively consider the list of clauses contained in the function,
+looking for one which accepts the argument. While this is true, we will merely
+concern ourselves with those control transitions, where a change in the values
+of the program variables can occur. The transitions between the clauses of a
+single definition, which occur when a function call argument is matched to a
+clause, call them \emph{fail transitions}, do not change the value of the
+argument but merely propagate it.  Hence, fail transitions are irrelevant to
+our analysis, so long as we have an edge from the source clause to each
+possible target clause, which is exactly what
+\referToDefinition{size-change-first-graph} states.
+
+We use a triplet to represent a call in order to ensure that calls with
+different arguments get different edges. This is important to clauses with
+expressions where multiple calls to the same function are made. In particular,
+the different calls might modify the values in different ways.
+
+\subsection{Order of evaluation}
+
+\referToDefinition{size-change-first-graph} indicates that we disregard the
+order of evaluation of the arguments. This too, is intentional.  In particular,
+if all the call cycles terminate, then so will all the evaluations. We show
+this with a few examples below and prove formally when we discuss
+\referToTheorem{size-change}.
+
+If calls are separated by node construction, the order in which those calls are
+made is definitely insignificant. For instance, consider the expression
+\mono{(f a).(g b)}, where \mono{f} and \mono{g} are some well-defined
+functions, $\text{\mono{f}}\neq\text{\mono{g}}$, and \mono{a} and \mono{b} are
+some bound variables. It makes no difference to the final result which of the
+calls, \mono{f a} and \mono{g b}, is evaluated first. Indeed, they can be
+evaluated in parallel, and we would still get the same result. This is easy to
+see for any nested construction of results of function calls, as in e.g.
+\mono{(f a).0.(g b)}.
+
+On the other hand, the syntax and semantics of \D{} allow for function calls to
+be nested as in e.g. the expression \mono{(f (g a) (h b))}, where \mono{h} is
+also some well-defined function and is pairwise unequal to \mono{f} and
+\mono{g}. The order of evaluation of \mono{(g a)} and \mono{(h b)} is
+insignificant wrt. to each another, as with function calls separated by
+construction. However, the order of evaluation of these two subexpressions wrt.
+to the call to function \mono{f}, is significant to the result, and
+\emph{might} be significant to termination analysis in general. However, we'll
+initially regard this as insignificant for mere simplicity.
+
+\subsection{An example}
+
+We can now draw a control flow graph for the program define in
+\referToListing{cfg-sample-1} as shown in \referToFigure{cfg-sample-1-pdf}.
+
+\begin{lstlisting}[label=listing:cfg-sample-1,caption={A sample \D{} program, always returning \mono{0.0.0}.}]
+f x y := x.y
+g _ := 0
+h _ := 0
+i x y := (f ((h y).(g x)) (h y))
+i input input
+\end{lstlisting}
+
+\includeFigure{cfg-sample-1-pdf}{A  control flow graph for the \D{} program in
+\referToListing{cfg-sample-1}. The graph does not explicitly specify
+back-propagation of control, if any.}
+
+\subsection{Disregarding back-propagation}
+
+It is worth noting that in \referToFigure{cfg-sample-1-pdf}, the clauses that
+make no function calls have out-degree $0$. Technically, these functions do
+transfer control, in particular, back to the callee. We may refer to this
+process as \emph{back-propagation} of control. While considering
+back-propagation is seemingly important to a concept that bases itself on the
+changes in the sizes of the program values, we won't be concerned with any
+exact values.
+
+The thing with back-propagation is that forward-propagation after
+back-propagation of a call cannot occur due to the way \D{} is defined. Hence,
+what we are really concerned with is, ``how deep the rabbit hole goes'', before
+we back-propagate, as back-propagation superimplies termination of the function
+we're back-propagating out of.
+
+\subsection{Call cycles}
+
+\begin{definition}\label{definition:call-cycle} Given a call graph $G =
+\left\langle C,E \right\rangle$, a call cycle is a path $z=c_1,c_2,\ldots,c_n$
+s.t. $c_1=c_n$ and $\forall\ \left\langle i, j \right\rangle \in \left\{
+\left\langle i,j \right\rangle \mid 1>i< n \wedge 1>j< n \wedge i\neq
+j\right\}\ c_i\neq c_j$.\end{definition}
+
+\begin{theorem}\label{theorem:acyclic-graph-terminates} Given program $r=
+\left\langle F, x \right\rangle$ has a corresponding acyclic graph $G =
+\left\langle C,E \right\rangle$, then the program terminates.\end{theorem}
+
+\begin{proof} Assume for the sake of contradiction that the program does not
+terminate. Then one of the acyclic paths in the graph must not terminate. Since
+the set $E$ is finite by \referToLemma{first-call-graph-finite}, then any path
+in $G$ must be finite.  Hence, one of the primitive operations, i.e.
+construction, destruction, comparison, binding, function call, etc., must not
+terminate. By the semantics of \D{} this is absurd.\end{proof}
+
+\begin{definition}\label{definition:recursive-terminal} Given a call graph $G =
+\left\langle C,E \right\rangle$, we refer to the set of calls that participate
+in a call cycle as recursive clauses and all other clauses as terminal
+clauses.\end{definition}
+
+\begin{definition} If a program choses some edge $e$ over another edge $e'$, we
+say that the program branches off to a new path starting with edge
+$e$.\end{definition}
+
+\begin{theorem} If a program branch takes a path $k$ consisting solely of
+terminal clauses, the branch terminates.\end{theorem}
+
+\begin{proof} If a program branches off to a path $k$ and $k$ consists solely
+of terminal clauses, then the program may be regarded as having branched off
+into a new program with a call graph consisting solely of the clauses visited
+by $k$ and edges in $k$. Such a call graph is acyclic due to
+\referToDefinition{recursive-terminal}, and by
+\referToTheorem{acyclic-graph-terminates} is finite. The branch must therefore
+terminate.\end{proof}
+
+\begin{corollary}\label{corollary:program-branch-terminate} A program
+terminates if all of its branches terminate.\end{corollary}
+
+\referToCorollary{program-branch-terminate} allows us to disregard all the
+clauses of a call graph that do not participate in call cycles.
+
+\begin{definition} Given a call graph $G=\left\langle C, E \right\rangle$, and
+the set of call cycles $Z$ in $G$, we define a call graph $G^r=\left\langle
+C^r, E^r\right\rangle$ to be the ``recursive call graph'', where $C^r=\left\{ c
+\mid c\in C \wedge c\Subset Z \right\}$ and $E^r = \left\{ e \mid e\in E \wedge
+e\Subset Z \right\}$. WLOG, all call graphs we refer to from this point on will
+be recursive call graphs.\end{definition}
+
+\subsection{Relation of call graphs to conventional static call graphs}
+
+Conventionally, a static call graph is a graph over all the calls made by a
+program at runtime. Such a graph has an infinite number of edges for any
+nonterminating program in \D{}. Hence, deducing the halting property can be
+rephrased as determining whether the static call graph has an infinite number
+of edges.
+
+\subsection{Visualization}
+
+When describing size-change termination we'll often revert to examples. Here we
+will make use of a few conventions wrt. listings and graphs s.t. a call graph
+for any given program is easy to visualize.
+
+\subsubsection{Multiple calls to the same function}
+
+An edge $e\in E$ in a call graph $G = \left\langle C,E \right\rangle$ was
+defined to be the tuple $\left\langle c_1, c_2, x \right\rangle : C \times C
+\times \mathbb{X}$. While this ensures to distinguish calls to the same
+function with different arguments from the same expression, it is not
+particularly friendly to the eye to visually annotate each edge with an
+expression.
+
+Instead, we adopt the convention of disjunctively labelling all the function
+calls of an expression as in \cite{size-change}. We'll do this both in listings
+and in visualizations. Refer to \referToListing{cfg-sample-2} and
+\referToFigure{cfg-sample-2-pdf} for an example.
+
+\begin{lstlisting}[label=listing:cfg-sample-2,
+  caption={A sample \D{} program, always returning \mono{(0.x).(0.y)},
+  where \mono{x} and \mono{y} are arbitrary \D{} values supplied by the user.}]
+f x y := x.y
+g x := 0.x
+i x y := (0: f (1: g x) (2: g y))
+i input input
+\end{lstlisting}
+
+\includeFigure{cfg-sample-2-pdf}{A  control flow graph for the \D{} program in
+\referToListing{cfg-sample-2}.}
+
+\subsubsection{Multiple clauses}
+
+As multiple clauses denote different nodes in the call graph, we would also
+like to visually distinguish the nodes while keeping a relation to the original
+listing. Hence, each clause of a function in the program listing will be
+labeled with a label prefixed with the function name and postfixed with the
+clause index starting at $0$. Refer to \referToListing{cfg-loop} and its
+corresponding call graph in \referToFigure{cfg-loop-pdf} for an example.
+
+\begin{lstlisting}[label=listing:cfg-loop,
+  caption={A simple, down-counting loop in \D{}.}]
+$f_0$: f 0 := 0
+$f_1$: f x._ := f x
+f input
+\end{lstlisting}
+
+\includeFigure[scale=1.5]{cfg-loop-pdf}{A  control flow graph for the program
+defined in \referToListing{cfg-loop}.} 
+
+As a more complex example, consider the call graph for the program
+\mono{reverse} introduced in \referToSection{d-samples}. The program is
+repeated in annotated form in \referToListing{cfg-reverse}, and its
+corresponding call graph is shown in \referToFigure{cfg-reverse-pdf}.
+
+\begin{lstlisting}[label=listing:cfg-reverse,
+  caption={An annotated version of the program \mono{reverse} introduced in
+  \referToSection{d-samples}.}]
+$r_0$: reverse 0 := 0
+$r_1$: reverse left.right := (0: reverse right).(1: reverse left)
+reverse input
+\end{lstlisting}
+
+\includeFigure[scale=1.5]{cfg-reverse-pdf}{A  control flow graph for the \D{}
+program in \referToListing{cfg-reverse}.}
