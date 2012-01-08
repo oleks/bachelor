@@ -189,7 +189,7 @@ b_2$.\end{definition}
 
 \begin{definition} Given a function $\left\langle v_t,x_s\right\rangle$, we
 construct the expression $x_s'$ where we replace all $\left\langle v,x
-\right\rangle\Subset x_s'$ with an auxiliary variable. We group those auxiliary
+\right\rangle\Subset x_s$ with an auxiliary variable. We group those auxiliary
 variables in the set $V^s_{calls}$.\end{definition} 
 
 For instance, consider an expression such as \mono{(g (f a).a)}, where \mono{a}
@@ -197,8 +197,8 @@ is some variable bound in the source. Assume that we're considering the the
 call to the function \mono{g}, then we replace the expression \mono{(f a).a)}
 with an expression like \mono{b.a} where $\textt{b}\in V^s_{calls}$. When this
 argument evaluates to some value $b_s$, then we can safely say that
-$b_s>\text{\mono{a}}$, $b_s>\text{\mono{b}}$, $b_s\geq\text{\mono{a.0}}$ and
-$v\geq\text{\mono{0.b}}$.
+$b_s>\text{\mono{a}}$, $b_s>\text{\mono{b}}$, $b_s\geq\text{\mono{b.0}}$ and
+$v\geq\text{\mono{0.a}}$.
 
 Continuing on with the example above, i.e. having the size relations
 $\{v>\textt{a}, v> \textt{b}, v\geq \textt{a.0}, v\geq \textt{0.b}\}$, assume
