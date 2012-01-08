@@ -27,10 +27,9 @@ $$
 \Phi = \left\{ \left\langle c_s, c_t,x, v_s, v_t, \rho \right\rangle \left| 
 \begin{array}{ll}
 &\left\langle c_s, c_t,x \right\rangle \in E\\
-\wedge&c_s = \left\langle \_, p_s, \_ \right\rangle \in C \\
 \wedge&c_t = \left\langle \_, p_t, \_ \right\rangle \in C \\
 \wedge&v_s,v_t\in\mathbb{V}\\
-\wedge&v_s\Subset p_s \wedge v_t \Subset p_t \\
+\wedge&v_s\Subset x \wedge v_t \Subset p_t \\
 \wedge&\rho\in\{\bot, <, \leq\}
 \end{array}
 \right.\right\}
@@ -39,100 +38,134 @@ $$
 \end{definition}
 
 This definition implies that for each call cycle there may be multiple
-variables to ensure reduction for. However, as there is only a finite number of
-variables in any given pattern, we can define these as separate cycles.
+variables\footnote{We'll define what we mean by a variable more formally in
+\referToDefinition{variable}.} to ensure reduction for. However, as there is
+only a finite number of variables in any given pattern and any given
+expression, we can define these as separate cycles.
 
-\begin{definition}\label{definition:variable-call-graph} Given a recursive call graph $G^r = \left\langle C^r, E^r \right\rangle$, let a ``unary recursive call graph'' $G^u= \left\langle C^u, E^u \right\rangle$, where
+\begin{definition}\label{definition:variable-call-graph} Given a recursive call
+graph $G^r = \left\langle C^r, E^r \right\rangle$, let $G^u= \left\langle C^u,
+E^u \right\rangle$ be a ``unary recursive call graph'', where
 
 $$E^u = \left\{ \left\langle c_s, c_t, x, v_s, v_t \right\rangle \left|
 \begin{array}{ll}
-&\left\langle c_s, c_t,x \right\rangle \in E\\
-\wedge&c_s = \left\langle \_, p_s, \_ \right\rangle \in C \\
-\wedge&c_t = \left\langle \_, p_t, \_ \right\rangle \in C \\
+&\left\langle c_s, c_t,x \right\rangle \in E^r\\
+\wedge&c_t = \left\langle \_, p_t, \_ \right\rangle \in C^r \\
 \wedge&v_s,v_t\in\mathbb{V}\\
-\wedge&v_s\Subset p_s \wedge v_t \Subset p_t
+\wedge&v_s\Subset x \wedge v_t \Subset p_t
 \end{array}
-\right.\right\}$$
+\right.\right\},$$
 
-Define a variable...
+and $C^u= \left\{ c \mid c \in C^r \wedge c\Subset E^u
+\right\}$.\end{definition}
 
-Visually we won't distinguish between variables, but rather, for any given call, we 
+\begin{theorem} A unary recursive call graph $G^u$ has a finite number of
+edges.\end{theorem}
 
-\begin{definition}\label{definition:increasing-decreasing-call} For \end{definition}
+\begin{proof} Follows from \referToDefinition{variable-call-graph} and the
+semantics of \D{}.\end{proof}
 
-A size relation as defined in \referToDefinition{size-relation} is used to
-deduce whether all the cycles in a call graph reduce a value.
+\referToDefinition{variable-call-graph} forces us to redefine the concept of a
+call cycle, as a sequence of clauses may have multiple cycles in $G^u$.
 
-\begin{lemma}\label{lemma:cycle-reduce} A call cycle $z=c_1,c_2,\ldots,c_n$ reduces a value on each
-iteration iff $\forall c\in$ at least one of the participating control transitions reduces the
-value and all other control transitions do not increase that value.\end{lemma}
+\begin{definition}\label{definition:variable-call-cycle} Given a recursive call
+graph $G^r = \left\langle C^r, E^r \right\rangle$, let $Z^r$ denote the set of
+call cycles in $G^r$, and $Z^u$ the set of call cycles in $G^u$, then
 
-\begin{proof} If a value is not reduced in a cycle, it either stays the same or
-is increased. If it is increased, then at least one control transition must've
-increased the value, an absurdity. If it stays the same then none of the
-participating control transitions have neither increased nor decreased the
-value, also an absurdity. \end{proof}
+$$Z^u = \bigcup_{z^r\in Z^r} \left\{ \left\langle c_s, c_t, x, v_s, v_t \right\rangle \left|
+\begin{array}{ll}
+&\left\langle c_s, c_t,x \right\rangle \in z^r\\
+\wedge&c_t = \left\langle \_, p_t, \_ \right\rangle \in C^r \\
+\wedge&v_s,v_t\in\mathbb{V}\\
+\wedge&v_s\Subset x \wedge v_t \Subset p_t
+\end{array}
+\right.\right\}.$$
 
-We can analyze how a value changes its size through a call sequence by
-analyzing the size relation between the variables bound in the source and the
-variables bound in the target of every control transition.
-
-\begin{definition} The relation $\Phi\ :\ C_{caller} \times C_{callee} \times
-N_{caller} \times N_{callee} \rightarrow \{\bot,<,\leq\}$ is defined to be the
-size relation between the caller and callee
-clauses in \D{} where $N_{caller}$ are the names of the variables bound in the
-caller, and $N_{callee}$ are the names of the variables bound in the callee.
-Note, that we are only concerned with reductions and non-increases in size, all
-other relationships are marked by the no relationship symbol $\bot$. Initially,
-the relationship between all the clauses and their variables is $\bot$.
 \end{definition}
 
-The construction of the relationship $\Phi$ for a given transition depends
-first and foremost on whether that transition is a fail or success transition.
+\referToDefinition{variable-call-graph} allows us now to more formally define
+what we've thus far meant as a variable that changes value from call to call.
 
-\subsection{Fail transitions}
+\begin{definition}\label{definition:variable} Given a unary recursive call
+graph $G^u$, every call cycle $z$ in $G^u$, changes exactly one variable, call
+it ``cycle variable'', or $v_z$.\end{definition}
 
-A fail transition occurs if the values passed to a given clause to match its
-pattern. If the values fail to match the pattern, no variables are bound and
-hence no change in values can occur. The values are simply passed along as they
-were to the next clause of the function declaration.
+Hence, while a variable may have different names in different clauses, we've
+defined an overall variable for every call cycle, and want to ensure that this
+variable is reduced in every iteration of the call cycle.
 
-\begin{lemma} Fail transitions are transitive in the sense that the
-relationship between the variables bound in the source and the variables bound
-in the target is the same regardless of the number of fail transitions in
-the path between the source and the target.\end{lemma}
+\begin{theorem}\label{theorem:multivariable-patterns} We can WLOG to
+termination analysis limit our attention to programs that bind at most one
+variable in every clause.\end{theorem}
 
-\begin{proof} Follows from the semantics of \D{}. \end{proof}
+\begin{proof} Let a recursive call graph $G^r$ have a set of call cycles $Z^r$,
+and a corresponding unary recursive call graph $G^u$ with a set of call cycles
+$Z^u$. By \referToDefinition{variable-call-cycle} and
+\referToDefinition{size-relation}, every call cycle in $Z^r$ reduces a value
+iff every call cycle in $Z^u$ reduces a value. We can hence limit our attention
+to deducing if each call cycle in $Z^u$ reduces a value.\end{proof}
 
-We are not concerned with exact equivalence, hence all fail transitions in the
-$\Phi$ relation return the relation $\leq$ for all variable pairs.
+\begin{definition}\label{definition:nice-call-graph} Let $G^1$ denote a
+recursive call graph of a program where each clause binds at most one
+variable.\end{definition}
 
-Note, that due to \D{} being first order and statically scoped, the variable
-space is always initially empty when a function clause begins pattern matching.
+Given \referToTheorem{multivariable-patterns} we can return to the old
+definition of a call graph as per \referToDefinition{recursive-call-graph} and
+call cycle as per \referToDefinition{call-cycle}. This demands a
+simplification of the size relation $\Phi$.
 
-\subsection{Success transitions}
+\begin{definition}\label{definition:unary-size-relation} For a given $G^1 =
+\left\langle C,E \right\rangle$ of a program, let a size relation be the set
 
-Since \D{} is a call-by-value language, when a function call is encountered,
-the source evaluates the arguments of the function call and generates some
-\emph{values} before giving up control.
+$$\Phi^1 = \left\{ \left\langle c_s, c_t,x, \rho \right\rangle \mid
+\left\langle c_s, c_t,x \right\rangle \in E \wedge \rho\in\{\bot, <, \leq\}
+\right\}$$
 
-The values may hence be a nested construction of some concrete values, values
-bound to variables in the source, and results of nested function calls. Without
-further regard of nested function calls, this implies that a \emph{size
-relation} can be deduced between the variables bound in the source and the
-values that result from an evaluation of the function call arguments. 
+\end{definition}
 
-Of course, we cannot deduce a precise size displacement as the values of the
-bound variables may initially be \emph{unknown} at compile
-time\footnote{Although some values can be deduced via static analysis of the
-program, others can come in from the outside world via the 0-ary function
-\mono{input} at run time.}.  However, we can deduce a \emph{safe} displacement
-estimate, such that it is less than or equal to the actual displacement in
-terms of absolute value. For instance, if the expression \mono{a.b} appears as
-a function call argument, where \mono{a} and \mono{b} are some bound variables
-with unknown values, and this argument evaluates to some value $v$, then we can
-\emph{safely} say that $v>\text{\mono{a}}$, $v>\text{\mono{b}}$,
-$v\geq\text{\mono{a.0}}$ and $v\geq\text{\mono{0.b}}$.
+\begin{definition}\label{definition:increasing-decreasing-call} Given a call
+graph $G$ with a call cycle $z$, a call $\left\langle c_s,c_t,x\right\rangle\in
+z$ is,
+
+\begin{enumerate}
+
+\item A ``decreasing call'' iff $\left\langle c_s,c_t,x,< \right\rangle \in
+\Phi^1$.
+
+\item A ``nonincreasing call'' iff $\left\langle c_s,c_t,x,\leq \right\rangle
+\in \Phi^1$.
+
+\item An ``undteremined call'' iff $\left\langle c_s,c_t,x,\bot \right\rangle
+\in \Phi^1$.
+
+\end{enumerate}
+
+\end{definition}
+
+\begin{lemma}\label{lemma:cycle-reduce} A call cycle $z= \left\langle c_1,c_2
+\right\rangle, \left\langle c_2, c_3 \right\rangle,\ldots, \left\langle
+c_{n-1}, c_n \right\rangle$ reduces a value on each iteration iff
+$$\left(\forall\ \left\langle c_i,c_j \right\rangle \in z\ \left(\left\langle
+c_i,c_j,\_, < \right\rangle \in \Phi^1\right) \vee \left(\left\langle
+c_i,c_j,\_, \leq \right\rangle \in \Phi^1 \right)\right)\wedge \left( \exists\
+\left\langle c_i,c_j \right\rangle \in z\ \left\langle c_i,c_j,\_, <
+\right\rangle \in \Phi^1 \right)$$.\end{lemma}
+
+\begin{proof} If a value is not reduced in a cycle, it either stays the same or
+is increased. If it is increased, then at least one call must've increased the
+value, which is an absurdity. If it stays the same then none of the
+participating control transitions have neither increased nor decreased the
+value, also an absurdity.\end{proof}
+
+\subsection{Deducing $\Phi^1$}
+
+Since \D{} is a call-by-value language, when a function call $\left\langle
+v_t,x_s \right\rangle$ is encountered, the source evaluates $x_s$ and generates
+some $b_s\in\mathbb{B}$ as the actual argument for the function call. The
+expression $x_s$ is by definition a nested construction of either some concrete
+value, some variable $v_s\in\mathbb{V}$ bound in the source, or a nested
+function call. Without further regard of nested function calls, this implies
+that a size relation can be deduced between the $v_s$ and $b_s$.
 
 We decide to ignore the nested function calls because this would imply a more
 complex static analysis of the program. Specifically, we're unable to say
@@ -140,22 +173,32 @@ anything about the result of the nested function call from the scope of the
 source clause alone. Instead, we treat results from nested function calls
 simply as variables with \emph{unknown} values. We also make sure to keep these
 variables separate from the bound variables as there is no relationship to draw
-between these ``variables'' and the variables bound in the
+between these ``variables'' and the variable that might be bound in the
 target\footnote{While this information may be useful for dead-code elimination
 and other forms of static analysis, this is of little importance to size-change
 termination.}.
 
-More formally, given a function argument as the expression $x$, we construct
-the expression $x^s$ where we replace all first-level nested function
-calls\footnote{Nested function calls of nested function calls are hence
-considered irrelevant to the derivation of the size relation of the top-level
-call, however, they may become relevant as we derive the size relations of the
-corresponding nested calls.} by auxiliary variables.  We group all those
-auxiliary variables into the set of variable names $N_{calls}^s$ and all the
-remaining variables into the set $N_{vars}^s$.  Furthermore we construct the
-auxiliary variable names in such way that $N_{vars}^s\cup
-N_{calls}^s=\emptyset$.  Hence, we obtain the tuple
-$(x^c,N_{vars}^s,N_{calls}^s)$.
+Due to nested functions calls being represented as variables with unknown
+values, a precise size displacement between the bound variable $v_s$ and the
+generated argument $b_s$ is not feasible. However, we can deduce a \emph{safe}
+displacement estimate.
+
+\begin{definition} A safe displacement estimate between the values
+$b_1,b_2\in\mathbb{B}$ is a value $n\in\mathbb{N}$ s.t. $b_1+n\leq
+b_2$.\end{definition}
+
+\begin{definition} Given a function $\left\langle v_t,x_s\right\rangle$, we
+construct the expression $x_s'$ where we replace all $\left\langle v,x
+\right\rangle\Subset x_s'$ with an auxiliary variable. We group those auxiliary
+variables in the set $V^s_{calls}$.\end{definition} 
+
+For instance, consider an expression such as \mono{(g (f a).a)}, where \mono{a}
+is some variable bound in the source. Assume that we're considering the the
+call to the function \mono{g}, then we replace the expression \mono{(f a).a)}
+with an expression like \mono{b.a} where $\textt{b}\in V^s_{calls}$. When this
+argument evaluates to some value $b_s$, then we can safely say that
+$b_s>\text{\mono{a}}$, $b_s>\text{\mono{b}}$, $b_s\geq\text{\mono{a.0}}$ and
+$v\geq\text{\mono{0.b}}$.
 
 Continuing on with the example above, i.e. having the size relations
 $\{v>\textt{a}, v> \textt{b}, v\geq \textt{a.0}, v\geq \textt{0.b}\}$, assume

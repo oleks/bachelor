@@ -49,9 +49,9 @@ clause, and $x$ is the call argument.  \end{definition}
 \referToDefinition{size-change-first-graph}.\end{proof}
 
 \begin{definition} Given a call graph $G = \left\langle C,E \right\rangle$ we
-refer to the list $c_1,c_2,\ldots,c_n$ as a path in $G$ iff\\ $\left\langle
-c_1,c_2,\_ \right\rangle, \left\langle c_2,c_3,\_ \right\rangle,
-\ldots,\left\langle c_{n-1}, c_n,\_ \right\rangle \in E$.\end{definition}
+refer to the list $\left\langle c_1,c_2,\_ \right\rangle, \left\langle
+c_2,c_3,\_ \right\rangle, \ldots,\left\langle c_{n-1}, c_n,\_ \right\rangle \in
+E$ as a ``path''.\end{definition}
 
 \referToDefinition{size-change-first-graph} might strike you as odd, since by
 the semantics of \D{}, when we make a function call to some function $f$, we
@@ -135,10 +135,10 @@ we're back-propagating out of.
 \subsection{Call cycles}
 
 \begin{definition}\label{definition:call-cycle} Given a call graph $G =
-\left\langle C,E \right\rangle$, a call cycle is a path $z=c_1,c_2,\ldots,c_n$
-s.t. $c_1=c_n$ and $\forall\ \left\langle i, j \right\rangle \in \left\{
-\left\langle i,j \right\rangle \mid 1>i< n \wedge 1>j< n \wedge i\neq
-j\right\}\ c_i\neq c_j$.\end{definition}
+\left\langle C,E \right\rangle$, a call cycle is a path\\ $z= \left\langle
+c_1,c_2,\_ \right\rangle, \left\langle c_2,c_3,\_ \right\rangle,
+\ldots,\left\langle c_{n-1}, c_n,\_ \right\rangle \in E$ s.t.
+$c_1=c_n$.\end{definition}
 
 \begin{theorem}\label{theorem:acyclic-graph-terminates} Given program $r=
 \left\langle F, x \right\rangle$ has a corresponding acyclic graph $G =
@@ -177,12 +177,13 @@ terminates if all of its branches terminate.\end{corollary}
 \referToCorollary{program-branch-terminate} allows us to disregard all the
 clauses of a call graph that do not participate in call cycles.
 
-\begin{definition} Given a call graph $G=\left\langle C, E \right\rangle$, and
-the set of call cycles $Z$ in $G$, we define a call graph $G^r=\left\langle
-C^r, E^r\right\rangle$ to be the ``recursive call graph'', where $C^r=\left\{ c
-\mid c\in C \wedge c\Subset Z \right\}$ and $E^r = \left\{ e \mid e\in E \wedge
-e\Subset Z \right\}$. WLOG, all call graphs we refer to from this point on will
-be recursive call graphs.\end{definition}
+\begin{definition}\label{definition:recursive-call-graph} Given a call graph
+$G=\left\langle C, E \right\rangle$, and the set of call cycles $Z$ in $G$, we
+define a call graph $G^r=\left\langle C^r, E^r\right\rangle$ to be the
+``recursive call graph'', where $C^r=\left\{ c \mid c\in C \wedge c\Subset Z
+\right\}$ and $E^r = \left\{ e \mid e\in E \wedge e\Subset Z \right\}$. WLOG,
+all call graphs we refer to from this point on will be recursive call
+graphs.\end{definition}
 
 \subsection{Relation of call graphs to conventional static call graphs}
 
