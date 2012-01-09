@@ -241,9 +241,9 @@ We would like to ensure that pattern matching is exhaustive for any function
 definition. This is to avoid programs that terminate due to inexhaustive
 pattern matching.
 
-\begin{definition} Given a function $f=\left\langle v, C\right\rangle$, it must
-hold that $\forall\ b\in\mathbb{B}\ \exists\ \left\langle v,p,x \right\rangle
-\in C\ b\succ p$.\end{definition}
+\begin{definition}\label{definition:exhaustive} Given a function
+$f=\left\langle v, C\right\rangle$, it must hold that $\forall\ b\in\mathbb{B}\
+\exists\ \left\langle v,p,x \right\rangle \in C\ b\succ p$.\end{definition}
 
 This definition allows us to define the following semantics for clause
 evaluation:

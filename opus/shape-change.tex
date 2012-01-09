@@ -30,6 +30,11 @@ property for such a class of programs without reducing size of the class of
 programs for which size-change termination can already deduce the halting
 property.
 
+In the discussion below we disregard the definitions of unary recursive call
+graphs and no longer assume to only have programs where at most one variable is
+bound in every clause. Moreover, we still let all the clauses be unary due to
+\referToTheorem{mutlivariate-to-unary}. 
+
 \section{The class of programs considered}
 
 Before we can speak of extending size-change termination to determine the
@@ -153,10 +158,13 @@ and $s_2$ are disjoint, or $s_1\cap s_2=\emptyset$, iff given $B_1=\{b\mid
 b\in\mathbb{B} \wedge b\succ s_1\}$ and $B_2=\{b\mid b\in\mathbb{B} \wedge
 b\succ s_2\}$ it holds that $B_1\cap B_2=\emptyset$.\end{definition}
 
+\begin{definition} Given a shape $s\in\mathbb{S}$, let $S^d_s= \left\{s^d \mid
+s^d\in\mathbb{S} \wedge s\cap s^d=\emptyset \wedge \forall\ s^d_1\in
+S^d_s\backslash\{s^d\}\ s^d\cap s^d_1=\emptyset \right\}$ be the set of shapes
+disjoint with $s$ and with each other.\end{definition}
+
 \begin{theorem}\label{lemma:extend-finite-converse} Given a shape
-$s\in\mathbb{S}$, the set $S_s^d=\{s^d \mid s^d\in\mathbb{S} \wedge s\cap
-s^d=\emptyset \wedge \forall\ s^d_1\in S^d\ s^d\cap s^d_1=\emptyset\}$, is
-finite.\end{theorem}
+$s\in\mathbb{S}$, the set $S^d_s$, is finite.\end{theorem}
 
 \begin{proof} The proof is two-fold,
 
@@ -175,6 +183,17 @@ pairwise disjoint.
 \item For any given shape $s\in\mathbb{S}$ the number of nodes and leafs is
 finite by \referToDefinition{shape}.\end{enumerate}\end{proof} 
 
+\begin{definition} Given a pairwise disjoint set of shapes $S_1$, and another
+pairwise disjoint set of shapes $S_2$, let $$S_1\Cup S_2 = \left\{ s \left|
+\begin{array}{ll} &\left(s\in S_1 \wedge \left(\exists\ s'\in S_2\ s\cap
+s'\neq\emptyset \longrightarrow s\succ s' \right) \right)\\ \vee & \left( s\in
+S_2 \wedge \left(\exists\ s'\in S_1\ s\cap s'\neq\emptyset \longrightarrow
+s\succ s' \right) \right) \end{array} \right.\right\}.$$\end{definition}
+
+In particular, the set $S_1\Cup S_2$ is the union of the two sets where for any
+pair of patterns that match one another, the one with the most nodes and leafs
+is chosen. 
+
 \subsection{Plausible shapes}
 
 \begin{definition} We say that a variable $v\in\mathbb{V}$ with some value
@@ -191,260 +210,59 @@ shapes $S_v=\{\any\}$.\end{corollary}
 $S=\{p\}$\footnote{Patterns are shapes as
 \referToDefinition{pattern-is-shape}.}.\end{corollary}
 
-\begin{corollary} Consider any pair of clauses $c_1=\left\langle v_1,p_1,x_1
-\right\rangle, c_2=\left\langle v_2,p_2,x_2 \right\rangle \in\mathbb{C}$, with
-the plausible value sets $S_1=\{b\mid b\in\mathbb{B} \wedge b \succ p_1\}$ and
-$S_2=\{b\mid b\in\mathbb{B} \wedge b \succ p_2\}$. If for some
-$b\in\mathbb{B}$, $c_1$ is considered before $c_2$, and $c_1$ fails to accept
-$b$, then the set of plausible shapes for $b$ can be said to be
-$S_1$\end{corollary}
+%$$C = \left\langle v_1,p_1, x_1 \right\rangle, \left\langle v_2, p_2, x_2
+%\right\rangle, \ldots, \left\langle v_{|C|}, p_{|C|}, x_{|C} \right\rangle.$$
 
-By \referToDefinition{unary-clause}, all clauses are unary, and hence a clause
-can be said to specify a shape. By \referToDefinition{function-tuple}, a
-function call contains a finite list of clauses.
+Consider henceforth a function call $f = \left\langle v, C \right\rangle$.
+Given a tuple $\left\langle i,j \right\rangle$ from the set $\left\{
+\left\langle i, j \right\rangle \mid 0 < i < |C| \wedge j = i + 1 \right\}$,
+consider also the clauses $c_i = \left\langle v_i, p_i, x_i \right\rangle, c_j
+= \left\langle v_j, p_j, x_j \right\rangle \in C$. Let $B_i=\{b\mid
+b\in\mathbb{B} \wedge b \succ p_i\}$ and $B_j=\{b\mid b\in\mathbb{B} \wedge b
+\succ p_j\}$ denote the sets of values that the clauses $c_i$ and $c_j$ accept,
+respectively.
 
-\begin{theorem} Given a function $f=\left\langle v,C\right\rangle$, \end{theorem}
+\begin{corollary}\label{corollary:nice-1} Given the semantics of \D{}, i.e.
+that clause $c_i$ will be considered before $c_j$, we can deduce that if $c_j$
+indeed accepts a given value $b\in\mathbb{B}$, that $c_i$ hence rejected, the
+set of plausible values for $b$ must be $B_j-B_i$.\end{corollary}
 
-\begin{proof} The shapes specified by a function are derived from the patterns
-of its clauses.\end{proof}
+\begin{corollary}\label{corollary:nice-2} Given a set $S^d_i$ of clauses
+disjoint with the shape corresponding to pattern $p_i$, let $S_c'=S^d_i\Cup
+p_j$ and $S_c=S_c'-\left\{ s \left| s\in S'_c \wedge s\not{\succ} p_j
+\right.\right\}$. Due to \referToCorollary{nice-1}, the clause $c_j$ could've
+been expressed in terms of the list of the following list of clauses:  
+
+$$C_j = \left\langle v_j,p_1, x_j \right\rangle, \left\langle v_j, p_2, x_j
+\right\rangle, \ldots, \left\langle v_j, p_n, x_j \right\rangle,$$
+
+where and $p_1,p_2,\ldots,p_n\subset S_c$ and $n=|S_c|$.\end{corollary}
+
+\begin{theorem} A function $f = \left\langle v, C \right\rangle$ can be defined
+in such a way that $B_i\cap B_j=\emptyset$.\end{theorem}
+
+\begin{proof} Follows from the semantics of \D{},
+\referToDefinition{exhaustive} and \referToCorollary{nice-2}. \end{proof}
+
+Given that all clauses are unary and patterns correspond to shapes, we
+henceforth say that clauses, like the shapes that their patterns represent can
+be ``disjoint''.
+
+\begin{definition} Given the clauses $c_1 = \left\langle \_, p_1, \_
+\right\rangle, c_2 = \left\langle \_, p_2, \_ \right\rangle\in \mathbb{C} $, we
+say $c_1\cap c_2 = \emptyset$ iff $p_1\cap p_2 = \emptyset$.\end{definition}
+
+\begin{definition}\label{definition:nice-3} All programs henceforth considered
+have function definitions with clause lists $C=c_1,c_2,\ldots,c_n$ s.t.
+$\forall\ \left\langle i,j \right\rangle \in \left\{ \left\langle i, j
+\right\rangle \mid 0 < i < n \wedge i < j \leq n \right\}\ c_i \cap c_j =
+\emptyset $.\end{definition}
 
 \section{Shape-change termination}
 
-\section{Nice}
-
-Every function can be defined in terms of clauses with disjoint shapes (perhaps
-duplicating some clauses).
-
-Let the set $S_{f_{init}}$ denote the initial (finite) set of shapes that the
-function $f\in\mathbb{F}$ considers. We say that a function considers a set of
-shapes $S\subset\mathbb{S}$, if the clauses of the function (now disjoint) use
-exactly the patterns that would constitute $S$.
-
-We define a program $r= \left\langle F,x \right\rangle$ as a network of nodes
-with the node set $\left\{ s \mid f\in F \wedge s\in S_{f_{init}}\right\}$.
-
-We define an explorative algorithm that at any given stage is in one of the nodes of the program. At any given  
-
-Let $s\in\mathbb{S}$ be some current variable shape. For any call from $s_f\in
-S_{f_{init}}$ to some function $g\in\mathbb{F}$, draw edges from $s_f$ to every
-shape in $\left\{ s_g\mid s_g\in S_{g_{init}} \wedge s\succ s_g \right\}$.
-Extend the present variable shape if applicable. If we're in shape $s_f\in
-S_{f_{init}}$ and follow a transition to shape $s_g\in S_{g_{init}}$, we must
-check back with the path taken to get to this $s'$, whether it has previously
-already been in the $s_g$ shape. If so, the question merely is whether 
-
-
-
-
-\section{Rest}
-
-If there is a finite number of shapes for any triangle, there is a finite number of shapes for any shape.
-
-Instead of constructing a call graph with every clause in a program as a node,
-we construct a call graph with every shape of every function call as a node.
-This builds upon the idea that there is a finite number of disjoint shapes
-deducible from the clauses of any function definition, which renders the number
-of nodes in the graph finite. The number of shapes for any one clause may vary,
-and hence there will be multiple edges from caller to its callees, rather than
-one edge to the first clause of the callee as seen with regular size-change
-termination.
-
-The nodes are iteratively derived starting with the initial clause $c_{main}$,
-drawing the edges and callee shapes as function calls are encountered, i.e. we
-use an exploration technique to build the graph.
-
-\subsection{Annotation}
-
-In the sections that follow we'll make use of an extended call graph syntax.
-The intent of the call graphs in this chapter is to show how a shape changes in
-a control transition from source to target. Indeed, the call graphs are no
-longer call graphs but \emph{shape change graphs}.
-
-\subsubsection{Success \& fail transitions}
-
-There no longer needs to be drawn a distinction between the two since a value
-of some shape will match exactly one choice. In some cases, where a deduction
-of a value is fairly evolved this clause may be deduced, in other cases, the
-success \& fail transitions will be regarded as one and the same. 
-
-\subsection{Patterns and shapes}
-
-
-For any unknown value, we may assume only one shape, the tree. Hence, given a
-program like the one in \referToListing{size-change-fail}, we start analyzing
-the function \mono{f} by assuming nothing about the input argument, i.e.
-annotating it with a $\bigtriangleup$. The value may match either clause, but
-it will match exactly one. If the value matches a clause, that indicates that
-the value has a certain shape, indeed this is what a pattern declaration is --
-a shape specification, or a requirement, if you wish. The position of the
-clause enclosing the pattern wrt. to other clauses can be used to reduce the
-singleton set of possible values to a set containing multiple, more concrete
-shapes. All in all, multiple clauses may be chosen, and as already discussed
-for clause $f_1$, multiple shapes can be deduced for a given clause, we
-consider \emph{all} possible shapes.
-\referToFigure{size-change-fail-shape-init} illustrates this initial step.
-
-\includeFigure{size-change-fail-shape-init}{Initializing shape analysis for the
-program in \referToListing{size-change-fail}.}
-
-\subsubsection{Deducing shapes from patterns}
-
-Shape deduction is an iterative, and initially non-terminating process for any
-non-terminating program. We begin by introducing the rules that allow us to
-deduce shapes from patterns and call sequences, and make the method terminating
-at a later stage.
-
-The method itself builds upon the idea that the sort of iterative pattern
-matching that goes on when a function call is made, can be used to deduce
-information about the shape of the value. Here, both failure to match a series
-of patterns as well as the success to match some pattern eventually are useful.
-In particular, the series of failed pattern matches indicate which shapes the
-value \emph{does not} have, which in turn allows us to assemble a finite set of
-shapes, one of which \emph{must} match the value\footnote{If a pattern matches
-a value then the value matches the pattern, and vice versa.}. We use this
-information as we look at the subsequent patterns where patterns themselves
-might not be descriptive enough. For instance, consider how failure to match a
-node allowed us to deduce a leaf, although the subsequent pattern itself
-indicated simply a tree shape in \referToSection{extend-deducing-zero}.
-
-\begin{lemma}\label{lemma:extend-first-clause} If a value $v$ matches the
-pattern $p$ of the first clause $c$ of a function declaration $f$, then only
-one possible shape of $v$ is known, indeed it is the one represented by
-$p$.\end{lemma}
-
-\begin{proof} The first clause of a function declaration is the first clause
-considered by \D{}'s runtime when a function call is made. No \emph{other}
-clauses, and hence patterns, have been attempted at this point. There is
-therefore no information about the shape of the value other than $p$ itself.
-Furthermore, if $v$ matches, then it certainly has the shape indicated by $p$,
-otherwise, $v$ wouldn't have matched $p$.\end{proof}
-
-The following are a few definitions and lemma are useful when talking about
-shapes.
-
-\begin{definition} Given two sets of shapes, $X$ and $Y$, we let the operation
-$X\Cup Y$ denote an operation where the two sets are joined into one, and the
-pairs of shapes that are not pairwise disjoint in the final set are joined with
-each other such that if $\exists\ s_1,s_2\in X\Cup Y : s_1\curlyvee s_2$, then
-$s_1$ is removed from $X\Cup Y$.  \end{definition}
-
-\begin{lemma}\label{lemma:extend-finite-converse} Given a shape, there is a
-finite number of disjoint shapes that are disjoint with that shape.\end{lemma}
-
-\begin{proof} A shape in \D{} is recursively defined in terms of an unlabeled
-binary tree, where neither nodes nor leafs have labels, and it is the nodes and
-leafs themselves that constitute a ``shape'' together with trees, that match
-either trees, nodes or leafs.
-
-Given a shape $A$, there is a corresponding shape $B$ for every leaf, and every
-node in $A$, such that $A$ and $B$ are disjoint. In particular, for every leaf
-in $A$, $B$ can be given a node with two trees as children, and for every node
-in $A$, $B$ can be given a leaf. In either case, $A$ and $B$ end up being
-disjoint. What's more, every $B$ is concerned with a different leaf or node,
-and no leaf or node in $A$ is ever replaced by a tree, this indicates that all
-the shapes $B$ are disjoint wrt. one another as well. The parts in shape $A$
-that remain untouched are the trees and there are no converse constructs to trees
-as they match both trees, nodes and leafs.
-
-Since in any given shape there is a finite number of nodes and leafs, any shape
-has a finite number of disjoint shapes that are disjoint with that shape.
-\end{proof}
-
-The following lemma indicates that for any function call there will finitely
-many shape branches.
-
-\begin{lemma}\label{lemma:extend-clause-finite} Every pattern in a function
-definition, if matched, indicates that the value has one of a finite number of
-disjoint shapes.\end{lemma}
-
-\begin{proof} Any pattern is a shape specification, hence, for single-clause
-functions this is true due to \referToLemma{extend-first-clause}.
-
-Given a multiple-clause function with two consecutive clauses $c_1$ and $c_2$
-with patterns $p_1$ and $p_2$, the presence of $p_1$ reduces the space of
-values which can reach $p_2$. Let $\overline{X}$ denote the pairwise disjoint
-set of shapes that are disjoint with the shape defined by $p_1$. If $p_1$ fails
-to match, then the incoming value must have one of the shapes in
-$\overline{X}$, and by the definition of \D{}, any such shape must be accepted
-by exactly one of the consecutive clauses. Let $Y$ denote the set of shapes
-defined by $p_2$. Then, if $p_2$ matches followed by $p_1$ failing to match,
-the shape of the incoming value will be in the set $\overline{X}\Cup Y$.
-
-Since $\overline{X}$ and $Y$ are finite sets by
-\referToLemma{extend-finite-converse}, the $\overline{X}\Cup Y$ must be finite
-as well.\end{proof}
-
-\section{A description}
-
-\subsection{Relationship between value shape and bound variables.}
-
-\subsection{Shape transitions}
-
-Actual shape transitions occur within the body of a clause.
-
-\subsubsection{Nested function calls}
-
-Unlike regular size-change termination we won't disregard the outcome of nested
-function calls, but instead consider the shape shifting that we can deduce from
-such calls. Rather intuitively, an expression evaluation terminates if all of
-the nested function calls terminate. Hence, for any expression it would require
-to start with the ``deepest most'' nested call and work our way up the call
-stack from there.
-
-\subsubsection{Between calls}
-
-Consider a unary clause $c$ with a pattern specification $p$ and expression
-$x$. Assume that the pattern $p$ matches some unknown value $v$ and the
-expression $x$ is hence evaluated with some variables $N$ bound to pairwise
-disjoint values, which are strict subsets of $v$, or $v$ itself. Due to
-\referToLemma{extend-clause-finite}, when $x$ is evaluated there is a finite
-set of value shapes that we've deduced for $v$ due to the fact that it matched
-$p$. The variables in the set $N$, without further details, can only be assumed
-to all be trees.
-
-When a nested function call is encountered in $x$ we compute a \emph{safe}
-shape approximation of all the arguments to the function before considering
-what shape shift the actual call might bring about, not least because that
-depends on the approximation of the shapes of the arguments.
-
-Any function call argument in \D{} is an expression. An expression is a nested
-construction of either concrete values, bound variables or nested function
-calls. Given concrete values, and what we've thus far said about the variables
-bound in $c$, we can deduce the most concrete shape specification without
-knowledge of what the initially unknown $v$ is.
-
-However, nested function calls, again complicate the matters, indeed because
-that implies that the shape of the nested function call has to be determined
-\emph{before} the shape of the parent function call can be determined. We
-could've ignored nested function calls and merely safely assumed the shape of
-the value returned by the call was a tree, but that would've been rather
-useless to the derivation of the shape returned by clause $c$. Instead, we
-follow this stack of nested function calls in an expression (without actually
-following the calls), and eventually a base function call that has no function
-calls in its arguments. Assume we've reached that nested function call and wish
-to determine the halting property for that particular call.
-
-With the finite set of shapes for the arguments we consider the disjoint shapes
-of the call destination, and hence determine which clauses may be taken. Note,
-of course, that this might be \emph{all} the clauses of the called function.
-
-We repeat this process, branching out in all the possible shapes and clauses
-taken. We certainly terminate whenever a value is passed to a terminating
-clause. The question hence is what do we do when we reach a loop.
-
-A loop in this case is a shape shifting loop, where a value of a certain shape
-input into a certain function leads to a call cycle that \emph{seemingly}
-retains the shape of the value. At runtime, if this call cycle is taken, it is
-certain that the change that has occurred in the value, if any, has happened in
-one of the triangles of the shape specification, since otherwise the shapes
-wouldn't have matched and the cycle wouldn't have occurred.
-
-Such cases is where original size change termination comes in handy. If despite
-retaining the shape, value is actually decreased in every iteration of the
-cycle, the triangle eventually reduces to \mono{0}. 
-
-A function call can at most possibly shift the shape to any of the possible
-shapes in a given function.
+In the next section we consider recursive call graphs as defined in
+\referToSection{size-change-termination} albeit for programs as discussed in
+\referToDefinition{nice-3}.
 
 \section{Termination \& Soundness}
 
