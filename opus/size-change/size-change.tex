@@ -159,24 +159,28 @@ value, also an absurdity.\end{proof}
 
 \subsection{Deducing $\Phi^1$}
 
-Since \D{} is a call-by-value language, when a function call $\left\langle
-v_t,x_s \right\rangle$ is encountered, the source evaluates $x_s$ and generates
-some $b_s\in\mathbb{B}$ as the actual argument for the function call. The
-expression $x_s$ is by definition a nested construction of either some concrete
-value, some variable $v_s\in\mathbb{V}$ bound in the source, or a nested
-function call. Without further regard of nested function calls, this implies
-that a size relation can be deduced between the $v_s$ and $b_s$.
+\begin{definition} Given a call graph $G^1 = \left\langle C^1,
+E^1\right\rangle$ and a call $\left\langle c_s = \left\langle \_,p_s,\_
+\right\rangle, c_t = \left\langle \_, p_t, \_ \right\rangle, x \right\rangle
+\in E^1$, let $v_{p_s}$ denote the variable s.t. $v_{p_s}\in\mathbb{V}\wedge
+v_{p_s}\Subset p_s$, and let $v_{p_t}$ denote the variable s.t.
+$v_{p_t}\in\mathbb{V}\wedge v_{p_t}\Subset p_t$. \end{definition}
+
+Since \D{} is a call-by-value language, for any given call $\left\langle
+c_s,c_t,x \right\rangle \in E^1$, the source evaluates $x$, and generates some
+$b\in\mathbb{B}$ as the actual argument for the call. The expression $x$ is by
+definition a nested construction of either some concrete value, some variable
+$v_{p_s}$, or a nested function call. Without further regard of nested function
+calls, this implies that a size relation can be deduced between the $v_{p_s}$
+and $b$.
 
 We decide to ignore the nested function calls because this would imply a more
 complex static analysis of the program. Specifically, we're unable to say
-anything about the result of the nested function call from the scope of the
-source clause alone. Instead, we treat results from nested function calls
-simply as variables with \emph{unknown} values. We also make sure to keep these
-variables separate from the bound variables as there is no relationship to draw
-between these ``variables'' and the variable that might be bound in the
-target\footnote{While this information may be useful for dead-code elimination
-and other forms of static analysis, this is of little importance to size-change
-termination.}.
+anything about the result of the nested function call from the scope of $c_s$
+alone. Instead, we treat results from nested function calls simply as variables
+with \emph{unknown} values. We also make sure to keep these variables separate
+from the bound variables as there is no relationship to draw between these
+auxiliary variables and the variable $v_t\in\mathbb{V}$ bound in $c_t$.
 
 Due to nested functions calls being represented as variables with unknown
 values, a precise size displacement between the bound variable $v_s$ and the
@@ -187,10 +191,17 @@ displacement estimate.
 $b_1,b_2\in\mathbb{B}$ is a value $n\in\mathbb{N}$ s.t. $b_1+n\leq
 b_2$.\end{definition}
 
-\begin{definition} Given a function $\left\langle v_t,x_s\right\rangle$, we
-construct the expression $p_s$ where we replace all $\left\langle v,x
-\right\rangle\Subset p_s$ with an auxiliary variable. We group those auxiliary
-variables in the set $V^s_{calls}$.\end{definition} 
+\begin{definition}\label{definition:source-variable} Given a call
+$\left\langle c_s,c_t,x_s\right\rangle$, we construct the expression $p_s$ where we
+replace all $\left\langle \_,\_ \right\rangle\Subset p_s$ with an auxiliary
+variable. We group those auxiliary variables in the set $V^s_{calls}$. There is
+only one possible variable in use in $x_s$, we denote this variable
+$v^s$.\end{definition} 
+
+\begin{definition}\label{definition:clause-variable} Given a clause
+$c_x=\left\langle \_,p_x,\_  \right\rangle \in \mathbb{C}$, we refer to the
+only variable in $p_x$ as $v^x$, hence $v^x\in\mathbb{V} \wedge v^t\Subset
+p_x$.\end{definition}
 
 \begin{lemma} An expression $p_s\in\mathbb{X}$ is interchangeable with a
 pattern. Hence, we say that $p_s\in\mathbb{P}.$\end{lemma}
@@ -226,42 +237,43 @@ between the bound variable and actual argument values, we can simply turn the
 argument into such an abstract pattern to begin with. The actual size relations
 are hence kept and can be deduced at a later stage in the process.
 
-Indeed, the tuple $\left\langle p_s,v^s,V_{calls}^s \right\rangle : \mathbb{P}
-\times \mathbb{V} \times [\mathbb{V}]$ constitutes such an abstract pattern
-already.
+%Indeed, the tuple $\left\langle p_s,v^s,V_{calls}^s \right\rangle : \mathbb{P}
+%\times \mathbb{V} \times [\mathbb{V}]$ constitutes such an abstract pattern
+%already.
 
-\begin{definition} Given a clause $c_t=\left\langle \_,p_t,\_  \right\rangle
-\in \mathbb{C}$, we refer to the only variable in $p_t$ as $v^t$, hence
-$v^t\in\mathbb{V} \wedge v^t\Subset p_t$.\end{definition}
+\subsubsection{Pattern matching}
 
-\subsection{Pattern matching}
+\begin{definition} Given a call graph $G^1= \left\langle C,E \right\rangle$ for
+each $\left\langle c_s=\_, c_t=\left\langle \_,p_t,\_\right\rangle,
+x_s\right\rangle \in E$, by \referToDefinition{source-variable} and
+\referToDefinition{clause-variable}, we can construct the tuples $\left\langle
+p^s,v^s,V_{calls}^s \right\rangle$ and $\left\langle p^t,v^t \right\rangle$. We
+hence assume for these tuples to be readily available for any given call
+$\left\langle c_s, c_t, x_s \right\rangle$.\end{definition}
 
-Our task is to deduce a size relation between the variables in the sets
-$N_{vars}^s$ and $N_{vars}^t$ given the tuples $(p^s,N_{vars}^s,N_{calls}^s)$
-and $(p^t,N_{vars}^t)$.
+%\begin{definition} Let the function $\phi\ :\ \mathbb{V} \times \mathbb{V}
+%\rightarrow \{<,\leq,\bot\}$ denote the function $\lambda N^t, N^s .
+%\Phi\left(C^t,C^s,N^t,N^s\right)$.\end{definition}
 
+%In the following section we will discuss the rules involved in deducing the
+%function $\phi$, that is, the function $\Phi$ for some given source and target
+%of a success transition.
 
-Let the function $\phi\ :\ \mathbb{N} \times \mathbb{N} \rightarrow
-\{<,\leq,\bot\}$ denote the function $\lambda N^t, N^s .
-\Phi\left(C^t,C^s,N^t,N^s\right)$. In the following section we will discuss the
-rules involved in deducing the function $\phi$, that is, the function $\Phi$
-for some given source and target of a success transition.
+%For this purpose we will regard the tuples $(P^s,N_{vars}^s)$ and
+%$(P^t,N_{vars}^t)$, of a given success transition, where $P^s$ is the list of
+%abstract patterns derived from the function arguments in the source, and $P^t$
+%is the list of corresponding actual patterns in the target. Furthermore, let
+%$N_{vars}^s$ and $N_{vars}^t$ be unary functions of the type
+%$\mathbb{P}\rightarrow\mathbb{N}^*$, accepting a pattern and yielding the
+%variable names that are contained both in the input pattern and the sets
+%$N_{vars}^s$ and $N_{vars}^t$, respectively.
 
-For this purpose we will regard the tuples $(P^s,N_{vars}^s)$ and
-$(P^t,N_{vars}^t)$, of a given success transition, where $P^s$ is the list of
-abstract patterns derived from the function arguments in the source, and $P^t$
-is the list of corresponding actual patterns in the target. Furthermore, let
-$N_{vars}^s$ and $N_{vars}^t$ be unary functions of the type
-$\mathbb{P}\rightarrow\mathbb{N}^*$, accepting a pattern and yielding the
-variable names that are contained both in the input pattern and the sets
-$N_{vars}^s$ and $N_{vars}^t$, respectively.
-
-In the following analysis we will look at but one instance of the lists $P^s$
-and $P^t$, namely the abstract pattern $p^s$ from the source and its
-corresponding actual pattern in the declaration, $p^t$. In total, however, this
-process has to be repeated for each such pair given the sets $P^s$ and $P^t$,
-iteratively extending the definition of the relation $\phi$ to all variables
-bound in the sets $N_{vars}^s$ and $N_{vars}^t$.
+%In the following analysis we will look at but one instance of the lists $P^s$
+%and $P^t$, namely the abstract pattern $p^s$ from the source and its
+%corresponding actual pattern in the declaration, $p^t$. In total, however, this
+%process has to be repeated for each such pair given the sets $P^s$ and $P^t$,
+%iteratively extending the definition of the relation $\phi$ to all variables
+%bound in the sets $N_{vars}^s$ and $N_{vars}^t$.
 
 We initially define $\phi$ to yield the value $\bot$ for all arguments. We will
 continuously modify this definition as we process $p^s$ and $p^t$. We denote
