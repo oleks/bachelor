@@ -3,11 +3,11 @@
 One trouble with size-change termination as described in the previous chapter
 is \referToLemma{cycle-reduce}. This lemma makes size-change termination weak
 in the sense that the overall shape changes in a given call cycle are
-\emph{not} considered, and instead, the calls of any call cycle are constrained
-to nonincreasing calls. However, there may be programs that have calls, or even
-call cycles, that in terms of size, increase a value for a finite amount of
-time, until some condition is met, or as in the case of \D{}, it has some
-particular shape.
+\emph{not} considered, and instead, call cycles are constrained to
+monotonically decreasing call cycles.  However, there may be programs that have
+calls, or even call cycles, that in terms of size, increase a value for a
+finite amount of time, until some condition is met, or as in the case of \D{},
+a value has some particular shape.
 
 Consider the program in \referToListing{size-change-fail} as an example of a
 program for which regular size-change termination is unable to determine the
@@ -299,19 +299,19 @@ function, or simply $r = \left\langle C, x\right\rangle : [\mathbb{C}] \times
 \section{Shape-change termination}
 
 In the next section, unless otherwise stated, we consider recursive call graphs
-as defined in \referToSection{size-change-termination} albeit for programs as
-discussed in \referToDefinition{nice-3} and
+as defined in \referToDefinition{recursive-call-graph}, albeit for programs
+as discussed in \referToDefinition{nice-3} and
 \referToDefinition{program-many-to-one}.
 
 \begin{definition}\label{definition:nice-4} Given a program $ r = \left\langle
-F, x \right\rangle$, where $|F|=1$, we define a ``shape change graph'' to be
+F, x \right\rangle$, where $|F|=1$, we define a ``shape-change graph'' to be
 the recursive call graph as by \referToDefinition{recursive-call-graph}. We
 also define a ``shape cycle'' to be a cycle in that graph as by
 \referToDefinition{call-cycle}.\end{definition}
 
-While this reuse of definition might strike you as odd, the difference is the
-underlying program and hence its call graph. The underlying call graph has
-exactly one function and every clause of that function has unique a pattern,
+While this recycling of definitions might seem odd at first, the difference is
+the underlying program and hence its call graph. The underlying program has
+exactly one function, and every clause of that function has a unique a pattern,
 i.e. shape. Hence, the name shape cycle, as a cycle between the clauses of the
 program now indeed constitutes a shape cycle, where we start at some given
 shape and stop at that same shape.
@@ -320,25 +320,28 @@ shape and stop at that same shape.
 \referToDefinition{variable}.
 
 \begin{definition} Given a shape cycle $z= \left\langle c_1,c_2,\_
-\right\rangle, \left\langle c_2,c_3 \right\rangle, \ldots, \left\langle
-c_{n-1}, c_n \right\rangle$, where $c_1=c_n$. Let $v_{p_1}$ denote the name of
-the variable bound in clause $c_1$. We say that the cycle $z$ has a terminal
-branch if the program takes a path $z'\neq z$ whenever $c_1$ is called with
-$v_{p_1}=0$.\end{definition}
+\right\rangle, \left\langle c_2,c_3,\_ \right\rangle, \ldots, \left\langle
+c_{n-1}, c_n,\_ \right\rangle$, where $c_1=c_n$. Let $v_{p_1}$ denote the name
+of the variable bound in clause $c_1$. We say that the cycle $z$ has a terminal
+branch if the program takes a path $z'\neq z$ whenever $c_1$ is called with an
+argument $b\in\mathbb{B}$ s.t. $v_{p_1}$ is bound to $0$.\end{definition}
 
-\begin{theorem} Given a shape change graph $G$, a program terminates iff all
+\begin{theorem} Given a shape-change graph $G$, a program terminates iff all
 shape cycles monotonically decrease their respective cycle
 variables and have a terminal branch.\end{theorem}
 
-\begin{proof} If a cycle monotonically decreases a value, then eventually, the
-cycle will be initiated with the cycle variable at value $0$. If the cycle,
-provided such a value, branches off the cycle, the cycle can be said to have
-terminated.\end{proof}
+\begin{proof} If a cycle $z= \left\langle c_1,c_2,\_ \right\rangle,
+\left\langle c_2,c_3,\_ \right\rangle, \ldots, \left\langle c_{n-1}, c_n,\_
+\right\rangle$ monotonically decreases the cycle variable, then eventually, the
+clause $c_1$ will be called with a value $b\in\mathbb{B}$ s.t. $v_{p_1}$ is
+bound to $0$. If $c_1$, hence branches off to a path $z'\neq z$, i.e. if $z$ is
+a terminal branch, then the cycle itself has terminated.\end{proof}
 
 \section{The algorithm}
 
 We define the shape-change termination algorithm as follows:
 
-\begin{definition} Given a program $r$ and its corresponding shape-change graph
-$G$, yield ``halts'' if all the call cycles in $G$ are monotonically
-decreasing, and ``unknown'' otherwise.\end{definition}
+\begin{definition}\label{definition:shape-change-algorithm} Given a program $r$
+and its corresponding shape-change graph $G$, yield ``halts'' if all the call
+cycles in $G$ are monotonically decreasing, and ``unknown''
+otherwise.\end{definition}
