@@ -1,4 +1,5 @@
-\section{Size-change termination principle}
+\section{Size-change termination
+principle}\label{section:size-change-principle}
 
 Consider the program in \referToListing{cfg-loop} and its corresponding call
 graph in \referToFigure{cfg-loop-pdf}. Without any further information about
@@ -119,7 +120,7 @@ simplification of the size relation $\Phi$.
 
 $$\Phi^1 = \left\{ \left\langle c_s, c_t,x, \rho \right\rangle \mid
 \left\langle c_s, c_t,x \right\rangle \in E \wedge \rho\in\{\bot, <, \leq\}
-\right\}$$
+\right\}.$$
 
 \end{definition}
 
@@ -149,7 +150,7 @@ $$\left(\forall\ \left\langle c_i,c_j \right\rangle \in z\ \left(\left\langle
 c_i,c_j,\_, < \right\rangle \in \Phi^1\right) \vee \left(\left\langle
 c_i,c_j,\_, \leq \right\rangle \in \Phi^1 \right)\right)\wedge \left( \exists\
 \left\langle c_i,c_j \right\rangle \in z\ \left\langle c_i,c_j,\_, <
-\right\rangle \in \Phi^1 \right)$$.\end{lemma}
+\right\rangle \in \Phi^1 \right).$$\end{lemma}
 
 \begin{proof} If a value is not reduced in a cycle, it either stays the same or
 is increased. If it is increased, then at least one call must've increased the
@@ -164,15 +165,34 @@ E^1\right\rangle$ and a call $\left\langle c_s = \left\langle \_,p_s,\_
 \right\rangle, c_t = \left\langle \_, p_t, \_ \right\rangle, x \right\rangle
 \in E^1$, let $v_{p_s}$ denote the variable s.t. $v_{p_s}\in\mathbb{V}\wedge
 v_{p_s}\Subset p_s$, and let $v_{p_t}$ denote the variable s.t.
-$v_{p_t}\in\mathbb{V}\wedge v_{p_t}\Subset p_t$. \end{definition}
+$v_{p_t}\in\mathbb{V}\wedge v_{p_t}\Subset p_t$. If some $p\in\mathbb{P}$
+contains no variables, then $\forall\ v\in\mathbb{V}\ v\neq
+v_p$.\end{definition}
 
-Since \D{} is a call-by-value language, for any given call $\left\langle
-c_s,c_t,x \right\rangle \in E^1$, the source evaluates $x$, and generates some
-$b\in\mathbb{B}$ as the actual argument for the call. The expression $x$ is by
-definition a nested construction of either some concrete value, some variable
-$v_{p_s}$, or a nested function call. Without further regard of nested function
-calls, this implies that a size relation can be deduced between the $v_{p_s}$
-and $b$.
+\begin{definition} Given a call graph $G^1 = \left\langle C^1,
+E^1\right\rangle$ and a call $\left\langle \_, \_, x \right\rangle \in E^1$,
+let $b_x\in\mathbb{B}$ denote the actual value $x$ evaluates
+to.\end{definition}
+
+This is a three-step process, for any given call $\left\langle c_s, c_t, x
+\right\rangle \in E^1$, \begin{inparaenum}[(1)]\item \label{nice-1} deduce a
+size relation between $v_{p_s}$ and $b_x$, \item \label{nice-2} deduce a size
+relation between $b_x$ and $v_{p_t}$, \item given (\ref{nice-1}) and
+(\ref{nice-2}), deduce a size relation between $v_{p_s}$ and
+$v_{p_t}$\end{inparaenum}, allowing us to update the relevant $\Phi^1$.
+
+In the discussions below we assume to be considering a single call $e\in E^1$,
+hence the variables $c_s$, $c_t$, $x$, $b_x$, $p_s$, $p_t$, $v_{p_s}$,
+$v_{p_t}$ and $V_x$ are available without further details.
+
+\subsubsection{Source to argument}
+
+Since \D{} is a call-by-value language, the source evaluates $x$, and generates some
+$b_x\in\mathbb{B}$ as the actual argument for the call. The expression $x$ is
+by definition a nested construction of either some concrete value, some
+variable $v_{p_s}$, or a nested function call. Without further regard of nested
+function calls, this implies that a size relation can be deduced between the
+$v_{p_s}$ and $b_x$.
 
 We decide to ignore the nested function calls because this would imply a more
 complex static analysis of the program. Specifically, we're unable to say
@@ -180,76 +200,72 @@ anything about the result of the nested function call from the scope of $c_s$
 alone. Instead, we treat results from nested function calls simply as variables
 with \emph{unknown} values. We also make sure to keep these variables separate
 from the bound variables as there is no relationship to draw between these
-auxiliary variables and the variable $v_t\in\mathbb{V}$ bound in $c_t$.
+auxiliary variables and the variable $v_{p_t}$.
 
 Due to nested functions calls being represented as variables with unknown
-values, a precise size displacement between the bound variable $v_s$ and the
-generated argument $b_s$ is not feasible. However, we can deduce a \emph{safe}
-displacement estimate.
+values, a precise size displacement between the bound variable $v_{p_s}$ and
+the generated argument $b$ is not feasible. However, we can deduce a
+\emph{safe} displacement estimate.
 
 \begin{definition} A safe displacement estimate between the values
 $b_1,b_2\in\mathbb{B}$ is a value $n\in\mathbb{N}$ s.t. $b_1+n\leq
 b_2$.\end{definition}
 
-\begin{definition}\label{definition:source-variable} Given a call
-$\left\langle c_s,c_t,x_s\right\rangle$, we construct the expression $p_s$ where we
-replace all $\left\langle \_,\_ \right\rangle\Subset p_s$ with an auxiliary
-variable. We group those auxiliary variables in the set $V^s_{calls}$. There is
-only one possible variable in use in $x_s$, we denote this variable
-$v^s$.\end{definition} 
+\begin{definition}\label{definition:source-variable} Given a call $\left\langle
+c_s,c_t,x\right\rangle$, we construct the expression $p_x$ where we replace all
+$\left\langle \_,\_ \right\rangle\Subset x$ with an auxiliary variable $v\neq
+v_{p_s}$. We group those auxiliary variables in the set $V_x$, that is,\\ $V_x =
+\left\{ v \mid v\in\mathbb{V} \wedge v\Subset p_x \wedge v \neq v_{p_s}
+\right\}$.\end{definition} 
 
-\begin{definition}\label{definition:clause-variable} Given a clause
-$c_x=\left\langle \_,p_x,\_  \right\rangle \in \mathbb{C}$, we refer to the
-only variable in $p_x$ as $v^x$, hence $v^x\in\mathbb{V} \wedge v^t\Subset
-p_x$.\end{definition}
+\begin{lemma} Given a call $\left\langle c_s,c_t,x\right\rangle$, the
+expression $p_x$ is interchangeable with a pattern. Hence, we say that
+$p_x\in\mathbb{P}.$\end{lemma}
 
-\begin{lemma} An expression $p_s\in\mathbb{X}$ is interchangeable with a
-pattern. Hence, we say that $p_s\in\mathbb{P}.$\end{lemma}
+\begin{proof} The expression $p_x$ contains no function calls. Function calls
+is what syntactically distinguishes expressions from patterns by the semantics
+of \D{}.\end{proof}
 
-\begin{proof} An expression $p_s$ contains no function calls. Function calls is
-what syntactically distinguishes expressions from patterns by the semantics of
-\D{}.\end{proof}
+For instance, consider an expression $x$ such as \mono{(g c.(f c))}, where
+$v_{p_s}=\textt{c}$. Assume that we're considering the call to the function
+\mono{g}. By \referToDefinition{source-variable}, we replace the expression
+\mono{c.(f c))} with an expression like \mono{c.d}, and let $V_x = \left\{
+\textt{d} \right\}$. When this argument evaluates to some value
+$b_x\in\mathbb{B}$, then we can deduce the set of safe displacement estimates
+$\{b_x>\text{\mono{c}}\}$.
 
-For instance, consider an expression such as \mono{(g c.(f c))}, where \mono{c}
-is some variable bound in the source clause. Assume that we're considering the
-call to the function \mono{g}. We may replace the expression \mono{c.(f c))}
-with an expression like \mono{c.d} where $\textt{d}\in V^s_{calls}$. When this
-argument evaluates to some value $b_s\in\mathbb{B}$, then we can deduce the set
-of safe displacement estimates $\{b_s>\text{\mono{c}}\}$.
-
-Consider now a target clause with a pattern like \mono{x.0}. The question
-henceforth is how do we draw the relationship that $\textt{c}\equiv\textt{x}$.
-In other words, that the call neither decreases nor increases the call cycle
+Consider now a target clause with a pattern like \mono{e.0}. The question
+henceforth is how do we draw the relationship that $\textt{c}=\textt{e}$. In
+other words, that the call neither decreases nor increases the call cycle
 value. We can perform a corresponding analysis on the pattern declaration and
 deduce the set of conditions that will hold if pattern matching succeeds,
-indeed, $\{b_s\geq \textt{x}\}$. The participation of \mono{x} in the same kind
-of relations as \mono{c}, does not alone imply that $\textt{c}\equiv\textt{x}$,
-since the property that $b_s\equiv\textt{c.d}$ is lost.
+indeed, $\{b_x\geq \textt{e}\}$. The participation of \mono{c} in the same kind
+of relations as \mono{e}, does not alone imply that $\textt{c}=\textt{e}$,
+since the property that $b_x=\textt{c.d}$, where $\textt{d}\geq 0$, is lost.
 
 On the other hand, if we had to formally define the relation that had to be
-built between the bound variable of a source clause and the value that a
-function call argument evaluated to, this would be a relation between values
-and some kind of ``abstract patterns'', i.e. shapes with annotated triangle
-shapes, as e.g. $b_s\geq\textt{c.0}$.
+drawn between $v_{p_s}$ and $b_x$ for any given $\left\langle c_s,c_t,x
+\right\rangle$, this would be a relation between $b_s$ and some sort of
+``abstract patterns'', as e.g. $b_s\geq\textt{c.0}$ where $\textt{c}\geq 0$.
 
-To simplify the entire process, instead of deducing actual size relations
-between the bound variable and actual argument values, we can simply turn the
-argument into such an abstract pattern to begin with. The actual size relations
-are hence kept and can be deduced at a later stage in the process.
+To simplify the entire process, instead of deducing actual size relation
+between $v_{p_s}$ and $b_x$, we can simply turn $x$ into such an abstract
+pattern to begin with (\referToDefinition{source-variable}). The actual size
+relations are hence kept and can be deduced at a later stage in the process.
 
 %Indeed, the tuple $\left\langle p_s,v^s,V_{calls}^s \right\rangle : \mathbb{P}
 %\times \mathbb{V} \times [\mathbb{V}]$ constitutes such an abstract pattern
 %already.
 
-\subsubsection{Pattern matching}
+\subsubsection{Source to target}\label{section:size-change-final}
 
-\begin{definition} Given a call graph $G^1= \left\langle C,E \right\rangle$ for
-each $\left\langle c_s=\_, c_t=\left\langle \_,p_t,\_\right\rangle,
-x_s\right\rangle \in E$, by \referToDefinition{source-variable} and
-\referToDefinition{clause-variable}, we can construct the tuples $\left\langle
-p^s,v^s,V_{calls}^s \right\rangle$ and $\left\langle p^t,v^t \right\rangle$. We
-hence assume for these tuples to be readily available for any given call
-$\left\langle c_s, c_t, x_s \right\rangle$.\end{definition}
+%\begin{definition} Given a call graph $G^1= \left\langle C^1,E^1 \right\rangle$
+%for each $\left\langle c_s=\_, c_t=\left\langle \_,p_t,\_\right\rangle,
+%x_s\right\rangle \in E$, by \referToDefinition{source-variable} and
+%\referToDefinition{clause-variable}, we can construct the tuples $\left\langle
+%p^s,v^s,V_{calls}^s \right\rangle$ and $\left\langle p^t,v^t \right\rangle$. We
+%hence assume for these tuples to be readily available for any given call
+%$\left\langle c_s, c_t, x_s \right\rangle$.\end{definition}
 
 %\begin{definition} Let the function $\phi\ :\ \mathbb{V} \times \mathbb{V}
 %\rightarrow \{<,\leq,\bot\}$ denote the function $\lambda N^t, N^s .
@@ -275,146 +291,145 @@ $\left\langle c_s, c_t, x_s \right\rangle$.\end{definition}
 %iteratively extending the definition of the relation $\phi$ to all variables
 %bound in the sets $N_{vars}^s$ and $N_{vars}^t$.
 
-We initially define $\phi$ to yield the value $\bot$ for all arguments. We will
-continuously modify this definition as we process $p^s$ and $p^t$. We denote
-this within the semantics in a manner similar to the state $\sigma$ in the
-semantics\footnote{See \referToSection{d-sos}.}. However, $\phi$ is now a
-binary ``memory'', requiring both a target name and a source name (in that
-order). For simplicity, we will borrow some suger coding from the matlab
-notation which allows us to provide a collection in place of a single element
-and let the runtime apply the given function to each element in the collection.
-For instance, we might write that $\phi\left(N_{vars}^t(p^t), n^s\right)\mapsto
-<$, meaning that all the target variables used in $p^t$ are strictly less than
-the source variable $n^s$.
+In the section below we will focus on defining a set of rules that allow us to
+deduce a relation between $v_{p_t}$ and $v_{p_t}$, directly given some $p_x$
+which has been constructed as by \referToDefinition{source-variable}.
 
-We now define a summoning rule, dividing the rules up into sub-rules:
+\begin{definition} Initially, let $\left\langle c_s,c_t,x, \bot\right\rangle
+\in \Phi^1$.\end{definition}
+
+In the discussion below, we use $\Phi^1$ in a manner similar to the state
+$\sigma$ in the definition of the semantics of \D{} in \referToSection{d-sos}.
+However, $\Phi^1$ is now a binary memory element, requiring both a source name
+and a target name (in that order).
+
+In particular, we would like a set of rules for modifying $\Phi^1$, given some
+argument expression $p_x$ and some target pattern $p_t$. We start by defining a
+summoning rule, dividing the rules up into sub-rules:
 
 \begin{equation}
-{
-    \left\langle\proc{A},p^t,p^s,\phi\right\rangle
+{\displaystyle
+\begin{array}{ll}
+&   \left\langle\proc{A},p_x,p_t,\Phi^1\right\rangle
     \rightarrow
-    \phi'
-  \vee
-    \left\langle\proc{B},p^t,p^s,\phi\right\rangle
+    \Phi^1_1\\
+  \vee&
+    \left\langle\proc{B},p_x,p_t,\Phi^1\right\rangle
     \rightarrow
-    \phi'
-  \vee
-    \left\langle\proc{C},p^t,p^s,\phi\right\rangle
+    \Phi^1_1\\
+  \vee&
+    \left\langle\proc{C},p_x,p_t,\Phi^1\right\rangle
     \rightarrow
-    \phi'
-  \vee
-    \left\langle\proc{D},p^t,p^s,\phi\right\rangle
+    \Phi^1_1\\
+  \vee&
+    \left\langle\proc{D},p_x,p_t,\Phi^1\right\rangle
     \rightarrow
-    \phi'
-  \vee
-    \left\langle\proc{E},p^t,p^s,\phi\right\rangle
+    \Phi^1_1\\
+  \vee&
+    \left\langle\proc{E},p_x,p_t,\Phi^1\right\rangle
     \rightarrow
-    \phi'
-}\over{
-  \left\langle p^t,p^s,\phi\right\rangle
+    \Phi^1_1
+\end{array}
+\over\displaystyle
+  \left\langle p_x,p_t,\Phi^1\right\rangle
   \rightarrow
-  \phi'
+  \Phi^1_1
 }
 \end{equation}
 
-One of the simpler cases is when the abstract pattern $p^s$ is simply \mono{0},
-or some name $n^s$, and $n^s\in N_{calls}^s$. Since no variables bound in the
-source participate in $p^s$, then no relations need to be drawn to any of the
-target variables that might appear in the corresponding $p^t$. Hence, $\phi$
-need not be modified.
+One of the simpler cases is when the abstract pattern $p_x$ is simply \mono{0},
+or $v\in V_x$. Since $v_{p_s}$ does not participate in $p_x$, then no relation
+needs to be drawn between $v_{p_s}$ and $v_{p_t}$ because no such relation
+exists.
 
 \begin{equation}\label{eq:sct-pattern-source-fail}
 {
 \left(
-    p^s\rightarrow 0
+    p_x = 0
   \vee
 \left(
-    p^s\rightarrow n^s
+    p_x = v
   \wedge
-    n^s\notin N_{vars}^s
+    v\neq v_{p_s}
 \right)
 \right)
   \wedge
-    \phi\rightarrow\phi'
+    \Phi^1\rightarrow\Phi^1_1
 }\over{
-  \left\langle\proc{A},p^t,p^s,\phi\right\rangle
+  \left\langle\proc{A},p_x,p_t,\Phi^1\right\rangle
   \rightarrow
-  \phi'
+  \Phi^1_1
 }
 \end{equation}
 
-This has a symmetrical case. Indeed when $p^t$ is neither a destruction, nor
-any name $n^t$, that is, it is \mono{\_} or \mono{0}. This pattern contains no
-variables, and hence  no relations need to be drawn from any of the variables
-that might appear in the corresponding $p^s$. Hence, $\phi$ need not be
-modified in such a case either.
+This has a symmetrical case. Indeed when $p_t$ is neither a destruction, nor
+any name $v_{p_t}$, that is, it is either \mono{\_} or \mono{0}. In this case,
+no relation needs to be drawn between $v_{p_t}$ and $v_{p_s}$ as such a
+relationship is absent.
 
 \begin{equation}
 {
 \left(
-    p^t\rightarrow 0
+    p_t = 0
 \vee
-    p^t\rightarrow \_
+    p_t = \_
 \right)
   \wedge
-    \phi\rightarrow\phi'
+    \Phi^1\rightarrow\Phi^1_1
 }\over{
-  \left\langle\proc{B},p^t,p^s,\phi\right\rangle
+  \left\langle\proc{B},p_x,p_t,\Phi\right\rangle
   \rightarrow
-  \phi'
+  \Phi^1_1
 }
 \end{equation}
 
-If $p^t$ is the name pattern $n^t$, the matters get a bit more complicated:
+If $p_t$ is the name pattern $v_{p_t}$, the matters get a bit more complicated:
 
 \begin{enumerate}
 
-\item If $p^s$ is some node, then all the variables that occur in $p^s$, i.e.
-$N_{vars}^s(p^s)$, will all be strictly less than $n^t$ by the semantics of
-\D{}. However, we are not concerned with this relation, as we would like to
-know when a value is decreased from source to target, and not, as in this case,
-increased.
+\item If $p_x$ is some node, then all the variables that occur in $p_x$, will
+be strictly less than $v_{p_t}$ by the semantics of \D{}. However, we are not
+concerned with this relation, as this indeed would be an increasing call rather
+than a decreasing or nonincreasing call.
 
-\item If $p^s$ is also some name pattern $n^s$, and  $n^s\in N^s_{vars}$, then
-the values of these corresponding variables will be \emph{equivalent}. However,
-we're not concerned with exact equivalence, and simply mark this relationship
-with the weaker, but still sound relation, $\leq$:
+\item If $p_x$ is $v_{p_s}$, then the values of these corresponding variables
+will be \emph{equivalent}. However, we're not concerned with exact equivalence,
+and simply mark this relationship with the weaker, but still sound relation,
+$\leq$:
 
 \begin{equation}
 {
-    p^t\rightarrow n^t
+    p_t = v_{p_t}
   \wedge
-    p^s\rightarrow n^s
+    p_x = v_{p_s}
   \wedge
-    n^s\in N_{vars}^s
-  \wedge
-    \left\langle\phi\left(n^t, n^s\right)\mapsto \leq\right\rangle\rightarrow\phi'
+    \left\langle\Phi^1\left(c_s, c_t, x\right)\mapsto \leq\right\rangle\rightarrow\Phi^1_1
 }\over{
-  \left\langle\proc{C},p^t,p^s,\phi\right\rangle
+  \left\langle\proc{C},p_x,p_t,\Phi^1\right\rangle
   \rightarrow
-  \phi'
+  \Phi^1_1
 }
 \end{equation}
 
 \end{enumerate}
 
-If $p^t$ is a destruction and $p^s$ is the variable name $n^s$, then we can safely say that
-all the variables that occur in $p^t$, i.e. $N_{vars}^t(p^t)$, are all strictly less
-than the variable in $n^s$:
+If $p_t$ is a destruction and $p_x = v_{p_x}$, then we can safely say that all
+the variables that occur in $p_t$, are all strictly less than the variable in
+$v_{p_x}$:
 
 \begin{equation}
 {
-    p^t\rightarrow p^t_1\cdot p^t_2
+    p_t = p_{t_1}\cdot p_{t_2}
   \wedge
-    p^s\rightarrow n^s
+    p_x = v_{p_s}
   \wedge
-    n^s\in N_{vars}^s
+    v_{p_t}\Subset{p_t}
   \wedge
-    \left\langle\phi\left(N_{vars}^t(p^t), n^s\right)\mapsto <\right\rangle\rightarrow\phi'
+    \left\langle\Phi^1\left(c_s, c_t, x\right)\mapsto <\right\rangle\rightarrow\phi^1_1
 }\over{
-  \left\langle\proc{D},p^t,p^s,\phi\right\rangle
+  \left\langle\proc{D},p_x,p_t,\Phi^1\right\rangle
   \rightarrow
-  \phi'
+  \Phi^1_1
 }
 \end{equation}
 
@@ -422,20 +437,20 @@ If both $p^t$ and $p^s$ are a destructions, then the following recursive rule ap
 
 \begin{equation}
 {
-    p^t\rightarrow p^t_1\cdot p^t_2
+    p_t = p_{t_1}\cdot p_{t_2}
   \wedge
-    p^s\rightarrow p^s_1\cdot p^s_2
+    p_s = p_{x_1}\cdot p_{x_2}
   \wedge
-    \left\langle p^t_1, p^s_1, \phi\right\rangle
+    \left\langle p_{t_1}, p_{x_1}, \Phi^1\right\rangle
     \rightarrow
-    \phi''
+    \Phi^1_2
   \wedge
-    \left\langle p^t_2, p^s_2, \phi''\right\rangle
+    \left\langle p_{t_2}, p_{x_2}, \Phi^1_2\right\rangle
     \rightarrow
-    \phi'
+    \Phi^1_1
 }\over{
-  \left\langle\proc{E},p^t,p^s,\phi\right\rangle
+  \left\langle\proc{E},p_x,p_t,\Phi^1\right\rangle
   \rightarrow
-  \phi'
+  \Phi^1_1
 }
 \end{equation}

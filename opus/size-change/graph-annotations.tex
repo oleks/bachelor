@@ -1,12 +1,24 @@
 \section{Graph annotation}
 
-Hence, we can deduce from \referToListing{cfg-loop}, that when $f_1$ makes a
-call to $f_0$ it does so with a value strictly less then its own argument,
-i.e. the transition $f_1\rightarrow f_0$ strictly decreases a value. Visually
-we will mark this with a $\downarrow$. The Lemmas \refer{lemma:d-pattern-leq}
-and \refer{lemma:d-pattern-less} can be used to deduce the same sort of
-relationship for the transitions $r_1\xrightarrow{0,1} r_0$ for
-\referToListing{cfg-reverse}. These observations are summarised in
-\referToFigure{sct-first}.
+Given the discussion in \referToSection{size-change-principle}, we can now
+deduce the calls from the recursive clause of the program in
+\referToListing{cfg-reverse} are both decreasing, yielding the conclusion that
+the program \mono{reverese} terminates.
 
-\input{figures/sct-first}
+Graphically, we won't define any special syntax for functions that have clauses
+where more than one variable is bound, instead, we will merely define a syntax
+for the set of size relations $\{<,\leq,\bot\}$. \referToFigure{sct-reverse-pdf}
+shows an example.
+
+\begin{definition} Given a call graph $G^1 = \left\langle C^1, E^1
+\right\rangle$, and its deduced size relation $\Phi^1$, let the graph $G^s =
+\left\langle C^1, \Phi^1 \right\rangle$ be known as a size-change graph. Note,
+that by the rules defined in \referToSection{size-change-final} and
+\referToDefinition{size-relation}, $\left(\forall\ \left\langle c_s, c_t, x
+\right\rangle \in E^1\ \exists\ \left\langle c_s, c_t, x, \_ \right\rangle \in
+\Phi^1\right) \wedge \left(\forall\ \left\langle c_s, c_t, x, \rho
+\right\rangle \in \Phi^1\ \nexists \left\langle c_s, c_t, x, \rho'
+\right\rangle \in \Phi^1\ \rho\neq\rho' \right)$.\end{definition}
+
+\includeFigure[scale=1.5]{sct-reverse-pdf}{A size-change graph for the program
+in \referToListing{cfg-reverse}.}

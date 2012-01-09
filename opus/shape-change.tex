@@ -9,8 +9,6 @@ call cycles, that in terms of size, increase a value for a finite amount of
 time, until some condition is met, or as in the case of \D{}, it has some
 particular shape.
 
-% TODO: define nonincreasing call to be a call that does not increase a value.
-
 Consider the program in \referToListing{size-change-fail} as an example of a
 program for which regular size-change termination is unable to determine the
 halting property, while the property itself would seem fairly simple to deduce.
@@ -105,7 +103,7 @@ the terminal clause $f_0$. The task then becomes to determine for each call
 cycle in a program whether it changes the shape of the argument to eventually
 match some terminal clause.
 
-\section{Prerequisites}
+\section{Preliminaries}
 
 Before we continue with this extension we can make a few important observations
 based on the semantics of function clauses in \D{}.
@@ -150,48 +148,48 @@ $g_2$: g e.f := 0
 
 \subsection{Disjoint shapes}
 
-\begin{definition} Given two shapes, $s_1\in\mathbb{S}$ and $s_2\in\mathbb{S}$,
-we say that $s_1$ and $s_2$ are disjoint, or $s_1\cap s_2=\emptyset$, iff given
-$B_1=\{b\mid b\in\mathbb{B} \wedge b\succ s_1\}$ and $B_2=\{b\mid
-b\in\mathbb{B} \wedge b\succ s_2\}$ it holds that $B_1\cap
-B_2=\emptyset$.\end{definition}
+\begin{definition} Given two shapes, $s_1,s_2\in\mathbb{S}$, we say that $s_1$
+and $s_2$ are disjoint, or $s_1\cap s_2=\emptyset$, iff given $B_1=\{b\mid
+b\in\mathbb{B} \wedge b\succ s_1\}$ and $B_2=\{b\mid b\in\mathbb{B} \wedge
+b\succ s_2\}$ it holds that $B_1\cap B_2=\emptyset$.\end{definition}
 
 \begin{theorem}\label{lemma:extend-finite-converse} Given a shape
-$s'\in\mathbb{S}$, the set $\{s \mid s\in\mathbb{S} \wedge s\cap
-s'=\emptyset\}$, that is also pairwise disjoint, is finite.\end{theorem}
+$s\in\mathbb{S}$, the set $S_s^d=\{s^d \mid s^d\in\mathbb{S} \wedge s\cap
+s^d=\emptyset \wedge \forall\ s^d_1\in S^d\ s^d\cap s^d_1=\emptyset\}$, is
+finite.\end{theorem}
 
 \begin{proof} The proof is two-fold,
 
 \begin{enumerate}
 
-\item Given a shape $s'\in\mathbb{S}$, there is a shape $s\in\mathbb{S}$ for
-every leaf and every node in $s'$ s.t. $s\cap s'=\emptyset$. In particular, for
-every leaf in $s'$, there is a shape $s$, that is otherwise equal to $s'$, but
-in place of the particular leaf, it has a node with two triangles as children.
-Likewise, for every node in $s'$, there is a shape $s$, that is otherwise equal
-to $s'$, but in place of the particular node in $s'$, there is a leaf. Any
-other shapes wouldn't be disjoint with either $s'$ or the shapes already
-considered. It is easy to see that all such $s\in\mathbb{S}$ are pairwise
-disjoint.
+\item Given a shape $s\in\mathbb{S}$, there is a shape $s'\in\mathbb{S}$ for
+every leaf and every node in $s$ s.t. $s\cap s'=\emptyset$. In particular, for
+every leaf in $s$, there is a shape $s'$, that is otherwise equal to $s$, but
+in place of the particular leaf in $s$, it has a node with two triangles as
+children.  Likewise, for every node in $s$, there is a shape $s'$, that is
+otherwise equal to $s$, but in place of the particular node in $s$, there is a
+leaf. Any other shapes wouldn't be disjoint with either $s$ or the shapes
+already considered. It is easy to see that all such $s'\in\mathbb{S}$ are also
+pairwise disjoint.
 
-\item For any given shape $s'\in\mathbb{S}$ the number of nodes and leafs is
+\item For any given shape $s\in\mathbb{S}$ the number of nodes and leafs is
 finite by \referToDefinition{shape}.\end{enumerate}\end{proof} 
 
-\section{Shape-change termination}
+\subsection{Plausible shapes}
 
 \begin{definition} We say that a variable $v\in\mathbb{V}$ with some value
 $b\in\mathbb{B}$ has a set of plausible shapes $S_v$ iff $\exists\ s\in S_v\
 b\succ s \wedge \left( \forall\ s'\in S_v\backslash\{s\}\ b \not{\succ} s'
 \right)$.\end{definition}
 
-\begin{corollary} By \referToDefinition{shape}, given a variable
+\begin{corollary} By \referToDefinition{succ}, given a variable
 $v\in\mathbb{V}$ with some unknown value $b\in\mathbb{B}$, the set of plausible
 shapes $S_v=\{\any\}$.\end{corollary}
 
-\begin{corollary} Given any clause $\left\langle v,p,x
-\right\rangle\in\mathbb{C}$ and a value $b\in\mathbb{B}$, if $b\succ p$, then
-$S=\{s\}$ is a plausible set of shapes for $b$, where $s$ is the shape
-corresponding to pattern $p$.\end{corollary}
+\begin{corollary} Given a clause $\left\langle v,p,x
+\right\rangle\in\mathbb{C}$, and a value $b\in\mathbb{B}$, if $b\succ p$, then
+$S=\{p\}$\footnote{Patterns are shapes as
+\referToDefinition{pattern-is-shape}.}.\end{corollary}
 
 \begin{corollary} Consider any pair of clauses $c_1=\left\langle v_1,p_1,x_1
 \right\rangle, c_2=\left\langle v_2,p_2,x_2 \right\rangle \in\mathbb{C}$, with
@@ -209,6 +207,8 @@ function call contains a finite list of clauses.
 
 \begin{proof} The shapes specified by a function are derived from the patterns
 of its clauses.\end{proof}
+
+\section{Shape-change termination}
 
 \section{Nice}
 

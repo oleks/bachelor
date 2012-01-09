@@ -21,7 +21,7 @@ the given program contains program flow cycles that loop indefinitely.
 Alan A. Turing and Alonzo D. Church developed separate proofs for the
 infeasibility of such a program almost simultaneously in 1937. Turing's proof
 however, would become the one more widely recognised, although they are
-mutually reduceable to one another.
+mutually reducible to one another.
 
 However, the fact that termination checking is infeasible \emph{in general},
 has unfortunately become an easy excuse for many to claim that the property is
@@ -50,36 +50,32 @@ for which $p$ returns \mono{unknown} is minimized.\end{definition}
 
 The reader is expected to have a background in computer science on a graduate
 level or higher. In particular, it is expected that the reader is familiar with
-basic concepts of compilers, computability and complexity, which at the present
-state of writing, are subject to basic undergraduate courses in computer
-science. Furthermore, the reader is expected to be familiar with discrete
-mathematics and the basic concepts of functional programming languages.
-Ideally, the reader should be well familiar with at least one purely functional
-programming language such as ML or Haskell.
+basic concepts of compilers, computability and complexity, discrete
+mathematics, and basic concepts of functional programming languages (Monads
+excluded). All of these topics, at the present state of writing, are subject to
+basic undergraduate courses in computer science. Ideally, the reader should be
+well familiar with at least one purely functional programming language such as
+ML or Haskell.
 
-In summary, the following concepts are used without definition:
+More exemplary, the following concepts shouldn't frighten you:
 
 \begin{itemize}
 
-\item Algorithm.
+\item Algorithm, Big-O notation.
 
-\item Function, pattern matching, loop, recursion.
+\item Function, expression, pattern, pattern matching, loop, recursion.
 
 \item Induction, variant, invariant.
 
-\item Big-O notation.
-
-\item Regular Expressions (\mono{preg} syntax).
+\item Regular expressions.
 
 \item Backus-Naur Form, structured operational semantics.
 
 \item Turing machine, the halting problem.
 
-\item List, head, tail.
+\item Set, list, tuple, head, tail.
 
-\item Basic discrete mathematics.
-
-\item Basic graph theory.
+\item Graph, node, edge, path, cycle.
 
 \end{itemize}
 
@@ -97,7 +93,7 @@ carries over the conventional ``wildcard'' meaning from functional
 languages.\end{definition}
 
 \begin{definition} When dealing with lists, aka. finite ordered sequences,
-we'll adopt the following notation:
+we'll adopt the following notational constructs:
 
 \begin{enumerate}
 
@@ -146,10 +142,21 @@ $n\in\mathbb{N}^0$.\end{definition}
 
 \item [Chapter 2]
 
-\item [Chapter 3]
+\item [Chapter 3] This chapter formally introduces a Turing-complete language
+called \D{}, that will be used to aid the discussions in latter chapters. We
+discuss data representation in \D{}, define the syntax and semantics for the
+language, provide some sample programs and show that \D{} is Turing-complete.
 
-\item [Chapter 4]
+\item [Chapter 4] This chapter describes the size change termination principle
+and describes how the technique can be applied to \D{} programs. While the
+chapter seeks to describe the concepts known from \cite{size-change} it does so
+with a heavy reliance on \D{}, so it is recommended to be familiar with Chapter
+3.
 
-\item [Chapter 5]
+\item [Chapter 5] This chapter proposes a small extension to size-change
+termination, dubbed shape-change termination, that allows to determine the
+halting property for a slightly wider class of programs. This chapter exploits
+many of the definitions in both Chapters 3 \& 4, so it is recommended to have
+read those beforehand.
 
 \end{description}
