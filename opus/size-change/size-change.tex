@@ -188,54 +188,58 @@ $b_1,b_2\in\mathbb{B}$ is a value $n\in\mathbb{N}$ s.t. $b_1+n\leq
 b_2$.\end{definition}
 
 \begin{definition} Given a function $\left\langle v_t,x_s\right\rangle$, we
-construct the expression $x_s'$ where we replace all $\left\langle v,x
-\right\rangle\Subset x_s$ with an auxiliary variable. We group those auxiliary
+construct the expression $p_s$ where we replace all $\left\langle v,x
+\right\rangle\Subset p_s$ with an auxiliary variable. We group those auxiliary
 variables in the set $V^s_{calls}$.\end{definition} 
 
-For instance, consider an expression such as \mono{(g (f a).a)}, where \mono{a}
-is some variable bound in the source. Assume that we're considering the the
-call to the function \mono{g}, then we replace the expression \mono{(f a).a)}
-with an expression like \mono{b.a} where $\textt{b}\in V^s_{calls}$. When this
-argument evaluates to some value $b_s$, then we can safely say that
-$b_s>\text{\mono{a}}$, $b_s>\text{\mono{b}}$, $b_s\geq\text{\mono{b.0}}$ and
-$v\geq\text{\mono{0.a}}$.
+\begin{lemma} An expression $p_s\in\mathbb{X}$ is interchangeable with a
+pattern. Hence, we say that $p_s\in\mathbb{P}.$\end{lemma}
 
-Continuing on with the example above, i.e. having the size relations
-$\{v>\textt{a}, v> \textt{b}, v\geq \textt{a.0}, v\geq \textt{0.b}\}$, assume
-that the target clause has the corresponding pattern \mono{x.y}. The question
-henceforth is how do we draw the relationship that $\textt{a}\equiv\textt{x}$
-and $\textt{b}\equiv\textt{y}$, or perhaps simply that the control transition
-neither decreases nor increases any values. We can perform a corresponding
-analysis on the pattern declaration and deduce the set of conditions that will
-hold after pattern matching succeeds, indeed, $\{v>\textt{x}, v> \textt{y},
-v\geq \textt{x.0}, v\geq \textt{0.y}\}$. The participation of $x$ in the same
-kind of relations as $a$, and the participation of $y$ in the same kind of
-relations as $b$, does not alone indicate their respective equivalence, since
-the actual property that $v\equiv\textt{a.b}$ is lost.
+\begin{proof} An expression $p_s$ contains no function calls. Function calls is
+what syntactically distinguishes expressions from patterns by the semantics of
+\D{}.\end{proof}
+
+For instance, consider an expression such as \mono{(g c.(f c))}, where \mono{c}
+is some variable bound in the source clause. Assume that we're considering the
+call to the function \mono{g}. We may replace the expression \mono{c.(f c))}
+with an expression like \mono{c.d} where $\textt{d}\in V^s_{calls}$. When this
+argument evaluates to some value $b_s\in\mathbb{B}$, then we can deduce the set
+of safe displacement estimates $\{b_s>\text{\mono{c}}\}$.
+
+Consider now a target clause with a pattern like \mono{x.0}. The question
+henceforth is how do we draw the relationship that $\textt{c}\equiv\textt{x}$.
+In other words, that the call neither decreases nor increases the call cycle
+value. We can perform a corresponding analysis on the pattern declaration and
+deduce the set of conditions that will hold if pattern matching succeeds,
+indeed, $\{b_s\geq \textt{x}\}$. The participation of \mono{x} in the same kind
+of relations as \mono{c}, does not alone imply that $\textt{c}\equiv\textt{x}$,
+since the property that $b_s\equiv\textt{c.d}$ is lost.
 
 On the other hand, if we had to formally define the relation that had to be
-built between the variables bound in the source and the values that the
-function call arguments evaluated to, this would be a relation between values
-and some kind of ``abstract patterns'', as e.g. $v\geq\textt{0.b}$.
+built between the bound variable of a source clause and the value that a
+function call argument evaluated to, this would be a relation between values
+and some kind of ``abstract patterns'', i.e. shapes with annotated triangle
+shapes, as e.g. $b_s\geq\textt{c.0}$.
 
 To simplify the entire process, instead of deducing actual size relations
-between the variables bound in the source and the values that the function
-arguments evaluate to, we can simply turn the function argument into the
-abstract pattern to begin with. The actual size relations are hence withkept
-and can be deduced at a later stage in the process.
+between the bound variable and actual argument values, we can simply turn the
+argument into such an abstract pattern to begin with. The actual size relations
+are hence kept and can be deduced at a later stage in the process.
 
-Indeed, the tuple $(x^s,N_{vars}^s,N_{calls}^s)$ constitutes such an abstract
-pattern already, since the expression $x^s$, contains no function calls and
-hence syntactically matches a pattern in \D{}\footnote{See
-\referToSection{d-syntax} if you're uncertain.}. We henceforth refer to such an
-expression as $p^s$\footnote{Where $s$ stands for \emph{source}.}. Given a
-clause with the pattern $p^t$\footnote{Where $t$ stands for \emph{target}.}, we
-can easily deduce the set $N_{vars}^t$, which is the set of variable names used
-in $p$. Our task is then to deduce a size relation between the variables in the
-sets $N_{vars}^s$ and $N_{vars}^t$ given the tuples
-$(p^s,N_{vars}^s,N_{calls}^s)$ and $(p^t,N_{vars}^t)$.
+Indeed, the tuple $\left\langle p_s,v^s,V_{calls}^s \right\rangle : \mathbb{P}
+\times \mathbb{V} \times [\mathbb{V}]$ constitutes such an abstract pattern
+already.
+
+\begin{definition} Given a clause $c_t=\left\langle \_,p_t,\_  \right\rangle
+\in \mathbb{C}$, we refer to the only variable in $p_t$ as $v^t$, hence
+$v^t\in\mathbb{V} \wedge v^t\Subset p_t$.\end{definition}
 
 \subsection{Pattern matching}
+
+Our task is to deduce a size relation between the variables in the sets
+$N_{vars}^s$ and $N_{vars}^t$ given the tuples $(p^s,N_{vars}^s,N_{calls}^s)$
+and $(p^t,N_{vars}^t)$.
+
 
 Let the function $\phi\ :\ \mathbb{N} \times \mathbb{N} \rightarrow
 \{<,\leq,\bot\}$ denote the function $\lambda N^t, N^s .

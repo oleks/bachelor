@@ -1,0 +1,12 @@
+\section{Graph annotation}
+
+Hence, we can deduce from \referToListing{cfg-loop}, that when $f_1$ makes a
+call to $f_0$ it does so with a value strictly less then its own argument,
+i.e. the transition $f_1\rightarrow f_0$ strictly decreases a value. Visually
+we will mark this with a $\downarrow$. The Lemmas \refer{lemma:d-pattern-leq}
+and \refer{lemma:d-pattern-less} can be used to deduce the same sort of
+relationship for the transitions $r_1\xrightarrow{0,1} r_0$ for
+\referToListing{cfg-reverse}. These observations are summarised in
+\referToFigure{sct-first}.
+
+\input{figures/sct-first}
