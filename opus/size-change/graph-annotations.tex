@@ -14,11 +14,11 @@ shows an example.
 \right\rangle$, and its deduced size relation $\Phi^1$, let the graph $G^s =
 \left\langle C^1, \Phi^1 \right\rangle$ be known as a size-change graph. Note,
 that by the rules defined in \referToSection{size-change-final} and
-\referToDefinition{size-relation}, $\left(\forall\ \left\langle c_s, c_t, x
+\referToDefinition{size-relation}, $$\left(\forall\ \left\langle c_s, c_t, x
 \right\rangle \in E^1\ \exists\ \left\langle c_s, c_t, x, \_ \right\rangle \in
-\Phi^1\right) \wedge \left(\forall\ \left\langle c_s, c_t, x, \rho
-\right\rangle \in \Phi^1\ \nexists \left\langle c_s, c_t, x, \rho'
-\right\rangle \in \Phi^1\ \rho\neq\rho' \right)$.\end{definition}
+\Phi^1\right) \wedge \left(\exists\ \left\langle c_s, c_t, x, \rho
+\right\rangle \in \Phi^1\longrightarrow \nexists \left\langle c_s, c_t, x,
+\rho' \right\rangle \in \Phi^1\ \rho\neq\rho' \right).$$\end{definition}
 
 \includeFigure[scale=1.5]{sct-reverse-pdf}{A size-change graph for the program
 in \referToListing{cfg-reverse}.}
