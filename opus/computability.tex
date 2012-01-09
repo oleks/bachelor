@@ -1,0 +1,176 @@
+\chapter{Computability and the halting problem}
+
+\section{Computable problems and effective procedures}
+
+A computable problem is a problem that can be solved by an effective procedure.
+
+A problem can be solved by an effective procedure iff the effective procedure
+is well-defined for the entire problem domain\footnote{Invalid inputs are, in
+this instance, irrelevant.}, and passing a value from the domain as input to
+the procedure \emph{eventually} yields a correct result (to the problem) as
+output of the procedure. That is, an effective procedure can solve a problem if
+it computes an injective partial function that associates the problem domain
+with the range of solutions to the problem.
+
+An effective procedure is discrete, in the sense that computing the said
+function cannot take an infinite amount of time. To do this, an effective
+procedure makes use of a finite sequence of steps that themselves are discrete.
+This has a few inevitable consequences for the input and output values, namely
+that they themselves must be discrete and that there must be a discrete number
+of them\footnote{A finite sequence of discrete values can be trivially encoded
+as a single discrete value.}. This is because an infinite value clearly cannot
+be processed nor produced by a finite sequence of discrete steps.
+
+An effective procedure is also deterministic, in the sense that passing the
+same input value always yields the same output value. This means that all of
+the steps of the procedure that are relevant to its output\footnote{All other
+steps can be omitted without loss of generality.} are themselves deterministic.
+This is easy to see, by a sort of cut-and-paste proof. In particular, if a
+procedure made use of a stochastic process to yield a deterministic result, the
+stochastic process would have to yield the same output for the same input in
+order for the global determinism property to be withheld, which is clearly
+absurd.
+
+%In effect, a procedure can be said to comprise of a finite sequence of other
+%procedures, which themselves may comprise of other procedures, however, all
+%procedures eventually bottom out, in that a finite sequence of composite
+%procedures can always be replaced by a finite sequence of basic procedures that
+%are implemented in underlying hardware.
+
+%The procedure input is a continuous machine state, the output is a discrete
+%change of the continuous state. And yet, the values that a procedure may use to
+%produce its result are all discrete.
+
+%Instructions that the computer can execute may have no effect, but such
+%instructions are seldom of any particular interest. More amusing instructions
+%alter some sort of state that the computer withkeeps across instructions.
+
+%An instruction
+%commands a machine to perform a discrete and deterministic alternation of the
+%its own state. For the simplest of purposes, the machine state can comprise of
+%the index of the currently executing instruction, known as the program counter,
+%the current state of the machine memory (tape), and the finite sequence of
+%instructions that the machine is using as its program.
+
+%The machine state comprises of the state of the tape, the current position on
+%tape and the program.
+
+%The instruction sequence, is by its sequential nature enumerable. Initial
+%program execution would be to iterate through the sequence in a particular
+%direction, e.g. top-down. In this process we implicitly make use of a ``program
+%counter'', which is a value that points to the index of the next instruction to
+%execute. When the program counter moves past the end of the instruction
+%sequence, the procedure halts.
+
+%In this model, a ``loop'' is constructable by having a special \emph{jump}
+%instruction that changes the program counter to some value less than the
+%current program counter.
+
+%A ``loop'' can be constructed by a sequence of such instructions, due its
+%sequential nature being enumerable, and with the existance of a special
+%\emph{jump} instruction, that changes the 
+
+%Clearly, a procedure that eventually halts and returns the correct output for
+%every input in the problem domain, solves the problem.
+
+
+%Procedures take in an input value and produce an output value. Multiple values
+%can be represented as a single value via. a pairing function.
+
+%\begin{itemize}
+
+%\item effective procedure
+
+%\item effectively decidable
+
+%\item effectively enumerable
+
+%\end{itemize}
+
+\section{Enumerability}
+
+\begin{definition} A set $S$ is enumerable if there exists a bijective function
+$f:S\longrightarrow \mathbb{N}$.\end{definition}
+
+\section{Turing machine}\label{section:turing-machine}
+
+Alan Turing was one of the first to introduce a powerful, yet simplistic
+computational model, in the form of what is now known as a \emph{Turing
+machine}\footnote{Although various definitions exist, this one was inspired by
+\url{http://plato.stanford.edu/entries/turing-machine/}.}.
+
+A Turing machine is a machine that has unlimited and unrestricted memory in the
+form of a one dimensional tape that can be extended infinitely in both
+directions, known as left and right. The tape itself is a series of symbols of
+a finite alphabet.  Furthermore, the Turing machine has a read/write head that
+at any given point in time is located over a single symbol on the tape. The
+head can hence read in the symbol and either overwrite it, move one symbol to
+the left, or move one symbol to the right, both in one computational step.
+
+The actual action to perform is defined in terms of a transition table which is
+a finite list of of the 4-tuples $\left\langle \lambda_0, \sigma, \lambda_1,
+\omega \right\rangle : \Lambda \times \Sigma \times \Lambda \times \Omega$,
+where $\Lambda$ is the set of states of the machine (some non-existent),
+$\Sigma$ is the alphabet of the machine, and hence the tape, typically
+$\{0,1\}$, and $\Omega$ is the action table of the machine. The action table is
+typically the set $\{ \leftarrow, \rightarrow, 0, 1 \}$, denoting a left-wise
+and right-wise move, as well as write $0$ and $1$, respectively. At any given
+point in time a Turing machine is in a state, say $\lambda_0$. Such a state has
+one and only one transition, namely $\left\langle \lambda_0, \sigma, \lambda_1,
+\omega \right\rangle$. If the symbol on the tape is equal to $\sigma$, the
+action $\omega$ is performed and regardless of the symbol, the machine moves
+into state $\lambda_1$.
+
+Last but not least, the Turing machine has an initial state, and often an
+accepting and rejecting state. We'll keep the definition simple and let any
+state that is undefined in the transition table yield a halting of the machine.
+The value which the read/write head is located over, can hence represent an
+accepting or rejecting state as needed.
+
+\section{Computational equivalence}
+
+\begin{definition} We say that two languages are computationally equivalent if
+they both can compute the same class of functions.\end{definition}
+
+\section{The halting problem}
+
+\begin{theorem} There does not exist a Turing machine $H(M,x)$ that given an
+arbitrary Turing machine $M$ and an arbitrary input $x$ determines whether $M$
+halts for $x$.\end{theorem}
+
+\begin{proof}
+
+Assume for the sake of contradiction that there exists a Turing machine
+$H(M,x)$, that given a Turing machine $M$ decides whether $M$ halts on input
+$x$, that is
+
+$$H(M,x)=\left\{
+\begin{array}{ll}
+true&M\ \text{halts on}\ x\\
+false&M\ \text{does not halt on}\ x.
+\end{array}
+\right.$$
+
+This means that we can construct another Turing machine $F$, which calls
+$H(M,M)$ and depending on the outcome, yields the opposite result, i.e. 
+
+$$F(M)=\left\{
+\begin{array}{ll}
+true&\text{if}\ H(M,M)\leadsto false\\
+false&\text{if}\ H(M,M)\leadsto true.
+\end{array}
+\right.$$
+
+Consider now running the Turing machine $F$ with itself as input, either result
+is absurd, and hence neither the Turing machine $F$ nor $H$ can
+exist.\end{proof}
+
+\section{Introduction to size-change termination}
+
+In the chapters that follow we will describe the size-change termination
+principle as in \cite{size-change} and extend it. The general idea behind size
+change termination is to construct a control flow graph for any given program
+-- an easy task given a first order language, and not too complicated given a
+higher order language\cite{size-change-higher-order}.
+
+

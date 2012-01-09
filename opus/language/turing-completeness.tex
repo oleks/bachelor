@@ -1,18 +1,15 @@
 \section{Turing-completeness of \D{}}
 
 We show that \D{} is Turing-complete by showing that we can simulate a
-universal Turing machine\footnote{The notation and type of universal Turing
-machine used here was inspired by
-\url{http://plato.stanford.edu/entries/turing-machine/}.}.
+universal Turing machine, that is a Turing machine that can simulate any Turing
+machine on any input value. 
 
-We can describe any Turing machine in terms of its transition table, which is a
-list of 4-tuples $\left\langle \lambda_0, \sigma, \lambda_1, \omega
-\right\rangle : \Lambda \times \Sigma \times \Lambda \times \Omega$, where
-$\Lambda$ is the finite set of states of the machine (some non-existent),
-$\Sigma$ is the alphabet of the machine, typically $\{0,1\}$, and $\Omega$ is
-the action table of the machine. Given that $\Lambda$, $\Sigma$ and $\Omega$
-have definitions that are subsets of $\mathbb{B}$, any such list of tuples can
-be represented as a \D{} value. 
+As a consequence of the discussion in \referToSection{turing-machine}, we can
+describe any Turing machine in terms of its transition table, i.e.  list of
+4-tuples $\left\langle \lambda_0, \sigma, \lambda_1, \omega \right\rangle :
+\Lambda \times \Sigma \times \Lambda \times \Omega$. If we can show that
+$\Lambda$, $\Sigma$ and $\Omega$ have definitions that are subsets of
+$\mathbb{B}$, any such list of tuples can be represented as a \D{} value. 
 
 \begin{definition} A list of values $L=\left[ b_i \mid b_i\in\mathbb{B}, 0 < i
 \leq |L| \right]$ in \D{} is represented as the value $b_1\cdot b_2\cdots

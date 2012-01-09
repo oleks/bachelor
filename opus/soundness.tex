@@ -335,10 +335,140 @@ cycle will be initiated with the cycle variable at value $0$. If the cycle,
 provided such a value, branches off the cycle, the cycle can be said to have
 terminated.\end{proof}
 
-\section{The algorithm}
+\section{Termination \& Soundness}
 
-We define the shape-change termination algorithm as follows:
+\begin{lemma}\label{lemma:extend-function-finite-shape} Any function
+declaration accepts a finite number of shapes for every parameter.\end{lemma}
 
-\begin{definition} Given a program $r$ and its corresponding shape-change graph
-$G$, yield ``halts'' if all the call cycles in $G$ are monotonically
-decreasing, and ``unknown'' otherwise.\end{definition}
+\begin{proof} Any function in \D{} consists of a finite number of clauses and
+by \referToLemma{extend-clause-finite}, every clause accepts a finite number of
+shapes for every parameter.\end{proof}
+
+\begin{lemma}\label{lemma:extend-any-function-any-value} Any function accepts
+any valid \D{} value as any parameter.\end{lemma}
+
+\begin{proof} Follows from the semantics of \D{}.\end{proof}
+
+\begin{definition} A shape transition source and target are different from a
+function call source and target in that a function function may elicit one of
+several shape transitions.\end{definition}
+
+\begin{lemma}\label{lemma:extend-any-call-targets} Any possible function call in a program has at least one and at
+most all of the shapes of a target function as its shape transition
+targets.\end{lemma}
+
+\begin{proof} By \referToLemma{extend-any-function-any-value} any value is
+matched by at least one of the shapes of a given function. Any value matches
+the triangle shape, and by \referToTheorem{d-all-patterns-all-shapes}, the
+patterns for a particular parameter in summation can match any value, i.e. in
+total correspond to the triangle shape.\end{proof}
+
+\begin{theorem} A shape shift network can be constructed for any valid program
+in finite time.\end{theorem}
+
+\begin{proof} Any given program has a finite number of functions. By
+\referToLemma{extend-function-finite-shape} the program may hence initially be
+considered as finite forest of shapes. Furthermore, by
+\referToLemma{extend-any-call-targets} any pair of shapes can be directly
+connected by at most one directed edge. Hence, the said forest has a finite
+number of edges. The algorithm is sound if all the edges possibly taken by an
+executing program are in place when it terminates.  Hence, if we terminate the
+branches of the algorithm whenever they reach a terminal clause or enclose a
+loop, eventually the algorithm must terminate.\end{proof}
+
+
+When a function call is made, a list of expressions, each consisting of nested
+constructions of concrete values, bound variables and nested function calls, is
+evaluated. For each such call, for each expression in the argument list, we
+would like a relationship to be drawn between the target input arguments (for
+which we already have some shape information) 
+
+
+\includeFigure{size-change-fail-shape-done}{Nice}
+
+
+
+If there is a cycle where we start from one of the disjoint shapes and come
+back to that shape, then the change must've occurred in one of the triangles.
+If the value was not decreased (size change termination), then the value
+must've been increased, or remained unchanged, and this is an infinite loop.
+
+
+\begin{proof} Otherwise, there wouldn't have been a loop. This is because the
+shapes are disjoint, so a change in a triangle can by no means make the value
+match another shape, otherwise the shapes indeed are \emph{not} disjoint.
+\end{proof}
+
+
+
+
+
+\newpage
+
+\section{Notes}
+
+Size change termination is indeed an abstraction of what we would like to do.
+Given that $p_0\curlyvee p_1$, we know that if any 
+
+
+A program can be rewritten into a single function where an extra parameter is
+added to each function, to distinguish the functions and each function gets a
+number of auxiliary parameters which are ignored in general. This way, a
+program of various functions can be transformed into a program consisting of a
+single function with many clauses, subsets of which represent the individual
+functions of the original program.
+
+The problem is thus reduced to checking the halting property for some single
+arbitrary function.
+
+Any function has a number of clauses, at least one. Any terminating program has
+at least one terminal clause. The point of checking the halting property is
+hence to deduce that any possible recursive clause that is taken, alters the
+shape of its arguments in such a way that the call cycle eventually reduces the
+value towards one, or several of the base cases.
+
+The benefit of this method over original size change termination is that it
+allows for some control transitions to increase values, as long as the overall
+cycle size and shape mutation goes towards a some base case.
+
+As much information about the shape of the (changing) value has to be withkept
+across calls, unlike original size-change termination that allows to discard
+shape information from the previous clause.
+
+Next, we make the observation that several functions may participate in a call
+cycle.  and in particular, a subset of the recursive clauses may participate in
+a call cycle. The call cycle describes a terminating loop if every control
+transition is nonincreasing and at least one is increasing, or the loop shape
+shifts one of the values towards a base of one of the participating functions.
+
+If the value is decreased, the shape distortion need not be withkept since the
+shape information that is deducible from here is by no means useful for call
+cycle analysis, only size decrease is.
+
+\begin{lstlisting}
+$c_0$: count x 0 := x
+$c_1$: count x y.z := count (count 0.x y) z
+\end{lstlisting}
+
+\begin{lstlisting}
+f ((0.a).(0.b)).(0.(0.c)) := 
+f a := f a.0
+\end{lstlisting}
+
+\begin{verbatim}
+equal x y := n-equal (normalize x) (normalize y)
+n-equal 0 _._ := 0
+n-equal _._ := 0
+n-equal 0 0 = 0.0
+n-equal a.b c.d = and (n-equal a c) (n-equal b d)
+\end{verbatim}
+
+Let $A$ denote the set of values that $p_2$ can
+match without regard to $p_1$, let $B$ denote the set of values that $p_1$ can
+match, and let $C$ denote the set of values that $p_2$ can come to match if
+$p_1$ failed. Since $p_1\curlyvee p_2$, then we know that $B\subset A$,
+$C\subset A$, $B\cap C=\emptyset$ and $C=A-B$.
+
+
+
+We say that a value "has" a shape and "it is of" a shape.

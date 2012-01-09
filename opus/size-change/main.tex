@@ -22,3 +22,11 @@ operations on otherwise static variables\cite{kildall}.
 \input{size-change/call-graphs}
 \input{size-change/size-change}
 \input{size-change/graph-annotations}
+
+\section{The algorithm}
+
+We define the size-change termination algorithm as follows:
+
+\begin{definition} Given a program $r$ and its corresponding size-change graph
+$G$, yield ``halts'' if all the call cycles in $G$ are monotonically
+decreasing, and ``unknown'' otherwise.\end{definition}
