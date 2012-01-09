@@ -1,0 +1,152 @@
+\section{The structured operational semantics used in this work}\label{appendix:sos}
+
+The following section describes the syntax used in this text to describe the
+operational semantics of the language \D{}. The syntax is inspired by
+\cite{sos}, but differs slightly.
+
+\subsection{Some general properties}
+
+\begin{itemize}
+
+\item Rules should be read in increasing order of equation number.
+
+\item If some rule with a lower equation number makes use of an undefined
+reduction rule, it is because the reduction rule is defined under some higher
+equation number.
+
+\item Rules can be defined in terms of themselves, i.e. they can be recursive,
+even mutually recursive.
+
+\end{itemize}
+
+\subsection{Atoms}\label{appendix:sos:atoms}
+
+To keep the rules clear and concise we'll make use of atoms to subdivide a rule
+into subrules and distinguish those rules from the rest. If you're familiar
+with Prolog, this shouldn't be particularly new to you.
+
+For instance, a chained expression $x$ may have the following semantics: 
+
+\begin{equation}\label{appendix:equation:expression}
+{\displaystyle
+  \left\langle \proc{Single}, x,\sigma\right\rangle
+  \rightarrow
+  \left\langle v,\sigma\right\rangle
+\vee
+  \left\langle \proc{Chain}, x,\sigma\right\rangle
+  \rightarrow
+  \left\langle v,\sigma\right\rangle
+\over\displaystyle
+  \left\langle x,\sigma\right\rangle
+  \rightarrow
+  \left\langle v,\sigma\right\rangle
+}
+\end{equation}
+
+This means that either the rule corresponding to the single element expression
+($\left\langle \proc{Single}, x,\sigma\right\rangle\rightarrow\left\langle
+v,\sigma\right\rangle$) validates, or the rule corresponding to the element
+followed by another expression ($\left\langle \proc{Chain},
+x,\sigma\right\rangle\rightarrow\left\langle v,\sigma\right\rangle$) does.
+
+Atoms are used in both propositions and conclusions of rules. For instance,
+\ref{appendix:equation:single} defines one of the subrules to the above rule.
+
+\subsection{The proposition operators}
+
+\subsubsection{The $=$ operator}
+
+The notation used in \cite{sos} does not make use of atoms\footnote{See
+\referToAppendix{sos:atoms}.}, but instead leaves the reader stranded guessing
+which rule to apply next. This is derivable from the language syntax, so
+usually this is isn't a problem. For instance, if an expression is either an
+if-statement or a while-loop we wouldn't find a summoning rule for expressions,
+but rather ``orphan rules'' like the following:
+
+\begin{equation*}
+{\displaystyle
+  \cdots
+\over\displaystyle
+  \left\langle\If\ e\ \kw{then}\ c_1\ \kw{else}\ c_2, \sigma\right\rangle
+  \longrightarrow
+  \cdots
+}
+\end{equation*}
+
+\begin{equation*}
+{\displaystyle
+  \cdots
+\over\displaystyle
+  \left\langle\kw{while}\ e\ \kw{do}\ c, \sigma\right\rangle
+  \longrightarrow
+  \cdots
+}
+\end{equation*}
+
+In the notation used in this text we define a summoning rule first, such as
+\ref{appendix:equation:expression}, and use atoms to subdivide that rule into
+subrules. The subrules are then defined further down, such as
+\ref{appendix:equation:single}. However, we still need a way to distinguish
+between things like if-statements and for-loops, or in the case of the running
+example elements and expressions.
+
+Hence, the first part of the proposition of a subrule will often begin with a
+``rule'' that uses the $=$ operator. For instance, $x = e$ means that the
+expression $x$ that we're considering really is just a single element, or $x =
+e\cdot x'$ means that the expression $x$ that we're considering really is a
+construction of an element $e$ and some other expression $x'$.
+
+\subsubsection{The $\rightarrow$ operator}
+
+\cite{sos} uses the operator $\longrightarrow$ to indicate a transition. Since
+we will blend this operator with other binary operators like $\wedge$ and
+$\vee$, and wish for the transition to have higher precedence\footnote{See
+\referToAppendix{sos:precedence}.}, it is visually more appropriate to use the
+$\rightarrow$ operator, since that keeps the vertical space between the
+operators roughly the same as between the operators $\wedge$ and $\vee$.
+
+\subsubsection{The $\wedge$ operator}
+
+The $\wedge$ operator is used as a conventional \emph{and} operator to combine
+multiple rules that must hold in a proposition. The left-to-right evaluation
+order is superimposed on the binary operator such that the ending values of the
+left hand rule can be used in the right hand rule. For instance, in the
+following rule, the value $e$ resulting from validating the left side of the
+$\wedge$ operator is carried over to the right side of the operator and used in
+another rule.
+
+\begin{equation}\label{appendix:equation:single}
+{\displaystyle
+  x\Rightarrow e
+\wedge
+  \left\langle e,\sigma\right\rangle
+  \rightarrow
+  \left\langle v,\sigma\right\rangle
+\over\displaystyle
+  \left\langle \proc{Single}, x,\sigma\right\rangle
+  \rightarrow
+  \left\langle v,\sigma\right\rangle
+}
+\end{equation}
+
+\subsubsection{The $\vee$ operator}
+
+The $\vee$ operator is used as a conventional short-circuited \emph{or}
+operator. That is, a left-to-right evaluation order is also superimposed but
+evaluation stops as soon as one of the operands holds.
+
+\subsubsection{Operator precedence}\label{appendix:sos:precedence}
+
+To avoid ambiguity, and having to revert to using parentheses we'll define the
+precedences of the possible operators in the prepositions of rules. Operators
+with higher precedence are bind tighter:
+
+\begin{enumerate}
+
+\item $\vee$
+
+\item $\wedge$
+
+\item $\rightarrow$
+
+\end{enumerate}
