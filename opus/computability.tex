@@ -168,9 +168,13 @@ exist.\end{proof}
 \section{Introduction to size-change termination}
 
 In the chapters that follow we will describe the size-change termination
-principle as in \cite{size-change} and extend it. The general idea behind size
-change termination is to construct a control flow graph for any given program
--- an easy task given a first order language, and not too complicated given a
-higher order language\cite{size-change-higher-order}.
+principle as in \cite{size-change}, and extend it slightly. The general idea
+behind the technique is to construct a control flow graph for a given program
+and consider the cycles in that graph.
 
-
+If every control flow cycle reduces a value of a well-founded data type on
+every iteration, i.e. monotonically decreases such a value, then rather
+intuitively, the program must terminate. In particular, a well-founded type is
+a type where any set of value of that type have a minimal element. The
+technique hence relies on the fact such a value eventually bottoms out and the
+cycle, unable to decrease the value further must inevitably terminate.
