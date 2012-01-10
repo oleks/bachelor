@@ -189,54 +189,44 @@
 
 % references
 
-\NewDocumentCommand\refer{m}
-{
-  \ref{#1} (\pageref{#1})
+\NewDocumentCommand\refer{m}{%
+\ref{#1} (\pageref{#1})%
 }
 
-\NewDocumentCommand\referToCorollary{m}
-{
-	Corollary \ref{corollary:#1} (\pageref{corollary:#1})
+\NewDocumentCommand\referToCorollary{m}{%
+Corollary \ref{corollary:#1} (\pageref{corollary:#1})%
 }
 
-\NewDocumentCommand\referToLemma{m}
-{
-	Lemma \ref{lemma:#1} (\pageref{lemma:#1})
+\NewDocumentCommand\referToLemma{m}{%
+Lemma \ref{lemma:#1} (\pageref{lemma:#1})%
 }
 
-\NewDocumentCommand\referToTheorem{m}
-{
-	Theorem \ref{theorem:#1} (\pageref{theorem:#1})
+\NewDocumentCommand\referToTheorem{m}{%
+Theorem \ref{theorem:#1} (\pageref{theorem:#1})%
 }
 
-\NewDocumentCommand\referToDefinition{m}
-{
-	Definition \ref{definition:#1} (\pageref{definition:#1})
+\NewDocumentCommand\referToDefinition{m}{%
+Definition \ref{definition:#1} (\pageref{definition:#1})%
 }
 
-\NewDocumentCommand\referToAppendix{m}
-{
-  Appendix \ref{appendix:#1} (\pageref{appendix:#1})
+\NewDocumentCommand\referToAppendix{m}{%
+Appendix \ref{appendix:#1} (\pageref{appendix:#1})%
 }
 
-\NewDocumentCommand\referToSection{m}
-{
-	\textsection\ \ref{section:#1} (\pageref{section:#1})
+\NewDocumentCommand\referToSection{m}{%
+\textsection\ \ref{section:#1} (\pageref{section:#1})%
 }
 
-\NewDocumentCommand\referToFigure{m}
-{
-	Figure \ref{figure:#1} (\pageref{figure:#1})
+\NewDocumentCommand\referToFigure{m}{%
+Figure \ref{figure:#1} (\pageref{figure:#1})%
 }
 
-\NewDocumentCommand\referToListing{m}
-{
-	Listing \ref{listing:#1} (\pageref{listing:#1})
+\NewDocumentCommand\referToListing{m}{%
+Listing \ref{listing:#1} (\pageref{listing:#1})%
 }
 
-\NewDocumentCommand\referToTable{m}
-{
-	Table \ref{table:#1} (\pageref{table:#1})
+\NewDocumentCommand\referToTable{m}{%
+Table \ref{table:#1} (\pageref{table:#1})%
 }
 
 % sections
