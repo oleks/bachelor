@@ -173,8 +173,8 @@ behind the technique is to construct a control flow graph for a given program
 and consider the cycles in that graph.
 
 If every control flow cycle reduces a value of a well-founded data type on
-every iteration, i.e. monotonically decreases such a value, then rather
-intuitively, the program must terminate. In particular, a well-founded type is
-a type where any set of value of that type have a minimal element. The
+every iteration, i.e. monotonically decreases the value, then, rather
+intuitively, the program must terminate. In particular, a well-founded data
+type is a data type where any set of values has a minimal element. The
 technique hence relies on the fact such a value eventually bottoms out and the
-cycle, unable to decrease the value further must inevitably terminate.
+cycle, unable to decrease the value any further, must inevitably terminate.
