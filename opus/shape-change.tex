@@ -1,5 +1,10 @@
 \chapter{Shape-Change Termination}
 
+Size-change termination, despite being simple is powerful enough to determine
+the halting property for a large class of programs. Many authors have extended
+the principle to even wider classes of programs, e.g. extending it to handle
+initially not well-founded data types \cite{bound-analysis}, 
+
 One trouble with size-change termination as described in the previous chapter
 is \referToLemma{cycle-reduce}. This lemma makes size-change termination weak
 in the sense that the overall shape changes in a given call cycle are
