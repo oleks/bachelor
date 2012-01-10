@@ -266,7 +266,7 @@ $\forall\ \left\langle i,j \right\rangle \in \left\{ \left\langle i, j
 
 \begin{lemma}\label{lemma:program-many-to-one} Given a program $r =
 \left\langle F, x\right\rangle$, it can be transformed into $r'=\left\langle
-F',x' \right\rangle$, s.t. $|F|=1$.\end{lemma}
+F',x' \right\rangle$, s.t. $|F'|=1$.\end{lemma}
 
 \begin{proof}\ \\
 
@@ -351,3 +351,10 @@ We define the shape-change termination algorithm as follows:
 and its corresponding shape-change graph $G$, yield ``halts'' if all the call
 cycles in $G$ are monotonically decreasing, and ``unknown''
 otherwise.\end{definition}
+
+\begin{theorem} Shape-change termination is sound and complete as per
+\referToDefinition{halting-2}.\end{theorem}
+
+\begin{proof} It is easy to see from the discussion above that the shape change
+graph has a finite number of nodes and edges, the method is complete by
+\referToTheorem{size-change}. \end{proof}

@@ -31,3 +31,16 @@ We define the size-change termination algorithm as follows:
 and its corresponding size-change graph $G$, yield ``halts'' if all the call
 cycles in $G$ are monotonically decreasing, and ``unknown''
 otherwise.\end{definition}
+
+Although it may seem odd to speak of termination of a method for which no
+particular implementation has been specified, we'll regard the finiteness of
+the call graph of a program as a proof of the termination of any method that
+takes a finite amount of time to build the call graph, and takes a finite
+amount of time to analyze the size-change property of any possible cycle in the
+call graph.
+
+\begin{theorem} Size-change termination is a sound and complete solution to
+\referToDefinition{halting-2}.\end{theorem}
+
+\begin{proof} Follows from \referToTheorem{size-change} and
+\referToTheorem{unary-finite}.\end{proof} 

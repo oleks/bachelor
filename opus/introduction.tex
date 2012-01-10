@@ -21,9 +21,9 @@ whether the given program contains any program flow cycles that loop
 indefinitely.
 
 Alan A. Turing and Alonzo D. Church developed separate proofs for the
-infeasibility of such a program almost simultaneously already in 1937. Turing's
-proof\cite{turing-machine} however, would live to become the one more widely
-recognised, although they are mutually reducible to one another.
+infeasibility of such a program almost simultaneously already in 1936/1937.
+Turing's proof\cite{turing-machine} however, would live to become the one more
+widely recognised, although they are mutually reducible to one another.
 
 However, the fact that termination checking is infeasible \emph{in general},
 has unfortunately become an easy excuse for many to claim that the property is
@@ -55,10 +55,14 @@ extended to such programs as well \cite{sct-untyped-lambda},
 \cite{sct-higher-order}.
 
 What's more, ``sound and complete'' termination analysis is undecidable in
-general as per \referToDefinition{halting-1}. Hence, whatever conclusions
-would've been reached would've either been unsound or incomplete. Instead we
+general as per \referToDefinition{halting-1}. Hence, whatever conclusions that
+could've been reached, would've either been unsound or incomplete. Instead we
 turn our attention to methods that are sound and complete if the halting
 problem is defined as in \referToDefinition{halting-2}.
+
+This definition also allows for a trivial implementation, in particular, one
+that returns ``unknown'' for any given program. While such a solution is valid,
+it is not particularly useful.
 
 \section{Expectations of the reader}
 
