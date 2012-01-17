@@ -1,4 +1,4 @@
-module Interpreter where
+module Interpreter (interpretString) where
 
 import Syntax
 import qualified Parser as Parser

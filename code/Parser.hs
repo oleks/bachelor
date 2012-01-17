@@ -1,9 +1,11 @@
-module Parser where
+module Parser (parseString) where
 
 import Syntax
 
 import Data.Char
 import Text.ParserCombinators.Parsec
+
+{- begin Parsing -}
 
 parseString :: String -> Either ParseError Program
 parseString programText = parse parseProgram ".." programText
@@ -14,6 +16,10 @@ parseProgram = do
   expression <- parseExpression
   eof
   return $ Program clauses expression
+
+{- end Parsing -}
+
+{- begin Clauses -}
 
 parseClause :: Parser Clause
 parseClause = do
@@ -34,6 +40,10 @@ stringToken text = do
   spaces
   return ()
 
+{- end Clauses -}
+
+{- begin Patterns -}
+
 parsePattern :: Parser Pattern
 parsePattern = do
   pattern <- chainr1 parsePElement (parseCons PNode)
@@ -50,6 +60,10 @@ parsePVariable :: Parser Pattern
 parsePVariable = do
   name <- parseName
   return $ PVariable name
+
+{- end Patterns -}
+
+{- begin Expressions -}
 
 parseExpression :: Parser Expression
 parseExpression = do
@@ -69,6 +83,10 @@ parseEVariable = do
   expressions <- many parseExpression
   return $ EVariable name expressions
 
+{- end Expressions -}
+
+{- begin Patterns & Expressions -}
+
 parseCons :: (t -> t-> t) -> Parser (t -> t -> t)
 parseCons f = do
   charToken '.'
@@ -86,6 +104,10 @@ parseBrackets tParser = do
   charToken ')'
   return $ t
 
+{- end Patterns & Expressions -}
+
+{- begin Auxiliary Functions -}
+
 charToken :: Char -> Parser ()
 charToken letter = do
   char letter
@@ -100,6 +122,8 @@ parseName = do
   return $ [firstLetter] ++ tailLetters
 
 lowerAlpha = satisfy (\letter -> isLower letter && isAlpha letter) <?> "valid name"
+
+{- end Auxiliary Functions -}
 
 {- TODO: Change <program> to <clause>+<expression>, most interesting programs
 have functions -}
