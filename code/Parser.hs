@@ -5,6 +5,35 @@ import Syntax
 import Data.Char
 import Text.ParserCombinators.Parsec
 
+parseString :: String -> Either ParseError Program
+parseString programText = parse parseProgram ".." programText
+
+parseProgram :: Parser Program
+parseProgram = do
+  clauses <- many1 parseClause
+  expression <- parseExpression
+  eof
+  return $ Program clauses expression
+
+parseClause :: Parser Clause
+parseClause = do
+  (name, patterns) <- try parseClauseDeclaration
+  expression <- parseExpression <?> "expression"
+  return $ Clause name patterns expression
+
+parseClauseDeclaration :: Parser (Name, [Pattern])
+parseClauseDeclaration = do
+  name <- parseName <?> "clause name"
+  patterns <- many1 parsePattern
+  stringToken ":="
+  return (name, patterns)
+
+parseExpression :: Parser Expression
+parseExpression = do
+  expression <- chainr1 parseEElement (parseCons ENode)
+  spaces
+  return expression
+
 lowerAlpha = satisfy (\letter -> isLower letter && isAlpha letter) <?> "valid name"
 
 charToken :: Char -> Parser ()
@@ -55,11 +84,6 @@ parseEElement = do
   <|> parseEVariable
   <|> parseBrackets parseExpression
 
-parseExpression :: Parser Expression
-parseExpression = do
-  expression <- chainr1 parseEElement (parseCons ENode)
-  spaces
-  return expression
 
 parsePElement :: Parser Pattern
 parsePElement = do
@@ -78,24 +102,5 @@ parseCons f = do
   charToken '.'
   return $ f
 
-parseClause :: Parser Clause
-parseClause = do
-  name <- parseName <?> "clause name"
-  patterns <- many1 parsePattern
-  stringToken ":="
-  expression <- parseExpression <?> "expression"
-  return $ Clause name patterns expression
-
 {- TODO: Change <program> to <clause>+<expression>, most interesting programs
 have functions -}
-
-parseProgram :: Parser Program
-parseProgram = do
-  clauses <- many1 parseClause
-  expression <- parseExpression
-  eof
-  return $ Program clauses expression
-
-parseString :: String -> Either ParseError Program
-parseString programText = parse parseProgram ".." programText
-

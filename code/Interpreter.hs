@@ -104,15 +104,6 @@ evaluateVariable name arguments
     result <- evaluateClauses clauses arguments
     return result
 
-{-
-    (StaticClause clause clauseContext) <- return $ context M.! name
-    return $
-      let
-        (value, _) = runDelta (evaluateClause clause arguments) (Context clauseContext)
-      in
-        value
--}
-
 evaluateExpression :: Expression -> Delta Expression
 evaluateExpression ENil = return ENil
 evaluateExpression (ENode e1 e2)
