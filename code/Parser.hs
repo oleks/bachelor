@@ -28,32 +28,40 @@ parseClauseDeclaration = do
   stringToken ":="
   return (name, patterns)
 
-parseExpression :: Parser Expression
-parseExpression = do
-  expression <- chainr1 parseEElement (parseCons ENode)
-  spaces
-  return expression
-
-lowerAlpha = satisfy (\letter -> isLower letter && isAlpha letter) <?> "valid name"
-
-charToken :: Char -> Parser ()
-charToken letter = do
-  char letter
-  spaces
-  return ()
-
 stringToken :: String -> Parser ()
 stringToken text = do
   string text
   spaces
   return ()
 
-parseName :: Parser Name
-parseName = do
-  firstLetter <- lowerAlpha
-  tailLetters <- many (lowerAlpha <|> char '-')
+parsePattern :: Parser Pattern
+parsePattern = do
+  pattern <- chainr1 parsePElement (parseCons PNode)
   spaces
-  return $ [firstLetter] ++ tailLetters
+  return pattern
+
+parsePElement :: Parser Pattern
+parsePElement = do
+  parseNil PNil
+  <|> parsePVariable
+  <|> parseBrackets parsePattern
+
+parsePVariable :: Parser Pattern
+parsePVariable = do
+  name <- parseName
+  return $ PVariable name
+
+parseExpression :: Parser Expression
+parseExpression = do
+  expression <- chainr1 parseEElement (parseCons ENode)
+  spaces
+  return expression
+
+parseEElement :: Parser Expression
+parseEElement = do
+  parseNil ENil
+  <|> parseEVariable
+  <|> parseBrackets parseExpression
 
 parseEVariable :: Parser Expression
 parseEVariable = do
@@ -61,10 +69,10 @@ parseEVariable = do
   expressions <- many parseExpression
   return $ EVariable name expressions
 
-parsePVariable :: Parser Pattern
-parsePVariable = do
-  name <- parseName
-  return $ PVariable name
+parseCons :: (t -> t-> t) -> Parser (t -> t -> t)
+parseCons f = do
+  charToken '.'
+  return $ f
 
 parseNil :: t -> Parser t
 parseNil t = do
@@ -78,29 +86,20 @@ parseBrackets tParser = do
   charToken ')'
   return $ t
 
-parseEElement :: Parser Expression
-parseEElement = do
-  parseNil ENil
-  <|> parseEVariable
-  <|> parseBrackets parseExpression
-
-
-parsePElement :: Parser Pattern
-parsePElement = do
-  parseNil PNil
-  <|> parsePVariable
-  <|> parseBrackets parsePattern
-
-parsePattern :: Parser Pattern
-parsePattern = do
-  pattern <- chainr1 parsePElement (parseCons PNode)
+charToken :: Char -> Parser ()
+charToken letter = do
+  char letter
   spaces
-  return pattern
+  return ()
 
-parseCons :: (t -> t-> t) -> Parser (t -> t -> t)
-parseCons f = do
-  charToken '.'
-  return $ f
+parseName :: Parser Name
+parseName = do
+  firstLetter <- lowerAlpha
+  tailLetters <- many (lowerAlpha <|> char '-')
+  spaces
+  return $ [firstLetter] ++ tailLetters
+
+lowerAlpha = satisfy (\letter -> isLower letter && isAlpha letter) <?> "valid name"
 
 {- TODO: Change <program> to <clause>+<expression>, most interesting programs
 have functions -}

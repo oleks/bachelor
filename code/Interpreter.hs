@@ -40,7 +40,7 @@ setContext :: Context -> Delta ()
 setContext context = Delta { runDelta = \_ -> ((), context) }
 
 getSignature :: Name -> [t] -> Name
-getSignature name t = name ++ (show $ length t)
+getSignature name t = name ++ ('/' : (show $ length t))
 
 makeConstant :: Expression -> [StaticClause]
 makeConstant expression = [(StaticClause [] expression M.empty)]
@@ -87,7 +87,7 @@ evaluateClause (StaticClause patterns expression clauseContext) arguments
         _ -> return $ Left ()
 
 evaluateClauses :: [StaticClause] -> [Expression] -> Delta Expression
-evaluateClauses [] _ = return ENil
+evaluateClauses [] _ = error "pattern matching not exhaustive"
 evaluateClauses (head : tail) arguments
   = do
     matched <- evaluateClause head arguments
@@ -97,13 +97,17 @@ evaluateClauses (head : tail) arguments
 
 evaluateVariable :: Name -> [Expression] -> Delta Expression
 evaluateVariable name arguments
-  = do
-    context <- getContext
-    signature <- return $ name ++ (show $ length arguments)
-    clauses <- return $ context M.! signature
-    result <- evaluateClauses clauses arguments
-    return result
-
+  = let
+      signature = getSignature name arguments
+    in
+      do
+        context <- getContext
+        clauses <-
+          if (M.member signature context)
+          then return $ context M.! signature
+          else error $ "undefined variable: " ++ signature
+        result <- evaluateClauses clauses arguments
+        return result
 evaluateExpression :: Expression -> Delta Expression
 evaluateExpression ENil = return ENil
 evaluateExpression (ENode e1 e2)
@@ -144,7 +148,7 @@ initializeClauses :: [Clause] -> Context -> Context
 initializeClauses [] map = map
 initializeClauses ((Clause name patterns expression) : tail) map =
   let
-    signature = name ++ (show $ length patterns)
+    signature = getSignature name patterns
     clauses = if (M.member signature map)
               then map M.! signature
               else []
