@@ -47,31 +47,18 @@ setContext context = Delta { runDelta = \_ -> ((), context) }
 
 {- begin Interpretation -}
 
-interpretString :: String -> Either Parsec.ParseError DotPicture
+interpretString :: String -> Either Parsec.ParseError Expression
 interpretString programText =
   case (Parser.parseString programText) of
     Left error -> Left error
     Right program -> Right (interpretProgram program)
 
-interpretProgram :: Program -> DotPicture
+interpretProgram :: Program -> Expression
 interpretProgram (Program clauses expression) =
   let
-    (value, _) = (runDelta (interpretExpression [] expression)) (initialContext clauses)
+    (value, _) = (runDelta (evaluateExpression expression)) (initialContext clauses)
   in
     value
-
-interpretExpression :: DotPicture -> Expression -> Delta DotPicture
-interpretExpression dotPicture ENil = return (Leaf : dotPicture)
-interpretExpression dotPicture (ENode e1 e2)
-  = do
-    d1 <- interpretExpression dotPicture e1
-    d2 <- interpretExpression d1 e2
-    return d2
-interpretExpression dotPicture variable
-  = do
-    value <- evaluateExpression variable
-    d <- interpretExpression dotPicture value
-    return d
 
 evaluateExpression :: Expression -> Delta Expression
 evaluateExpression ENil = return ENil
