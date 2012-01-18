@@ -1,4 +1,4 @@
-module Parser (parseString) where
+module Parser (parseFile, parseString) where
 
 import Syntax
 
@@ -6,6 +6,9 @@ import Data.Char
 import Text.ParserCombinators.Parsec
 
 {- begin Parsing -}
+
+parseFile :: String -> IO (Either ParseError Program)
+parseFile fileName = parseFromFile parseProgram fileName
 
 parseString :: String -> Either ParseError Program
 parseString programText = parse parseProgram ".." programText

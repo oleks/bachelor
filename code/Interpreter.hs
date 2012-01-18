@@ -1,4 +1,9 @@
-module Interpreter (interpretString) where
+module Interpreter (
+  interpretString,
+  interpretFile,
+  interpretFileToDot,
+  interpretFileToPdf
+) where
 
 import Syntax
 import qualified Parser as Parser
@@ -6,15 +11,10 @@ import qualified Text.ParserCombinators.Parsec.Error as Parsec
 
 import Control.Monad
 import Data.Map as M
+import Data.Char as C
+import System.Process as P
 
 {- begin Type Declarations -}
-
-data Shape
-  = Node
-  | Leaf
-  deriving(Show)
-
-type DotPicture = [Shape]
 
 type Context = M.Map String [StaticClause]
 
@@ -35,7 +35,9 @@ instance Monad Delta where
         (runDelta newDelta) newContext
     }
 
-{- Context auxiliaries -}
+{- end Type Declarations -}
+
+{- begin Context Auxiliaries -}
 
 getContext :: Delta Context
 getContext = Delta { runDelta = \context -> (context, context) }
@@ -43,15 +45,46 @@ getContext = Delta { runDelta = \context -> (context, context) }
 setContext :: Context -> Delta ()
 setContext context = Delta { runDelta = \_ -> ((), context) }
 
-{- end Type Declarations -}
+{- end Context Auxiliaries -}
 
 {- begin Interpretation -}
 
-interpretString :: String -> Either Parsec.ParseError Expression
-interpretString programText =
-  case (Parser.parseString programText) of
-    Left error -> Left error
-    Right program -> Right (interpretProgram program)
+{- dot -Tpdf f.delta.dot -o f.delta.pdf -}
+
+interpretFileToPdf :: String -> IO String
+interpretFileToPdf fileName =
+  let
+    pdfFileName = fileName ++ ".pdf"
+  in
+    do
+      dotFileName <- interpretFileToDot fileName
+      P.createProcess (P.proc "dot" ["-Tpdf", dotFileName, "-o", pdfFileName])
+      return pdfFileName
+
+interpretFileToDot :: String -> IO String
+interpretFileToDot fileName =
+  let
+    dotFileName = fileName ++ ".dot"
+  in
+    do
+      result <- interpretFile fileName
+      writeFile dotFileName $ getDotGraph $ result
+      return dotFileName
+
+interpretFile :: String -> IO Expression
+interpretFile fileName =
+  do
+    ast <- Parser.parseFile fileName
+    return $ interpret ast
+
+interpretString :: String -> Expression
+interpretString programText = interpret (Parser.parseString programText)
+
+interpret :: (Either Parsec.ParseError Program) -> Expression
+interpret ast =
+  case ast of
+    Left errorText -> error $ show errorText
+    Right program -> interpretProgram program
 
 interpretProgram :: Program -> Expression
 interpretProgram (Program clauses expression) =
@@ -171,20 +204,66 @@ initializeClauses ((Clause name patterns expression) : tail) map =
 
 {- end Initial Context -}
 
-{- Erlang-like signatures -}
+{- begin Erlang-like signatures -}
 
 getSignature :: Name -> [t] -> Name
 getSignature name t = name ++ ('/' : (show $ length t))
 
+{- end Erlang-like signatures -}
 
+{- begin Dot Graph Generation -}
 
+{- main node name, node text, edge text -}
 
+data DotGraph
+  = DotGraph {
+    dotName :: String,
+    dotNodes :: String,
+    dotEdges :: String
+  }
 
+dotGraph :: String -> String -> String -> DotGraph
+dotGraph name nodes edges =
+  DotGraph {
+    dotName = name,
+    dotNodes = nodes,
+    dotEdges = edges
+  }
 
+getNewName :: String -> String
+getNewName name
+  = case name of
+    'z' : tail -> 'a' : 'z' : tail
+    head : tail -> (C.chr ((C.ord head) + 1) ) : tail
 
+getDotGraph :: Expression -> String
+getDotGraph expression =
+  let
+    graph = getDotGraphAux "a" expression
+    nodes = dotNodes graph
+    edges = dotEdges graph
+  in
+    "digraph G {\n" ++ nodes ++ edges ++ "}"
 
+getDotGraphAux :: String -> Expression -> DotGraph
+getDotGraphAux initialName ENil =
+  let
+    nodes = initialName ++ "[shape=circle,fillcolor=white,label=\"\"];\n"
+    edges = []
+  in
+    dotGraph initialName nodes edges
+getDotGraphAux initialName (ENode e1 e2) =
+  let
+    name1 = getNewName initialName
+    graph1 = getDotGraphAux name1 e1
+    name2 = getNewName (dotName graph1)
+    graph2 = getDotGraphAux name2 e2
+    nodes = initialName ++ "[shape=circle,fillcolor=black,style=filled,label=\"\"];\n" ++
+      (dotNodes graph1) ++ (dotNodes graph2)
+    edges = initialName ++ "->{" ++ name1 ++ (';' : name2) ++
+      ('}' : ';' : '\n' : (dotEdges graph1)) ++ (dotEdges graph2)
+  in
+    dotGraph name2 nodes edges
+getDorGraphAux _ _ = error "expression wasn't evaluated before drawing"
 
-
-
-
-
+{- end Dot Graph Generation -}
