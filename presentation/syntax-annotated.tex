@@ -1,0 +1,41 @@
+\begin{frame}
+
+\frametitle{The syntax of \D{}}
+
+\setcounter{equation}{0}
+
+\begin{align*}
+\nonterm{program}\ \textt{::=}&\ \nonterm{clause}^{\color{red}\textt{+}}
+\ \nonterm{expression}
+& \\
+\nonterm{expression}\ \textt{::=}&\ \nonterm{element}\ \textt{(}\ \term{.}
+\ \nonterm{expression}\ \textt{)}\ \textt{?}
+& x\\
+\nonterm{element}\ \textt{::=}&\ \term{0}\ \textt{|}\ \term{(}
+\ \nonterm{element}\ \term{)}\ \textt{|}\ \nonterm{name}\ \textt{|}
+\ \nonterm{application}
+& e\\
+\nonterm{application}\ \textt{::=}&\ \nonterm{name}
+\ \nonterm{expression}^{\color{yellow}\textt{*}}
+& \left\langle v,X \right\rangle \\
+\nonterm{clause}\ \textt{::=}&\ \nonterm{name}
+\ \nonterm{pattern}^{\color{yellow}\textt{*}}\ \term{:=}
+\ \nonterm{expression}
+& c=\left\langle v, P, x \right\rangle \\
+\nonterm{pattern}\ \textt{::=}&\ \nonterm{pattern-element}\ \textt{(}
+\ \term{.}\ \nonterm{pattern}\ \textt{)}\ \textt{?}
+& p\\
+\nonterm{pattern-element}\ \textt{::=}&\ \term{0}\ \textt{|}\ \term{\_}
+\ \textt{|}\ \term{(}\ \nonterm{pattern}\ \term{)}\ \textt{|}\ \nonterm{name}
+& p\\
+\nonterm{name}\ \textt{::=}&\ \textt{[}\term{a}\mathmono{-}\term{z}\textt{]}
+\ \textt{(}\ \textt{[}\term{-}\ \term{a}\mathmono{-}\term{z}\textt{]}^\textt{*}
+\ \textt{[}\term{a}\mathmono{-}\term{z}\textt{]}\ \textt{)}\ \textt{?}
+& v
+\end{align*}
+
+(14)
+
+% e in this case could've well been x.. %
+
+\end{frame}

@@ -12,13 +12,25 @@ import qualified Text.ParserCombinators.Parsec.Error as Parsec
 import Control.Monad
 import Data.Map as M
 import Data.Char as C
-import System.Process as P
+import System.Process as Process
+import System.Random as Random
 
 {- begin Type Declarations -}
 
-type Context = M.Map String [StaticClause]
+type Variables = M.Map String Int
+type Clauses = M.Map String StaticClause
 
-data StaticClause = StaticClause [Pattern] Expression Context
+data Context
+  = Context
+  {
+    contextVariables :: Variables,
+    contextClauses :: Clauses,
+    contextStdGen :: Random.StdGen
+  }
+  deriving(Show)
+
+data StaticClause
+  = StaticClause [Pattern] Expression [String]
   deriving(Show)
 
 data Delta t = Delta {
@@ -39,11 +51,32 @@ instance Monad Delta where
 
 {- begin Context Auxiliaries -}
 
+makeContext :: Random.StdGen -> M.Map
+
 getContext :: Delta Context
-getContext = Delta { runDelta = \context -> (context, context) }
+getContext =
+  Delta { runDelta = \context -> (context, context) }
+
+getFromContext :: (Context -> t) -> Delta t
+getFromContext f =
+  Delta { runDelta = \context -> ((f context), context) }
+
+getVariables :: Delta (M.Map String Int)
+getVariables = getFromContext contextVariables
+
+getClauses :: Delta (M.Map String StaticClause)
+getClauses = getFromContext contextClauses
+
+getStdGen :: Delta (Random.StdGen)
+getStdGen = getFromContext contextStdGen
 
 setContext :: Context -> Delta ()
-setContext context = Delta { runDelta = \_ -> ((), context) }
+setContext context =
+  Delta { runDelta = \_ -> ((), context) }
+
+setVariables :: M.Map String Int -> Delta ()
+setVariables newVariables =
+  Delta { runDelta = \context -> ((), context { contextVariables = newVariables } ) }
 
 {- end Context Auxiliaries -}
 
@@ -55,43 +88,59 @@ interpretFileToPdf :: String -> IO String
 interpretFileToPdf fileName =
   let
     pdfFileName = fileName ++ ".pdf"
+    pdfProcess = \dotFileName -> Process.proc "dot" ["-Tpdf", dotFileName, "-o", pdfFileName]
   in
+    return ""
+{-
     do
       dotFileName <- interpretFileToDot fileName
-      P.createProcess (P.proc "dot" ["-Tpdf", dotFileName, "-o", pdfFileName])
+      Process.createProcess $ pdfProcess dotFileName
       return pdfFileName
+-}
 
 interpretFileToDot :: String -> IO String
 interpretFileToDot fileName =
   let
     dotFileName = fileName ++ ".dot"
   in
+    return ""
+{-
     do
       result <- interpretFile fileName
       writeFile dotFileName $ getDotGraph $ result
       return dotFileName
+-}
 
-interpretFile :: String -> IO Expression
+interpretFile :: String -> IO Context
 interpretFile fileName =
   do
     ast <- Parser.parseFile fileName
-    return $ interpret ast
+    result <- interpret ast
+    return result
 
-interpretString :: String -> Expression
+interpretString :: String -> IO Context
 interpretString programText = interpret (Parser.parseString programText)
 
-interpret :: (Either Parsec.ParseError Program) -> Expression
+interpret :: (Either Parsec.ParseError Program) -> IO Context
 interpret ast =
   case ast of
     Left errorText -> error $ show errorText
     Right program -> interpretProgram program
 
-interpretProgram :: Program -> Expression
+interpretProgram :: Program -> IO Context
 interpretProgram (Program clauses expression) =
-  let
-    (value, _) = (runDelta (evaluateExpression expression)) (initialContext clauses)
-  in
-    value
+  do
+    context <- initialContext clauses
+    return context
+{-
+    return $
+      let
+        (result, _) = (runDelta (evaluateExpression expression)) context
+      in
+        result
+-}
+
+{-
 
 evaluateExpression :: Expression -> Delta Expression
 evaluateExpression ENil = return ENil
@@ -116,10 +165,10 @@ evaluateVariable name arguments
       signature = getSignature name arguments
     in
       do
-        context <- getContext
+        variables <- getVariables
         clauses <-
-          if (M.member signature context)
-          then return $ context M.! signature
+          if (M.member signature variables)
+          then return $ variables M.! signature
           else error $ "undefined variable: " ++ signature
         result <- evaluateClauses clauses arguments
         return result
@@ -134,17 +183,19 @@ evaluateClauses (head : tail) arguments
       Left _ -> evaluateClauses tail arguments
 
 evaluateClause :: StaticClause -> [Expression] -> Delta (Either () Expression)
-evaluateClause (StaticClause patterns expression clauseContext) arguments
-  = let
-      (matched, boundContext) = (runDelta (evaluatePatternMatches patterns arguments)) clauseContext
-    in
-      case matched of
-        True ->
-          let
-            (value, _) = (runDelta (evaluateExpression expression)) boundContext
-          in
-            return $ Right value
-        _ -> return $ Left ()
+evaluateClause (StaticClause patterns expression clauseVariables) arguments =
+  do
+    originalVariables <- getVariables
+    setVariables clauseVariables
+    matched <- evaluatePatternMatches patterns arguments
+    if matched
+    then
+      do
+        result <- evaluateExpression expression
+        setVariables originalVariables
+        return $ Right result
+    else
+      return $ Left ()
 
 {- end Variable Evaluation -}
 
@@ -165,11 +216,11 @@ evaluatePatternMatch PNil ENil = return True
 evaluatePatternMatch (PVariable name) expression
   = let
       signature = getSignature name []
-      clause = makeConstant expression
     in
       do
-        context <- getContext
-        setContext $ M.insert signature clause context
+        clause <- makeConstant expression
+        variables <- getVariables
+        setVariables $ M.insert signature clause variables
         return True
 evaluatePatternMatch (PNode p1 p2) (ENode e1 e2)
   = do
@@ -180,27 +231,53 @@ evaluatePatternMatch _ _ = return False
 
 {- Variables are bound as 0-ary clauses. -}
 
-makeConstant :: Expression -> [StaticClause]
-makeConstant expression = [(StaticClause [] expression M.empty)]
+makeConstant :: Expression -> Delta [StaticClause]
+makeConstant expression = return [(StaticClause [] expression M.empty)]
 
 {- end Pattern Matching -}
 
 {- begin Initial Context -}
 
-initialContext :: [Clause] -> Context
-initialContext clauses = initializeClauses  clauses M.empty
+-}
 
-initializeClauses :: [Clause] -> Context -> Context
-initializeClauses [] map = map
-initializeClauses ((Clause name patterns expression) : tail) map =
+initialContext :: [Clause] -> IO Context
+initialContext clauses =
+  do
+    stdGen <- Random.getStdGen
+    context <- return $ makeContext stdGen M.empty M.empty
+    return $
+      let
+        finalVariables = initializeClauses clauses context
+        finalClauses = mapWithKey (normalizeClause clauses) finalVariables
+      in
+        context { contextVariable contextClauses = finalClauses }
+
+initializeClauses :: [Clause] -> Variables -> M.Map String Int
+initializeClauses [] variables = variables
+initializeClauses ((Clause name patterns expression) : tail) variables =
   let
     signature = getSignature name patterns
-    clauses = if (M.member signature map)
-              then map M.! signature
-              else []
-    staticClause = StaticClause patterns expression map
+    signatureExists = M.member signature variables
+    clauses =
+      if signatureExists
+      then variables M.! signature
+      else []
+    staticClause = StaticClause patterns expression variables
   in
-    initializeClauses tail (M.insert signature (clauses ++ [staticClause]) map)
+    initializeClauses tail (M.insert signature (clauses ++ [staticClause]) variables)
+
+normalizeClause :: Variables -> String -> [StaticClause] -> [StaticClause]
+normalizeClause initialVariables name clauses
+  = Prelude.map (\clause -> normalizeStaticClause name initialVariables clause) clauses
+
+normalizeStaticClause :: String -> Variables -> StaticClause -> StaticClause
+normalizeStaticClause name initialVariables (StaticClause patterns expression variables) =
+  let
+    updateClauses = \key _ acc -> M.insert key (initialVariables M.! key) acc
+    fixPoint = M.fromList [(name, (initialVariables M.! name))]
+    newVariables = M.foldrWithKey (updateClauses) fixPoint variables
+  in
+    StaticClause patterns expression newVariables
 
 {- end Initial Context -}
 
