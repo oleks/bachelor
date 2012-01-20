@@ -287,13 +287,13 @@ initialContext clauses =
     context <- return $ emptyContext stdGen
     return $
       let
-        (frame, functions) = initializeClauses (reverse clauses) [] M.empty
+        (frame, functions) = initializeFunctions (reverse clauses) [] M.empty
       in
         context { contextFrame = frame, contextFunctions = functions }
 
-initializeClauses :: [Clause] -> Frame -> Functions -> (Frame, Functions)
-initializeClauses [] frame functions = (frame, functions)
-initializeClauses ((Clause name patterns expression) : tail) frame functions =
+initializeFunctions :: [Clause] -> Frame -> Functions -> (Frame, Functions)
+initializeFunctions [] frame functions = (frame, ensureExhaustive functions)
+initializeFunctions ((Clause name patterns expression) : tail) frame functions =
   let
     signature = getSignature name patterns
     signatureExists = M.member signature functions
@@ -307,7 +307,32 @@ initializeClauses ((Clause name patterns expression) : tail) frame functions =
       then functions M.! signature
       else []
   in
-    initializeClauses tail functionFrame (M.insert signature functionClauses functions)
+    initializeFunctions tail functionFrame (M.insert signature functionClauses functions)
+
+ensureExhaustive :: Functions -> Functions
+ensureExhaustive functions = mapWithKey ensureExhaustiveFunction functions
+
+ensureExhaustiveFunction :: Name -> [StaticClause] -> [StaticClause]
+ensureExhaustiveFunction name clauses = clauses
+
+getSiblings :: Pattern -> [Pattern]
+getSiblings PNil = [PNode (PVariable "x") (PVariable "x")]
+getSiblings (PVariable _) = []
+getSiblings (PNode p1 p2) =
+  let
+    s1 = getSiblings p1
+    s2 = getSiblings p2
+    f2 = Prelude.map (\s -> (PNode s p2)) s1
+    f1 = Prelude.map (\s -> (PNode p1 s)) s2
+  in
+    [PNil] ++ f1 ++ f2 ++ mergeSiblings s1 s2 s2
+
+mergeSiblings :: [Pattern] -> [Pattern] -> [Pattern] -> [Pattern]
+mergeSublings [] _ _ = []
+mergeSiblings s1@(h1 : t1) (h2 : t2) s2 =
+  (PNode h1 h2) : (mergeSiblings s1 t2 s2)
+mergeSiblings (_ : t1) [] s2 =
+  mergeSiblings t1 s2 s2
 
 {- end Initial Context -}
 

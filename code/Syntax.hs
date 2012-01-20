@@ -16,7 +16,11 @@ data Pattern
   = PNode Pattern Pattern
   | PVariable Name
   | PNil
-  deriving(Show)
+
+instance Show Pattern where
+  show PNil = "0"
+  show (PVariable name) = name
+  show (PNode left right) = ('(' : (show left)) ++ ('.' : (show right)) ++ ")"
 
 data Clause
   = Clause Name [Pattern] Expression
