@@ -6,7 +6,11 @@ data Expression
   = ENode Expression Expression
   | EVariable Name [Expression]
   | ENil
-  deriving(Show)
+
+instance Show Expression where
+  show ENil = "0"
+  show (EVariable name arguments) = ('(' : name) ++ (' ' : (show arguments))  ++ ")"
+  show (ENode left right) = ('(' : (show left)) ++ ('.' : (show right)) ++ ")"
 
 data Pattern
   = PNode Pattern Pattern

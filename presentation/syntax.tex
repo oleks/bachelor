@@ -18,7 +18,7 @@
 & \\
 \nonterm{clause}\ \textt{::=}&\ \nonterm{name}
 \ \nonterm{pattern}^{\color{yellow}\textt{*}}\ \term{:=}
-\ \nonterm{expression}
+\ \nonterm{expression}{\color{green}\term{;}}
 & \\
 \nonterm{pattern}\ \textt{::=}&\ \nonterm{pattern-element}\ \textt{(}
 \ \term{.}\ \nonterm{pattern}\ \textt{)}\ \textt{?}
@@ -36,7 +36,11 @@
 % <program> should probably be <clause>+ <expression>, since most interesting
 % problems have at least one clause.
 
-% Why did we avoid constants? No reason. Constants are 0-ary functions that
-% trivially terminate.
+% We add ; to distinguish last clause from program expression
+
+% Why did we avoid 0-ary funcitons? Because Nil Jones does it, but there is no
+% particular reason wrt. size change termination. In particular, recursive
+% 0-ary clauses never terminate, 0-ary clases without any calls trivially
+% terminate, and all other constants can be inlined.
 
 \end{frame}

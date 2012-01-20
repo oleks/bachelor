@@ -28,12 +28,13 @@ parseClause :: Parser Clause
 parseClause = do
   (name, patterns) <- try parseClauseDeclaration
   expression <- parseExpression <?> "expression"
+  charToken ';'
   return $ Clause name patterns expression
 
 parseClauseDeclaration :: Parser (Name, [Pattern])
 parseClauseDeclaration = do
   name <- parseName <?> "clause name"
-  patterns <- many1 parsePattern
+  patterns <- many parsePattern
   stringToken ":="
   return (name, patterns)
 

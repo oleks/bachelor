@@ -10,28 +10,38 @@ import qualified Parser as Parser
 import qualified Text.ParserCombinators.Parsec.Error as Parsec
 
 import Control.Monad
+import Control.Monad.Trans
 import Data.Map as M
 import Data.Char as C
+import Data.Bits as Bits
 import System.Process as Process
 import System.Random as Random
+import System.Time as Time
+
+minInputSize = 1
+maxInputSize = 10
 
 {- begin Type Declarations -}
 
-type Variables = M.Map String Int
-type Clauses = M.Map String StaticClause
+type Frame = [Name]
+
+type Functions = M.Map Name [StaticClause]
+
+type Variables = M.Map Name Expression
+
+data StaticClause = StaticClause [Pattern] Expression Frame
+  deriving(Show)
 
 data Context
   = Context
   {
-    contextVariables :: Variables,
-    contextClauses :: Clauses,
-    contextStdGen :: Random.StdGen
+    contextStdGen :: Random.StdGen,
+    contextFrame :: Frame,
+    contextFunctions :: Functions,
+    contextVariables :: Variables
   }
   deriving(Show)
 
-data StaticClause
-  = StaticClause [Pattern] Expression [String]
-  deriving(Show)
 
 data Delta t = Delta {
     runDelta :: Context -> (t, Context)
@@ -51,7 +61,15 @@ instance Monad Delta where
 
 {- begin Context Auxiliaries -}
 
-makeContext :: Random.StdGen -> M.Map
+emptyContext :: Random.StdGen -> Context
+emptyContext stdGen
+  = Context {
+      contextStdGen = stdGen,
+      contextFrame = [],
+      contextFunctions = M.empty,
+      contextVariables = M.empty
+    }
+
 
 getContext :: Delta Context
 getContext =
@@ -61,22 +79,38 @@ getFromContext :: (Context -> t) -> Delta t
 getFromContext f =
   Delta { runDelta = \context -> ((f context), context) }
 
-getVariables :: Delta (M.Map String Int)
-getVariables = getFromContext contextVariables
-
-getClauses :: Delta (M.Map String StaticClause)
-getClauses = getFromContext contextClauses
-
 getStdGen :: Delta (Random.StdGen)
 getStdGen = getFromContext contextStdGen
+
+getFrame :: Delta Frame
+getFrame = getFromContext contextFrame
+
+getFunctions :: Delta Functions
+getFunctions = getFromContext contextFunctions
+
+getVariables :: Delta Variables
+getVariables = getFromContext contextVariables
+
 
 setContext :: Context -> Delta ()
 setContext context =
   Delta { runDelta = \_ -> ((), context) }
 
-setVariables :: M.Map String Int -> Delta ()
-setVariables newVariables =
-  Delta { runDelta = \context -> ((), context { contextVariables = newVariables } ) }
+setStdGen :: StdGen -> Delta ()
+setStdGen stdGen =
+  Delta { runDelta = \context -> ((), context { contextStdGen = stdGen } ) }
+
+setFrame :: Frame -> Delta ()
+setFrame frame =
+  Delta { runDelta = \context -> ((), context { contextFrame = frame } ) }
+
+setFunctions :: Functions -> Delta ()
+setFunctions functions =
+  Delta { runDelta = \context -> ((), context { contextFunctions = functions } ) }
+
+setVariables :: Variables -> Delta ()
+setVariables variables =
+  Delta { runDelta = \context -> ((), context { contextVariables = variables } ) }
 
 {- end Context Auxiliaries -}
 
@@ -90,85 +124,103 @@ interpretFileToPdf fileName =
     pdfFileName = fileName ++ ".pdf"
     pdfProcess = \dotFileName -> Process.proc "dot" ["-Tpdf", dotFileName, "-o", pdfFileName]
   in
-    return ""
-{-
     do
       dotFileName <- interpretFileToDot fileName
       Process.createProcess $ pdfProcess dotFileName
       return pdfFileName
--}
 
 interpretFileToDot :: String -> IO String
 interpretFileToDot fileName =
   let
     dotFileName = fileName ++ ".dot"
   in
-    return ""
-{-
     do
       result <- interpretFile fileName
       writeFile dotFileName $ getDotGraph $ result
       return dotFileName
--}
 
-interpretFile :: String -> IO Context
+interpretFile :: String -> IO Expression
 interpretFile fileName =
   do
     ast <- Parser.parseFile fileName
     result <- interpret ast
     return result
 
-interpretString :: String -> IO Context
+interpretString :: String -> IO Expression
 interpretString programText = interpret (Parser.parseString programText)
 
-interpret :: (Either Parsec.ParseError Program) -> IO Context
+interpret :: (Either Parsec.ParseError Program) -> IO Expression
 interpret ast =
   case ast of
     Left errorText -> error $ show errorText
     Right program -> interpretProgram program
 
-interpretProgram :: Program -> IO Context
-interpretProgram (Program clauses expression) =
-  do
-    context <- initialContext clauses
-    return context
-{-
-    return $
-      let
-        (result, _) = (runDelta (evaluateExpression expression)) context
-      in
-        result
--}
-
-{-
+interpretProgram :: Program -> IO Expression
+interpretProgram (Program clauses expression) = do
+  context <- initialContext clauses
+  (result, _) <- return $ (runDelta (evaluateExpression expression)) context
+  putStrLn $ show result
+  return result
 
 evaluateExpression :: Expression -> Delta Expression
 evaluateExpression ENil = return ENil
-evaluateExpression (ENode e1 e2)
-  = do
+evaluateExpression (ENode e1 e2) = do
     r1 <- evaluateExpression e1
     r2 <- evaluateExpression e2
     return $ ENode r1 r2
 evaluateExpression (EVariable name expressions)
-  = do
-    arguments <- mapM evaluateExpression expressions
-    result <- evaluateVariable name arguments
-    return result
+  = if name == "input"
+    then evaluateInput
+    else evaluateApplication name expressions
+
+evaluateInput :: Delta Expression
+evaluateInput = do
+  stdGen <- Interpreter.getStdGen
+  (size, newStdGen) <- return $ Random.randomR (minInputSize,maxInputSize) stdGen
+  Interpreter.setStdGen newStdGen
+  return $ balancedTree size
+
+balancedTree :: Int -> Expression
+balancedTree 0 = ENil
+balancedTree size =
+  let
+    halfSize = Bits.shiftR (size - 1) 1
+  in
+    ENode (balancedTree halfSize) (balancedTree halfSize)
+
+evaluateApplication :: Name -> [Expression] -> Delta Expression
+evaluateApplication name expressions = do
+  arguments <- mapM evaluateExpression expressions
+  variables <- getVariables
+  result <-
+    case arguments of
+      []  ->
+        if M.member name variables
+        then  evaluateVariable name
+        else evaluateCall name arguments
+      _   -> evaluateCall name arguments
+  return result
+
 
 {- end Interpretation -}
 
 {- begin Variable Evaluation -}
 
-evaluateVariable :: Name -> [Expression] -> Delta Expression
-evaluateVariable name arguments
+evaluateVariable :: Name -> Delta Expression
+evaluateVariable name = do
+  variables <- getVariables
+  return $ variables M.! name
+
+evaluateCall :: Name -> [Expression] -> Delta Expression
+evaluateCall name arguments
   = let
       signature = getSignature name arguments
     in
       do
-        variables <- getVariables
+        functions <- getFunctions
         clauses <-
-          if (M.member signature variables)
-          then return $ variables M.! signature
+          if (M.member signature functions)
+          then return $ functions M.! signature
           else error $ "undefined variable: " ++ signature
         result <- evaluateClauses clauses arguments
         return result
@@ -183,16 +235,16 @@ evaluateClauses (head : tail) arguments
       Left _ -> evaluateClauses tail arguments
 
 evaluateClause :: StaticClause -> [Expression] -> Delta (Either () Expression)
-evaluateClause (StaticClause patterns expression clauseVariables) arguments =
+evaluateClause (StaticClause patterns expression clauseFrame) arguments =
   do
-    originalVariables <- getVariables
-    setVariables clauseVariables
+    originalFrame <- getFrame
+    setFrame clauseFrame
     matched <- evaluatePatternMatches patterns arguments
     if matched
     then
       do
         result <- evaluateExpression expression
-        setVariables originalVariables
+        setFrame originalFrame
         return $ Right result
     else
       return $ Left ()
@@ -213,71 +265,49 @@ evaluatePatternMatches _ _ = return False
 
 evaluatePatternMatch :: Pattern -> Expression -> Delta Bool
 evaluatePatternMatch PNil ENil = return True
-evaluatePatternMatch (PVariable name) expression
-  = let
-      signature = getSignature name []
-    in
-      do
-        clause <- makeConstant expression
-        variables <- getVariables
-        setVariables $ M.insert signature clause variables
-        return True
-evaluatePatternMatch (PNode p1 p2) (ENode e1 e2)
-  = do
-    r1 <- evaluatePatternMatch p1 e1
-    r2 <- evaluatePatternMatch p2 e2
-    return $ r1 && r2
+evaluatePatternMatch (PVariable name) expression = do
+  variables <- getVariables
+  setVariables $ M.insert name expression variables
+  return True
+evaluatePatternMatch (PNode p1 p2) (ENode e1 e2) = do
+  r1 <- evaluatePatternMatch p1 e1
+  r2 <- evaluatePatternMatch p2 e2
+  return $ r1 && r2
 evaluatePatternMatch _ _ = return False
-
-{- Variables are bound as 0-ary clauses. -}
-
-makeConstant :: Expression -> Delta [StaticClause]
-makeConstant expression = return [(StaticClause [] expression M.empty)]
 
 {- end Pattern Matching -}
 
 {- begin Initial Context -}
 
--}
-
 initialContext :: [Clause] -> IO Context
 initialContext clauses =
   do
-    stdGen <- Random.getStdGen
-    context <- return $ makeContext stdGen M.empty M.empty
+    picosec <- ctPicosec `liftM` (Time.getClockTime >>= Time.toCalendarTime)
+    stdGen <- return $ Random.mkStdGen $ fromInteger $ picosec
+    context <- return $ emptyContext stdGen
     return $
       let
-        finalVariables = initializeClauses clauses context
-        finalClauses = mapWithKey (normalizeClause clauses) finalVariables
+        (frame, functions) = initializeClauses (reverse clauses) [] M.empty
       in
-        context { contextVariable contextClauses = finalClauses }
+        context { contextFrame = frame, contextFunctions = functions }
 
-initializeClauses :: [Clause] -> Variables -> M.Map String Int
-initializeClauses [] variables = variables
-initializeClauses ((Clause name patterns expression) : tail) variables =
+initializeClauses :: [Clause] -> Frame -> Functions -> (Frame, Functions)
+initializeClauses [] frame functions = (frame, functions)
+initializeClauses ((Clause name patterns expression) : tail) frame functions =
   let
     signature = getSignature name patterns
-    signatureExists = M.member signature variables
-    clauses =
+    signatureExists = M.member signature functions
+    functionFrame =
       if signatureExists
-      then variables M.! signature
+      then frame
+      else signature : frame
+    staticClause = StaticClause patterns expression functionFrame
+    functionClauses = staticClause :
+      if signatureExists
+      then functions M.! signature
       else []
-    staticClause = StaticClause patterns expression variables
   in
-    initializeClauses tail (M.insert signature (clauses ++ [staticClause]) variables)
-
-normalizeClause :: Variables -> String -> [StaticClause] -> [StaticClause]
-normalizeClause initialVariables name clauses
-  = Prelude.map (\clause -> normalizeStaticClause name initialVariables clause) clauses
-
-normalizeStaticClause :: String -> Variables -> StaticClause -> StaticClause
-normalizeStaticClause name initialVariables (StaticClause patterns expression variables) =
-  let
-    updateClauses = \key _ acc -> M.insert key (initialVariables M.! key) acc
-    fixPoint = M.fromList [(name, (initialVariables M.! name))]
-    newVariables = M.foldrWithKey (updateClauses) fixPoint variables
-  in
-    StaticClause patterns expression newVariables
+    initializeClauses tail functionFrame (M.insert signature functionClauses functions)
 
 {- end Initial Context -}
 
@@ -289,8 +319,6 @@ getSignature name t = name ++ ('/' : (show $ length t))
 {- end Erlang-like signatures -}
 
 {- begin Dot Graph Generation -}
-
-{- main node name, node text, edge text -}
 
 data DotGraph
   = DotGraph {
@@ -340,7 +368,7 @@ getDotGraphAux initialName (ENode e1 e2) =
     edges = initialName ++ "->{" ++ name1 ++ (';' : name2) ++
       ('}' : ';' : '\n' : (dotEdges graph1)) ++ (dotEdges graph2)
   in
-    dotGraph name2 nodes edges
+    dotGraph (dotName graph2) nodes edges
 getDorGraphAux _ _ = error "expression wasn't evaluated before drawing"
 
 {- end Dot Graph Generation -}
