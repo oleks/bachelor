@@ -22,7 +22,8 @@ parseProgram = do
   expression <- parseExpression
   eof
   (frame, functions) <- return $ initializeFunctions clauses [] Map.empty
-  return $ ValidProgram frame functions expression
+  normalExpression <- return $ normalizeExpression [] frame expression
+  return $ ValidProgram frame functions normalExpression
 
 {- end Parsing -}
 
@@ -137,19 +138,51 @@ initializeFunctions :: [Clause] -> Frame -> Functions -> (Frame, Functions)
 initializeFunctions [] frame functions = (frame, ensureExhaustive functions)
 initializeFunctions ((Clause name patterns expression) : tail) frame functions =
   let
-    signature = getSignature name patterns
+    signature = getUnarySignature name
     signatureExists = Map.member signature functions
     functionFrame =
       if signatureExists
       then frame
       else signature : frame
-    staticClause = StaticClause patterns expression functionFrame
+    staticClause = normalizeClause patterns expression functionFrame
     functionClauses = staticClause :
       if signatureExists
       then functions Map.! signature
       else []
   in
     initializeFunctions tail functionFrame (Map.insert signature functionClauses functions)
+
+normalizeClause :: [Pattern] -> Expression -> Frame -> StaticClause
+normalizeClause patterns expression functionFrame =
+  let
+    (names, normalPattern) = foldl (\(names, acc) pattern ->
+      (getVariableNames pattern names, PNode acc pattern)) ([], PNil) patterns
+    normalExpression = normalizeExpression names functionFrame expression
+  in
+    StaticClause [normalPattern] normalExpression functionFrame
+
+normalizeExpression :: [Name] -> Frame -> Expression -> Expression
+normalizeExpression variableNames functionFrame ENil = ENil
+normalizeExpression variableNames functionFrame (ENode leftE rightE) =
+  let
+    normalLeftE = normalizeExpression variableNames functionFrame leftE
+    normalRightE = normalizeExpression variableNames functionFrame rightE
+  in
+    ENode normalLeftE normalRightE
+normalizeExpression variableNames functionFrame (EVariable name arguments) =
+  let
+    signature = getUnarySignature name
+    argument = foldl (\expression acc -> (ENode expression acc)) ENil arguments
+  in
+    if any (== name) variableNames
+    then
+      if length arguments == 0
+      then EVariable name []
+      else error $ name ++ " is a variable and therefore takes no arguments"
+    else
+      if any (== signature) functionFrame
+      then EVariable name [argument]
+      else error $ signature ++ " does not exist"
 
 ensureExhaustive :: Functions -> Functions
 ensureExhaustive functions = Map.mapWithKey ensureExhaustiveFunction functions
@@ -160,20 +193,20 @@ ensureExhaustiveFunction name clauses = clauses
 getSiblings :: Pattern -> [Pattern]
 getSiblings PNil = [PNode (PVariable "_") (PVariable "_")]
 getSiblings (PVariable _) = []
-getSiblings (PNode p1 p2) =
+getSiblings (PNode leftP rightP) =
   let
-    s1 = getSiblings p1
-    s2 = getSiblings p2
-    f2 = Prelude.map (\s -> (PNode s p2)) s1
-    f1 = Prelude.map (\s -> (PNode p1 s)) s2
+    leftS = getSiblings leftP
+    rightS = getSiblings rightP
+    leftInit = map (\s -> (PNode leftP s)) rightS
+    rightInit = map (\s -> (PNode s rightP)) leftS
   in
-    [PNil] ++ f1 ++ f2 ++ mergeSiblings s1 s2 s2
+    [PNil] ++ leftInit ++ rightInit ++ mergeSiblings leftS rightS rightS
 
 mergeSiblings :: [Pattern] -> [Pattern] -> [Pattern] -> [Pattern]
-mergeSublings [] _ _ = []
-mergeSiblings s1@(h1 : t1) (h2 : t2) s2 =
-  (PNode h1 h2) : (mergeSiblings s1 t2 s2)
-mergeSiblings (_ : t1) [] s2 =
-  mergeSiblings t1 s2 s2
+mergeSiblings [] _ _ = []
+mergeSiblings leftS @ (leftH : leftT) (rightH : rightT) rightS =
+  (PNode leftH rightH) : (mergeSiblings leftS rightT rightS)
+mergeSiblings (_ : leftT) [] rightS =
+  mergeSiblings leftT rightS rightS
 
 
