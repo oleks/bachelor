@@ -1,5 +1,7 @@
 module Syntax where
 
+import qualified Data.Map as Map
+
 type Name = String
 
 data Expression
@@ -28,4 +30,15 @@ data Clause
 
 data Program
   = Program [Clause] Expression
+  deriving(Show)
+
+type Frame = [Name]
+
+data StaticClause = StaticClause [Pattern] Expression Frame
+  deriving(Show)
+
+type Functions = Map.Map Name [StaticClause]
+
+data ValidProgram
+  = ValidProgram Frame Functions Expression
   deriving(Show)
