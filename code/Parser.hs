@@ -275,28 +275,44 @@ exhaustiveFunctionProgram functionProgram =
 
 exhaustiveFunction :: Name -> [FunctionClause] -> [FunctionClause]
 exhaustiveFunction _ [] = []
-exhaustiveFunction name functionClauses @ (clause : tailClauses) =
+exhaustiveFunction name (clause : tailClauses) =
   let
     patterns = fClausePatterns clause
-
     initialSiblings = map (getSiblings) patterns
-    finalSiblings = foldl
-      (\siblings functionClause -> map
-        (\(pattern, siblings) -> matchSiblings pattern siblings)
-        (zip (fClausePatterns functionClause) siblings))
-      initialSiblings
+    (finalSiblings, finalClauses) = foldl
+      (\(siblings, clauses) clause ->
+        let
+          patterns = fClausePatterns clause
+          nice = map
+            (\(pattern, siblings) -> matchSiblings pattern siblings)
+            (zip patterns siblings)
+          (good, bad) = unzip nice
+          newClauses = synthesize good clause clauses
+        in
+          (bad, newClauses))
+      (initialSiblings, [clause])
       tailClauses
   in
     if all (\siblingList -> length siblingList == 0) finalSiblings
-    then functionClauses
+    then finalClauses
     else error $ name ++ " is not exhaustive, wouldn't match " ++ (show finalSiblings)
 
-matchSiblings :: Pattern -> [Pattern] -> [Pattern]
+synthesize :: [[Pattern]] -> FunctionClause -> [FunctionClause] -> [FunctionClause]
+synthesize [] _ clauses = clauses
+synthesize (patterns : tailPatterns) clause clauses =
+  synthesize tailPatterns clause (clause { fClausePatterns = patterns } : clauses)
+
+{---
+@returns (good, bad)
+-}
+matchSiblings :: Pattern -> [Pattern] -> ([Pattern], [Pattern])
 matchSiblings matchingPattern possiblePatterns =
-  foldl (\acc pattern ->
+  foldl (\(good, bad) pattern ->
     if matches matchingPattern pattern
-    then acc
-    else pattern : acc) [] possiblePatterns
+    then (pattern : good, bad)
+    else (good, pattern : bad))
+  ([], [])
+  possiblePatterns
 
 matches :: Pattern -> Pattern -> Bool
 matches PNil PNil = True
@@ -306,22 +322,4 @@ matches _ (PVariable _) = False
 matches (PNode _ _) PNil = False
 matches (PNode p11 p12) (PNode p21 p22) = matches p11 p21 && matches p12 p22
 
-getSiblings :: Pattern -> [Pattern]
-getSiblings PNil = [PNode (PVariable "_") (PVariable "_")]
-getSiblings (PVariable _) = []
-getSiblings (PNode leftP rightP) =
-  let
-    leftS = getSiblings leftP
-    rightS = getSiblings rightP
-    leftInit = map (\s -> (PNode leftP s)) rightS
-    rightInit = map (\s -> (PNode s rightP)) leftS
-  in
-    [PNil] ++ leftInit ++ rightInit ++ mergeSiblings leftS rightS rightS
-
-mergeSiblings :: [Pattern] -> [Pattern] -> [Pattern] -> [Pattern]
-mergeSiblings [] _ _ = []
-mergeSiblings leftS @ (leftH : leftT) (rightH : rightT) rightS =
-  (PNode leftH rightH) : (mergeSiblings leftS rightT rightS)
-mergeSiblings (_ : leftT) [] rightS =
-  mergeSiblings leftT rightS rightS
 
