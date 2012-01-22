@@ -1,6 +1,10 @@
-module Util where
+module Util(
+  getSignature,
+  getUnarySignature,
+  getVariables
+) where
 
-import Syntax
+import Grammar
 
 {- begin Erlang-like signatures -}
 
@@ -12,14 +16,20 @@ getUnarySignature name = name ++ "/1"
 
 {- end Erlang-like signatures -}
 
-getVariableNames :: Pattern -> [Name] -> [Name]
-getVariableNames PNil names = names
-getVariableNames (PNode leftP rightP) names =
+getVariables :: [Pattern] -> [Name]
+getVariables patterns = foldl
+  (\list pattern -> getVariablesAux pattern list)
+  []
+  patterns
+
+getVariablesAux :: Pattern -> [Name] -> [Name]
+getVariablesAux PNil names = names
+getVariablesAux (PNode leftP rightP) names =
   let
-    leftNames = getVariableNames leftP names
+    leftNames = getVariablesAux leftP names
   in
-    getVariableNames rightP leftNames
-getVariableNames (PVariable "_") names = names
-getVariableNames (PVariable name) names = name : names
+    getVariablesAux rightP leftNames
+getVariablesAux (PVariable "_") names = names
+getVariablesAux (PVariable name) names = name : names
 
 

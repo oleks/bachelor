@@ -1,6 +1,6 @@
 module DotGraph (getDotGraph) where
 
-import Syntax
+import Grammar
 import qualified Data.Char as Char
 
 data DotGraph

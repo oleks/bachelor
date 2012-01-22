@@ -5,7 +5,7 @@ module Interpreter (
   interpretFileToPdf
 ) where
 
-import Syntax
+import Grammar
 import Util
 import DotGraph
 import qualified Parser as Parser
