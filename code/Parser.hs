@@ -7,6 +7,7 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 
 import Data.Char
+import Data.List
 import Text.ParserCombinators.Parsec
 
 {- begin Parsing -}
@@ -283,11 +284,10 @@ exhaustiveFunction name (clause : tailClauses) =
       (\(siblings, clauses) clause ->
         let
           patterns = fClausePatterns clause
-          nice = map
-            (\(pattern, siblings) -> matchSiblings pattern siblings)
+          (good, bad) = unzip $ map
+            (\(pattern, siblings) -> matchClauseToSiblings pattern siblings)
             (zip patterns siblings)
-          (good, bad) = unzip nice
-          newClauses = synthesize good clause clauses
+          newClauses = synthesize (transpose good) clause clauses
         in
           (bad, newClauses))
       (initialSiblings, [clause])
@@ -303,16 +303,23 @@ synthesize (patterns : tailPatterns) clause clauses =
   synthesize tailPatterns clause (clause { fClausePatterns = patterns } : clauses)
 
 {---
-@returns (good, bad)
+matchClauseToSiblings :: clausePattern -> activeSiblings -> (good, bad)
+@where good are those shapes that will be matched by the pattern.
+@where bad are those shapes that won't be matche by the pattern.
 -}
-matchSiblings :: Pattern -> [Pattern] -> ([Pattern], [Pattern])
-matchSiblings matchingPattern possiblePatterns =
-  foldl (\(good, bad) pattern ->
-    if matches matchingPattern pattern
-    then (pattern : good, bad)
-    else (good, pattern : bad))
-  ([], [])
-  possiblePatterns
+matchClauseToSiblings :: Pattern -> [Pattern] -> ([Pattern], [Pattern])
+matchClauseToSiblings clausePattern activeSiblings =
+  let
+    clausePatternSiblings = getSiblings clausePattern
+  in
+    foldl (\(good, bad) activeSibling ->
+      if matches activeSibling clausePattern
+      then (clausePattern : good, (filter (matches activeSibling) clausePatternSiblings) ++ bad)
+      else if matches clausePattern activeSibling
+        then (activeSibling : good, bad)
+        else (good, activeSibling : bad))
+    ([], [])
+    activeSiblings
 
 matches :: Pattern -> Pattern -> Bool
 matches PNil PNil = True
