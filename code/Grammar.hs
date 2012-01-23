@@ -15,14 +15,19 @@ instance Show Expression where
   show (ENode left right) = ('(' : (show left)) ++ ('.' : (show right)) ++ ")"
 
 data Pattern
-  = PNode Pattern Pattern
+  = PNode Name Pattern Pattern
   | PVariable Name
-  | PNil
+  | PNil Name
 
 instance Show Pattern where
-  show PNil = "0"
+  show (PNil "_") = "0"
+  show (PNil name) = name ++ "@0"
   show (PVariable name) = name
-  show (PNode left right) = ('(' : (show left)) ++ ('.' : (show right)) ++ ")"
+  show (PNode name left right) =
+    let
+      tail = ('(' : (show left)) ++ ('.' : (show right)) ++ ")"
+    in
+      if name == "_" then tail else name ++ ('@' : tail)
 
 data Clause
   = Clause {
@@ -61,10 +66,11 @@ instance Show FunctionClause where
     ++ " := " ++ (show $ fClauseExpression clause)
     ++ " / " ++ (show $ fClauseFrame clause)
 
+type Functions = Map.Map Name [FunctionClause]
 
 data FunctionProgram
   = FunctionProgram {
-    fpFunctions :: Map.Map Name [FunctionClause],
+    fpFunctions :: Functions,
     fpExpression :: Expression
   }
 emptyFunctionProgram :: Expression -> FunctionProgram

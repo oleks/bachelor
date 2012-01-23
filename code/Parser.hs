@@ -57,13 +57,13 @@ stringToken text = do
 
 parsePattern :: Parser Pattern
 parsePattern = do
-  pattern <- chainr1 parsePElement (parseCons PNode)
+  pattern <- chainr1 parsePElement (parseCons (PNode "_"))
   spaces
   return pattern
 
 parsePElement :: Parser Pattern
 parsePElement = do
-  parseNil PNil
+  parseNil (PNil "_")
   <|> parsePVariable
   <|> parseBrackets parsePattern
 
@@ -288,8 +288,9 @@ exhaustiveFunction name (clause : tailClauses) =
             (\(pattern, siblings) -> matchClauseToSiblings pattern siblings)
             (zip patterns siblings)
           newClauses = synthesize (transpose good) clause clauses
+          unnamedBad = map (map (unnameAll)) bad
         in
-          (bad, newClauses))
+          (unnamedBad, newClauses))
       (initialSiblings, [clause])
       tailClauses
   in
@@ -301,6 +302,16 @@ synthesize :: [[Pattern]] -> FunctionClause -> [FunctionClause] -> [FunctionClau
 synthesize [] _ clauses = clauses
 synthesize (patterns : tailPatterns) clause clauses =
   synthesize tailPatterns clause (clause { fClausePatterns = patterns } : clauses)
+
+unnameAll :: Pattern -> Pattern
+unnameAll (PNil _) = PNil "_"
+unnameAll (PVariable _) = PVariable "_"
+unnameAll (PNode _ p1 p2) =
+  let
+    unnamedP1 = unnameAll p1
+    unnamedP2 = unnameAll p2
+  in
+    PNode "_" unnamedP1 unnamedP2
 
 {---
 matchClauseToSiblings :: clausePattern -> activeSiblings -> (good, bad)
@@ -316,17 +327,33 @@ matchClauseToSiblings clausePattern activeSiblings =
       if matches activeSibling clausePattern
       then (clausePattern : good, (filter (matches activeSibling) clausePatternSiblings) ++ bad)
       else if matches clausePattern activeSibling
-        then (activeSibling : good, bad)
+        then ((mergeNames clausePattern activeSibling) : good, bad)
         else (good, activeSibling : bad))
     ([], [])
     activeSiblings
 
+mergeNames :: Pattern -> Pattern -> Pattern
+mergeNames (PNil name) (PNil _) = PNil name
+mergeNames (PNil name) (PVariable _) = PVariable name
+mergeNames (PNil name) (PNode _ p1 p2) = PNode name p1 p2
+mergeNames (PVariable name) (PNil _) = PNil name
+mergeNames (PVariable name) (PVariable _) = PVariable name
+mergeNames (PVariable name) (PNode _ p1 p2) = PNode name p1 p2
+mergeNames (PNode name _ _) (PNil _) = PNil name
+mergeNames (PNode name _ _) (PVariable _) = PVariable name
+mergeNames (PNode name n1 n2) (PNode _ p1 p2) =
+  let
+    m1 = mergeNames n1 p1
+    m2 = mergeNames n2 p2
+  in
+    PNode name m1 m2
+
 matches :: Pattern -> Pattern -> Bool
-matches PNil PNil = True
-matches PNil _ = False
+matches (PNil _) (PNil _) = True
+matches (PNil _) _ = False
 matches (PVariable _) _ = True
 matches _ (PVariable _) = False
-matches (PNode _ _) PNil = False
-matches (PNode p11 p12) (PNode p21 p22) = matches p11 p21 && matches p12 p22
+matches (PNode _ _ _) (PNil _) = False
+matches (PNode _ p11 p12) (PNode _ p21 p22) = matches p11 p21 && matches p12 p22
 
 

@@ -24,34 +24,36 @@ getVariables patterns = foldl
   patterns
 
 getVariablesAux :: Pattern -> [Name] -> [Name]
-getVariablesAux PNil names = names
-getVariablesAux (PNode leftP rightP) names =
+getVariablesAux (PNil "_") names = names
+getVariablesAux (PNil name) names = name : names
+getVariablesAux (PNode name leftP rightP) names =
   let
     leftNames = getVariablesAux leftP names
+    nestedNames = getVariablesAux rightP leftNames
   in
-    getVariablesAux rightP leftNames
+    if name == "_" then nestedNames else (name : nestedNames)
 getVariablesAux (PVariable "_") names = names
 getVariablesAux (PVariable name) names = name : names
 
 {- begin Siblings -}
 
 getSiblings :: Pattern -> [Pattern]
-getSiblings PNil = [PNode (PVariable "_") (PVariable "_")]
+getSiblings (PNil name) = [PNode name (PVariable "_") (PVariable "_")]
 getSiblings (PVariable _) = []
-getSiblings (PNode leftP rightP) =
+getSiblings (PNode name leftP rightP) =
   let
     leftS = getSiblings leftP
     rightS = getSiblings rightP
-    leftInit = map (\s -> (PNode leftP s)) rightS
-    rightInit = map (\s -> (PNode s rightP)) leftS
+    leftInit = map (\s -> (PNode name leftP s)) rightS
+    rightInit = map (\s -> (PNode name s rightP)) leftS
   in
-    [PNil] ++ leftInit ++ rightInit ++ mergeSiblings leftS rightS rightS
+    [(PNil name)] ++ leftInit ++ rightInit ++ mergeSiblings name leftS rightS rightS
 
-mergeSiblings :: [Pattern] -> [Pattern] -> [Pattern] -> [Pattern]
-mergeSiblings [] _ _ = []
-mergeSiblings leftS @ (leftH : leftT) (rightH : rightT) rightS =
-  (PNode leftH rightH) : (mergeSiblings leftS rightT rightS)
-mergeSiblings (_ : leftT) [] rightS =
-  mergeSiblings leftT rightS rightS
+mergeSiblings :: Name -> [Pattern] -> [Pattern] -> [Pattern] -> [Pattern]
+mergeSiblings name [] _ _ = []
+mergeSiblings name leftS @ (leftH : leftT) (rightH : rightT) rightS =
+  (PNode name leftH rightH) : (mergeSiblings name leftS rightT rightS)
+mergeSiblings name (_ : leftT) [] rightS =
+  mergeSiblings name leftT rightS rightS
 
 {- end Siblings -}
