@@ -126,18 +126,24 @@ interpretFile fileName =
 interpretString :: String -> IO Expression
 interpretString programText = interpret (Parser.parseString programText)
 
-interpret :: (Either Parsec.ParseError ValidProgram) -> IO Expression
+interpret :: (Either Parsec.ParseError FunctionProgram) -> IO Expression
 interpret ast =
   case ast of
     Left errorText -> error $ show errorText
     Right program -> interpretProgram program
 
-interpretProgram :: ValidProgram -> IO Expression
-interpretProgram (ValidProgram frame functions expression) = do
-  context <- initialContext frame functions
-  (result, _) <- return $ (runDelta (evaluateExpression expression)) context
-  putStrLn $ show result
-  return result
+interpretProgram :: FunctionProgram -> IO Expression
+interpretProgram functionProgram =
+  let
+    functions = fpFunctions functionProgram
+    frame = Map.keys functions
+    expression = fpExpression functionProgram
+  in
+    do
+      context <- initialContext frame functions
+      (result, _) <- return $ (runDelta (evaluateExpression expression)) context
+      putStrLn $ show result
+      return result
 
 evaluateExpression :: Expression -> Delta Expression
 evaluateExpression ENil = return ENil
@@ -168,7 +174,7 @@ balancedTree size =
 evaluateApplication :: Name -> [Expression] -> Delta Expression
 evaluateApplication name expressions = do
   arguments <- mapM evaluateExpression expressions
-  variables <- getVariables
+  variables <- Interpreter.getVariables
   result <-
     case arguments of
       []  ->
@@ -184,7 +190,7 @@ evaluateApplication name expressions = do
 
 evaluateVariable :: Name -> Delta Expression
 evaluateVariable name = do
-  variables <- getVariables
+  variables <- Interpreter.getVariables
   return $ variables Map.! name
 
 evaluateCall :: Name -> [Expression] -> Delta Expression
@@ -201,7 +207,7 @@ evaluateCall name arguments
         result <- evaluateClauses clauses arguments
         return result
 
-evaluateClauses :: [StaticClause] -> [Expression] -> Delta Expression
+evaluateClauses :: [FunctionClause] -> [Expression] -> Delta Expression
 evaluateClauses [] _ = error "pattern matching not exhaustive"
 evaluateClauses (head : tail) arguments
   = do
@@ -210,20 +216,25 @@ evaluateClauses (head : tail) arguments
       Right expression -> return expression
       Left _ -> evaluateClauses tail arguments
 
-evaluateClause :: StaticClause -> [Expression] -> Delta (Either () Expression)
-evaluateClause (StaticClause patterns expression clauseFrame) arguments =
-  do
-    originalFrame <- getFrame
-    setFrame clauseFrame
-    matched <- evaluatePatternMatches patterns arguments
-    if matched
-    then
-      do
-        result <- evaluateExpression expression
-        setFrame originalFrame
-        return $ Right result
-    else
-      return $ Left ()
+evaluateClause :: FunctionClause -> [Expression] -> Delta (Either () Expression)
+evaluateClause functionClause arguments =
+  let
+    patterns = fClausePatterns functionClause
+    expression = fClauseExpression functionClause
+    frame = fClauseFrame functionClause
+  in
+    do
+      originalFrame <- getFrame
+      setFrame frame
+      matched <- evaluatePatternMatches patterns arguments
+      if matched
+      then
+        do
+          result <- evaluateExpression expression
+          setFrame originalFrame
+          return $ Right result
+      else
+        return $ Left ()
 
 {- end Variable Evaluation -}
 
@@ -240,16 +251,29 @@ evaluatePatternMatches (p : ps) (x : xs)
 evaluatePatternMatches _ _ = return False
 
 evaluatePatternMatch :: Pattern -> Expression -> Delta Bool
-evaluatePatternMatch PNil ENil = return True
-evaluatePatternMatch (PVariable name) expression = do
-  variables <- getVariables
-  setVariables $ Map.insert name expression variables
+evaluatePatternMatch (PNil "_") ENil = return True
+evaluatePatternMatch (PNil name) ENil = do
+  bindVariable name ENil
   return True
-evaluatePatternMatch (PNode p1 p2) (ENode e1 e2) = do
+evaluatePatternMatch (PVariable name) expression = do
+  bindVariable name expression
+  return True
+evaluatePatternMatch (PNode name p1 p2) (ENode e1 e2) = do
   r1 <- evaluatePatternMatch p1 e1
   r2 <- evaluatePatternMatch p2 e2
-  return $ r1 && r2
+  if r1 && r2
+  then  if name /= "_"
+        then return True
+        else do
+          bindVariable name (ENode e1 e2)
+          return True
+  else return False
 evaluatePatternMatch _ _ = return False
+
+bindVariable :: Name -> Expression -> Delta ()
+bindVariable name expression = do
+  variables <- Interpreter.getVariables
+  setVariables $ Map.insert name expression variables
 
 {- end Pattern Matching -}
 
