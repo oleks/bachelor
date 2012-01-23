@@ -203,7 +203,7 @@ evaluateCall name arguments
         clauses <-
           if (Map.member signature functions)
           then return $ functions Map.! signature
-          else error $ "undefined variable: " ++ signature
+          else error $ "Interpreter: undefined variable: " ++ signature
         result <- evaluateClauses clauses arguments
         return result
 
@@ -262,7 +262,7 @@ evaluatePatternMatch (PNode name p1 p2) (ENode e1 e2) = do
   r1 <- evaluatePatternMatch p1 e1
   r2 <- evaluatePatternMatch p2 e2
   if r1 && r2
-  then  if name /= "_"
+  then  if name == "_"
         then return True
         else do
           bindVariable name (ENode e1 e2)
