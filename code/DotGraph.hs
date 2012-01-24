@@ -1,7 +1,12 @@
-module DotGraph (getDotGraph) where
+module DotGraph (getDotGraph, getSCGraph) where
 
 import Grammar
+import Util
+import qualified Data.Map as Map
 import qualified Data.Char as Char
+import qualified Data.Set as Set
+
+import Control.Monad
 
 data DotGraph
   = DotGraph {
@@ -9,6 +14,36 @@ data DotGraph
     dotNodes :: String,
     dotEdges :: String
   }
+
+{- begin Name Monad -}
+
+data NameM t = NameM {
+    runNameM :: Name -> (t, Name)
+  }
+
+instance Monad NameM where
+  return value = NameM { runNameM = \name -> (value, name) }
+  nameM >>= f = NameM { runNameM = \name ->
+      let
+        (value, newName) = (runNameM nameM) name
+        newNameM = f value
+      in
+        (runNameM newNameM) newName
+    }
+
+getName :: NameM Name
+getName = NameM { runNameM = \name -> (name, name) }
+
+getNewNameM :: NameM Name
+getNewNameM = NameM { runNameM = \name ->
+  let
+    newName = getNewName name
+  in
+    (newName, newName) }
+
+initialName = "`"
+
+{- end Name Monad -}
 
 dotGraph :: String -> String -> String -> DotGraph
 dotGraph name nodes edges =
@@ -59,3 +94,7 @@ getDotGraphAux initialName _ =
   in
     dotGraph initialName nodes edges
 
+type NameMap = Map.Map Name Name
+
+getSCGraph :: SCGraph -> String
+getSCGraph shapeChangeGraph = "coming.."

@@ -1,11 +1,18 @@
 module Util(
   getSignature,
   getUnarySignature,
+  simplifiedSignature,
   getVariables,
-  getSiblings
+  getSiblings,
+  matches,
+  matchesShape,
+  foldlWithIndex,
+  foldlMWithIndex
 ) where
 
 import Grammar
+import Control.Monad
+import qualified Data.Foldable as Foldable
 
 {- begin Erlang-like signatures -}
 
@@ -14,6 +21,9 @@ getSignature name t = name ++ ('/' : (show $ length t))
 
 getUnarySignature :: Name -> Name
 getUnarySignature name = name ++ "/1"
+
+simplifiedSignature :: Name -> Name
+simplifiedSignature name = foldr (\c newName -> if c == '/' then newName else c : newName) [] name
 
 {- end Erlang-like signatures -}
 
@@ -57,3 +67,36 @@ mergeSiblings name (_ : leftT) [] rightS =
   mergeSiblings name leftT rightS rightS
 
 {- end Siblings -}
+
+matches :: Pattern -> Pattern -> Bool
+matches (PNil _) (PNil _) = True
+matches (PNil _) _ = False
+matches (PVariable _) _ = True
+matches _ (PVariable _) = False
+matches (PNode _ _ _) (PNil _) = False
+matches (PNode _ p11 p12) (PNode _ p21 p22) = matches p11 p21 && matches p12 p22
+
+matchesShape :: Pattern -> Expression -> Bool
+matchesShape _ (EVariable _ _) = True
+matchesShape (PVariable _) _ = True
+matchesShape (PNil _) ENil = True
+matchesShape (PNil _) _ = False
+matchesShape (PNode _ _ _) ENil = False
+matchesShape (PNode _ p1 p2) (ENode e1 e2) = matchesShape p1 e1 && matchesShape p2 e2
+
+foldlWithIndex :: (Int -> a -> b -> a) -> a -> [b] -> a
+foldlWithIndex function initial list =
+  let
+    (_, a) = foldl (\(index,a) b -> (index + 1, function index a b)) (0, initial) list
+  in
+    a
+
+foldlMWithIndex :: (Foldable.Foldable t, Monad m) => (Int -> a -> b -> m a) -> a -> t b -> m a
+foldlMWithIndex function initial list = do
+  (_,a) <- Foldable.foldlM
+    (\(index,a) b -> do
+      result <- function index a b
+      return $ (index + 1, result))
+    (0, initial)
+    list
+  return a

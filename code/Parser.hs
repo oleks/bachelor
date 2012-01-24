@@ -348,12 +348,3 @@ mergeNames (PNode name n1 n2) (PNode _ p1 p2) =
   in
     PNode name m1 m2
 
-matches :: Pattern -> Pattern -> Bool
-matches (PNil _) (PNil _) = True
-matches (PNil _) _ = False
-matches (PVariable _) _ = True
-matches _ (PVariable _) = False
-matches (PNode _ _ _) (PNil _) = False
-matches (PNode _ p11 p12) (PNode _ p21 p22) = matches p11 p21 && matches p12 p22
-
-

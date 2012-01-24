@@ -84,3 +84,18 @@ instance Show FunctionProgram where
       clauseList)
     (show $ fpExpression functionProgram)
     (fpFunctions functionProgram)
+
+type ClauseSignature = Name
+
+getClauseSignature :: Name -> Int -> ClauseSignature
+getClauseSignature functionSignature index = functionSignature ++ ('/' : (show index))
+
+data SCEdge = SCEdge ClauseSignature ClauseSignature Name Name Change
+  deriving (Show)
+type SCGraph = [SCEdge]
+
+data Change
+  = LT
+  | LEQ
+  | UNKNOWN
+  deriving(Eq,Show)
