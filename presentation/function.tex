@@ -1,5 +1,7 @@
 \begin{frame}
 
+\begin{textblock}{1}(13,-3.5)$(15,36)$\end{textblock}
+
 \frametitle{Functions in \D{}}
 
 $$f = \left\langle v, C \right\rangle \quad \text{s.t.} \quad \forall\
@@ -9,23 +11,19 @@ $$f = \left\langle v, C \right\rangle \quad \text{s.t.} \quad \forall\
 
 \begin{center}
 
-Pattern matching is ensured {\bf exhaustive} at compile time.
+Pattern matching is ensured {\bf exhaustive} at compile time, i.e.
+
+$$\forall\ b \in \mathbb{B}\ \exists\ c \in C\ c\succ b.$$
+
+WLOG, $c = \left\langle p,x \right\rangle$.
 
 \end{center}
-
-$$\forall\ b \in \mathbb{B}\ \exists\ c \in C\ c\succ b$$
-
-\begin{center}
-
-WLOG,
-
-\end{center}
-
-$$c = \left\langle p,x \right\rangle$$
 
 \end{frame}
 
 \begin{frame}[fragile]
+
+\begin{textblock}{1}(13.8,-3.5)$(15)$\end{textblock}
 
 \frametitle{Patterns and shapes}
 
@@ -52,7 +50,7 @@ $$c = \left\langle p,x \right\rangle$$
 \li $(P_{success},P_{fail}) \gets \proc{Match-Clause-To-Siblings}(c,P_s)$
 \li \For $p\in P_{success}$ \Do
 \li $c'' \gets \proc{Clone}(c')$
-\li $\proc{Merge-Pattern}(c'',p)$
+\li $\proc{Merge-Pattern}(c'',p)^{\color{green}\textt{\bf *}}$
 \li $C' \gets c' : C'$ \End
 \li $P_{siblings} \gets P_{fail}$ \End
 \li \Return $C'$
