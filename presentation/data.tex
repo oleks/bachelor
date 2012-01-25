@@ -88,6 +88,8 @@ be the pairwise disjoint set of shapes disjoint with $s_i$.
 
 \begin{frame}[fragile]
 
+\begin{textblock}{1}(13.8,-3.5)$(35)$\end{textblock}
+
 \begin{lstlisting}
 data Pattern
   = PNil
@@ -112,5 +114,14 @@ getSiblings (PNode leftP rightP) =
       leftInit ++ rightInit ++
       interleaveSiblings name leftS rightS
 \end{lstlisting}
+
+\end{frame}
+
+\begin{frame}
+
+\begin{align*}
+T(1)&=4\\
+T(n)&=1+T(n-1)+T(n-1)+T(n-1)\cdot T(n-1)
+\end{align*}
 
 \end{frame}
