@@ -101,6 +101,6 @@ type ShapeGraph = [ShapeEdge]
 
 data ShapeChange
   = Less
-  | Leq
+  | LessOrEqual
   | UnknownChange
   deriving(Eq,Show)

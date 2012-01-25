@@ -83,6 +83,11 @@ ccGet f = do
 ccGetVariablePatterns :: State ClauseContext VariablePatterns
 ccGetVariablePatterns = ccGet ccVariablePatterns
 
+ccGetVariablePattern :: Name -> State ClauseContext Pattern
+ccGetVariablePattern name = do
+  variablePatterns <- ccGetVariablePatterns
+  return $ variablePatterns Map.! name
+
 isBoundVariable :: Name -> State ClauseContext Bool
 isBoundVariable name = do
   variablePatterns <- ccGetVariablePatterns
@@ -96,6 +101,20 @@ ccGetClauses functionSignature = do
       functions = cgcFunctions callGraphContext
     in
       functions Map.! functionSignature
+
+ccPutCall :: (ClauseSignature -> ShapeEdge) -> State ClauseContext ()
+ccPutCall f = do
+  context <- get
+  put $
+    let
+      sourceSignature = ccSourceSignature context
+      shapeEdge = f sourceSignature
+      callGraphContext = ccGraphContext context
+      shapeGraph = cgcGraph callGraphContext
+      newGraphContext = callGraphContext { cgcGraph = shapeEdge : shapeGraph }
+    in
+      context { ccGraphContext = newGraphContext }
+
 
 {-
 
@@ -248,84 +267,27 @@ analyzeExpression (EVariable name arguments) =
 analyzeCall :: FunctionSignature -> Arguments -> State ClauseContext ()
 analyzeCall functionSignature arguments = do
   clauses <- ccGetClauses functionSignature
+  pureArguments <- mapM (purifyExpression) arguments
+  foldlMWithIndex
+    (\index _ functionClause ->
+      let clauseSignature = getClauseSignature functionSignature index
+      in matchClause clauseSignature functionClause pureArguments)
+    ()
+    clauses
   return ()
-
 
 purifyExpression :: Expression -> State ClauseContext Expression
 purifyExpression ENil = return ENil
 purifyExpression (ENode e1 e2) = do
   d1 <- purifyExpression e1
   d2 <- purifyExpression e2
-  return $ liftM (liftM $ ENode $ purifyExpression e1) d2
-
-{-
-purifyExpression (EVariable name []) = do
-  variables <- getContextVariables
-  if Map.member name variables
-  then return $ patternToExpression (variables Map.! name)
-  else return $ EVariable "_" []
--}
-
-
-{-
-  functions <- getContextFunctions
-  signature <- return $ getSignature name arguments
-  if Map.member signature functions
-  then do
-    arguments <- mapM (deduceArgument) arguments
-    clauses <- return $ functions Map.! signature
-    setCalleeName signature
-    foldlMWithIndex (matchClause arguments) () clauses
-  else return ()
--}
-
-
-{-
-
-
-{-
-analyzeClause
-  bind variables
-  analyze expression
--}
-
-analyzeClause :: FunctionClause -> State ShapeContext ()
-analyzeClause clause =
-  let
-    patterns = fClausePatterns clause
-    expression = fClauseExpression clause
-  in do
-    setVariables Map.empty
-    mapM (bindPatternVariables) patterns
-    analyzeExpression expression
-
-analyzeExpression :: Expression -> State ShapeContext ()
-analyzeExpression ENil = return ()
-analyzeExpression (ENode e1 e2) = do
-  analyzeExpression e1
-  analyzeExpression e2
-  return ()
-analyzeExpression (EVariable name arguments) = do
-  functions <- getContextFunctions
-  signature <- return $ getSignature name arguments
-  if Map.member signature functions
-  then do
-    arguments <- mapM (deduceArgument) arguments
-    clauses <- return $ functions Map.! signature
-    setCalleeName signature
-    foldlMWithIndex (matchClause arguments) () clauses
-  else return ()
-
-deduceArgument :: Expression -> State ShapeContext Expression
-deduceArgument ENil = return ENil
-deduceArgument (ENode e1 e2) = do
-  d1 <- deduceArgument e1
-  d2 <- deduceArgument e2
   return $ ENode d1 d2
-deduceArgument (EVariable name []) = do
-  variables <- getContextVariables
-  if Map.member name variables
-  then return $ patternToExpression (variables Map.! name)
+purifyExpression (EVariable name []) = do
+  isVariable <- isBoundVariable name
+  if isVariable
+  then do
+    variablePattern <- ccGetVariablePattern name
+    return $ patternToExpression variablePattern
   else return $ EVariable "_" []
 
 patternToExpression :: Pattern -> Expression
@@ -338,83 +300,77 @@ patternToExpression (PNode _ p1 p2) =
   in
     (ENode e1 e2)
 
-matchClause :: [Expression] -> Int -> () -> FunctionClause -> State ShapeContext ()
-matchClause arguments clauseIndex _ clause =
+matchClause :: ClauseSignature -> FunctionClause -> [Expression] -> State ClauseContext ()
+matchClause clauseSignature functionClause arguments =
   let
-    patterns = fClausePatterns clause
+    patterns = fClausePatterns functionClause
     allMatch = all (\(pattern, shape) -> matchesShape pattern shape) (zip patterns arguments)
   in
     if allMatch
-    then deduceRelations arguments patterns clauseIndex
+    then do
+      mapM (deduceRelation clauseSignature) (zip patterns arguments)
+      return ()
     else return ()
 
-deduceRelations :: [Expression] -> [Pattern] -> Int -> State ShapeContext ()
-deduceRelations arguments patterns clauseIndex = do
-  callerName <- getCallerName
-  calleeName <- getCalleeName
-  pureArguments <- mapM (purifyExpression) arguments
-  case callerName of
-    Nothing -> return ()
-    Just name -> do
-      setCalleeName (getClauseSignature calleeName clauseIndex)
-      mapM (deduceRelationsAux) (zip pureArguments patterns)
-      return ()
+makeShapeEdge :: ClauseSignature -> Name -> Name -> ShapeChange -> ClauseSignature -> ShapeEdge
+makeShapeEdge targetSignature targetVariable sourceVariable shapeChange sourceSignature =
+  ShapeEdge sourceSignature targetSignature sourceVariable targetVariable shapeChange
 
-purifyExpression :: Expression -> State ShapeContext Expression
-purifyExpression ENil = return ENil
-purifyExpression (EVariable name []) = do
-  hasVariable <- isBoundVariable name
-  if hasVariable
-  then return $ EVariable name []
-  else return $ EVariable "_" []
-purifyExpression (ENode e1 e2) = do
-  p1 <- purifyExpression e1
-  p2 <- purifyExpression e2
-  return $ ENode e1 e2
+deduceRelation :: ClauseSignature -> (Pattern, Expression) -> State ClauseContext ()
 
-deduceRelationsAux :: (Expression, Pattern) -> State ShapeContext ()
+{-
+deduceRelation targetSignature (pattern, expression) = do
+  ccPutCall (makeShapeEdge targetSignature "_" "_" UnknownChange)
+-}
 
-deduceRelationsAux (ENil, _) = return ()
-deduceRelationsAux (_,(PNil _)) = return ()
+deduceRelation _ (_, ENil)                = return ()
+deduceRelation _ ((PNil _), _)            = return ()
 
-deduceRelationsAux (EVariable "_" _, _) = return ()
-deduceRelationsAux (_,(PVariable "_")) = return ()
+{- if pattern is Nil, then expression must be Nil as well, hence no relation. -}
 
-deduceRelationsAux (EVariable sourceName _, PVariable targetName) =
-  putShape sourceName targetName LEQ
-deduceRelationsAux (expression, PVariable targetName) = do
-  expressionVariables <- getBoundVariables [] expression
-  setAll (putTargetSourceShape targetName UNKNOWN) expressionVariables
+deduceRelation _ (_, (EVariable "_" _))   = return ()
+deduceRelation _ ((PVariable "_"), _)     = return ()
 
-deduceRelationsAux (EVariable sourceName [], pattern @ (PNode "_" p1 p2)) =
+deduceRelation targetSignature (PVariable targetName, EVariable sourceName _) =
+  ccPutCall (makeShapeEdge targetSignature targetName sourceName LessOrEqual)
+
+deduceRelation targetSignature (pattern @ (PNode name _ _), EVariable sourceName _) =
   let
     patternVariables = getVariables [pattern]
-  in
-    setAll (putSourceTargetShape sourceName Grammar.LT) patternVariables
-deduceRelationsAux (EVariable sourceName _, PNode targetName p1 p2) =
-  let
-    variables = getVariables [p1,p2]
   in do
-    putShape sourceName targetName LEQ
-    setAll (putSourceTargetShape sourceName Grammar.LT) variables
+    Foldable.foldlM
+      (\_  targetName -> ccPutCall
+        (makeShapeEdge targetSignature targetName sourceName Less))
+      ()
+      patternVariables
+    if name /= "_"
+    then ccPutCall (makeShapeEdge targetSignature name sourceName LessOrEqual)
+    else return ()
+deduceRelation targetSignature (PNode "_" p1 p2, ENode e1 e2) = do
+  deduceRelation targetSignature (p1,e1)
+  deduceRelation targetSignature (p2,e2)
 
-deduceRelationsAux ((ENode e1 e2),(PNode _ p1 p2)) = do
-  deduceRelationsAux (e1,p1)
-  deduceRelationsAux (e2,p2)
+deduceRelation targetSignature (pattern, expression) = do
+  patternVariables <- return $ getVariables [pattern]
+  expressionVariables <- getBoundVariables [] expression
+  Foldable.foldlM
+    (\_ targetName -> Foldable.foldlM
+      (\_ sourceName -> ccPutCall
+        (makeShapeEdge targetSignature targetName sourceName UnknownChange))
+      ()
+      expressionVariables)
+    ()
+    patternVariables
 
-setAll :: (Name -> State ShapeContext ()) -> [Name] -> State ShapeContext ()
-setAll f names = Foldable.foldlM (\_ name -> f name) () names
+{- EVariable now can't be "_", and all are []. -}
 
-getBoundVariables :: [Name] -> Expression -> State ShapeContext [Name]
+getBoundVariables :: [Name] -> Expression -> State ClauseContext [Name]
 getBoundVariables names ENil = return names
 getBoundVariables names (EVariable name []) = do
-  hasVariable <- isBoundVariable name
-  if hasVariable
+  isVariable <- isBoundVariable name
+  if isVariable
   then return $ (name : names)
   else return names
 getBoundVariables names (ENode e1 e2) = do
   l1 <- getBoundVariables names e1
   getBoundVariables l1 e2
-
-
--}
