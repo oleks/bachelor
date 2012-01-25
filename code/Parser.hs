@@ -13,7 +13,13 @@ import Text.ParserCombinators.Parsec
 {- begin Parsing -}
 
 parseFile :: String -> IO (Either ParseError FunctionProgram)
-parseFile fileName = parseFromFile parseProgram fileName
+parseFile fileName = do
+  ast <- parseFromFile parseProgram fileName
+  case ast of
+    Left errorText -> error $ show errorText
+    Right program -> do
+      writeFile (fileName ++ ".out") $ show $ program
+      return ast
 
 parseString :: String -> Either ParseError FunctionProgram
 parseString programText = parse parseProgram ".." programText

@@ -39,3 +39,45 @@
 % e in this case could've well been x.. %
 
 \end{frame}
+
+\begin{frame}
+
+\begin{textblock}{1}(13.8,-3.5)$(14)$\end{textblock}
+
+\frametitle{\D{}, syntax}
+
+\setcounter{equation}{0}
+
+\begin{align*}
+\nonterm{program}\ \textt{::=}&\ \nonterm{clause}^{\color{red}\textt{\bf +}}
+\ \nonterm{expression}
+& \\
+\nonterm{expression}\ \textt{::=}&\ \nonterm{element}\ \textt{(}\ \term{.}
+\ \nonterm{expression}\ \textt{)}\ \textt{?}
+& x\\
+\nonterm{element}\ \textt{::=}&\ \term{0}\ \textt{|}\ \term{(}
+\ \nonterm{element}\ \term{)}\ \textt{|}\ \nonterm{name}\ \textt{|}
+\ \nonterm{application}
+& e\\
+\nonterm{application}\ \textt{::=}&\ \nonterm{name}
+\ \nonterm{expression}^{\color{yellow}\textt{*}}
+& \left\langle v,x \right\rangle \\
+\nonterm{clause}\ \textt{::=}&\ \nonterm{name}
+\ \nonterm{pattern}^{\color{yellow}\textt{*}}\ \term{:=}
+\ \nonterm{expression}{\color{green}\term{;}}
+& c=\left\langle v, p, x \right\rangle \\
+\nonterm{pattern}\ \textt{::=}&\ \nonterm{pattern-element}\ \textt{(}
+\ \term{.}\ \nonterm{pattern}\ \textt{)}\ \textt{?}
+& p\\
+\nonterm{pattern-element}\ \textt{::=}&\ \term{0}\ \textt{|}\ \term{\_}
+\ \textt{|}\ \term{(}\ \nonterm{pattern}\ \term{)}\ \textt{|}\ \nonterm{name}
+& p\\
+\nonterm{name}\ \textt{::=}&\ \textt{[}\term{a}\mathmono{-}\term{z}\textt{]}
+\ \textt{(}\ \textt{[}\term{-}\ \term{a}\mathmono{-}\term{z}\textt{]}^\textt{*}
+\ \textt{[}\term{a}\mathmono{-}\term{z}\textt{]}\ \textt{)}\ \textt{?}
+& v
+\end{align*}
+
+% e in this case could've well been x.. %
+
+\end{frame}

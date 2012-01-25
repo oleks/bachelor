@@ -100,12 +100,14 @@ interpretFileToPdf fileName =
   let
     pdfFileName = fileName ++ ".pdf"
     pdfProcess = \dotFileName -> Process.proc "dot" ["-Tpdf", dotFileName, "-o", pdfFileName]
-    convertProcess = Process.proc "convert" ["-density", "300", "-negate", pdfFileName]
+    convertProcess = Process.proc "convert" ["-density", "300", pdfFileName, "-negate", pdfFileName]
   in
     do
       dotFileName <- interpretFileToDot fileName
-      Process.createProcess $ pdfProcess dotFileName
-      Process.createProcess $ convertProcess
+      (_,_,_,h) <- Process.createProcess $ pdfProcess dotFileName
+      Process.waitForProcess h
+      (_,_,_,h) <- Process.createProcess $ convertProcess
+      Process.waitForProcess h
       return pdfFileName
 
 interpretFileToDot :: String -> IO String

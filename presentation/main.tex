@@ -48,6 +48,29 @@
 	\end{figure}
 }
 
+\usepackage{clrscode3e}
+\usepackage{verbatim}
+\usepackage{listings}
+\lstset
+{
+	tabsize=2,
+	numbers=left,
+	breaklines=true,
+	foregroundcolor=\color{shade},
+	framexleftmargin=0.05in,
+	basicstyle=\ttfamily\small,
+	numberstyle=\tiny,
+%  keywordstyle=\color{green},
+%	stringstyle=\color{red},
+%	commentstyle=\color{ForestGreen},
+  keywords={input},
+  mathescape=true,
+  captionpos=b,
+  escapeinside={(*@}{@*)},
+  language=haskell
+}
+
+
 
 \setbeamercolor{title}{fg=shade}
 \setbeamercolor{frametitle}{fg=shade}
@@ -90,9 +113,8 @@
 \input{symbols}
 \input{syntax-annotated}
 \input{function}
-\input{program}
+%\input{program}
 \input{demo}
-\input{disjoint}
 
 \input{mistakes}
 \input{references}

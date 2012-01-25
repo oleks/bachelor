@@ -84,12 +84,6 @@ matchesShape (PNil _) _ = False
 matchesShape (PNode _ _ _) ENil = False
 matchesShape (PNode _ p1 p2) (ENode e1 e2) = matchesShape p1 e1 && matchesShape p2 e2
 
-foldlWithIndex :: (Int -> a -> b -> a) -> a -> [b] -> a
-foldlWithIndex function initial list =
-  let
-    (_, a) = foldl (\(index,a) b -> (index + 1, function index a b)) (0, initial) list
-  in
-    a
 
 foldlMWithIndex :: (Foldable.Foldable t, Monad m) => (Int -> a -> b -> m a) -> a -> t b -> m a
 foldlMWithIndex function initial list = do

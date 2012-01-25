@@ -80,8 +80,9 @@ emptyFunctionProgram = FunctionProgram Map.empty
 
 instance Show FunctionProgram where
   show functionProgram = Map.foldrWithKey
-    (\name clauseList formerFunction -> ('\n' : name) ++ "\n" ++ foldr
-      (\clause formerClauses -> "  " ++ (show clause) ++ ('\n' : formerClauses))
+    (\name clauseList formerFunction -> ('\n' : name) ++ "\n" ++ foldlWithIndex
+      (\index formerClauses clause -> (show index) ++ ":  " ++ (show clause) ++
+        ('\n' : formerClauses))
       formerFunction
       clauseList)
     (show $ fpExpression functionProgram)
@@ -104,3 +105,20 @@ data ShapeChange
   | LessOrEqual
   | UnknownChange
   deriving(Eq,Show)
+
+foldlWithIndex :: (Int -> a -> b -> a) -> a -> [b] -> a
+foldlWithIndex function initial list =
+  let
+    init = ((length list) - 1, initial)
+    (_, a) = foldl (\(index,a) b -> (index - 1, function index a b)) init list
+  in
+    a
+
+foldrWithIndex :: (Int -> a -> b -> a) -> a -> [b] -> a
+foldrWithIndex function initial list =
+  let
+    init = ((length list) - 1, initial)
+    (_, a) = foldr (\b (index,a) -> (index - 1, function index a b)) init list
+  in
+    a
+

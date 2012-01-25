@@ -44,3 +44,35 @@
 % terminate, and all other constants can be inlined.
 
 \end{frame}
+
+\begin{frame}[fragile]
+
+\frametitle{\D{}, sample programs}
+
+\begin{lstlisting}
+reverse 0 := 0
+reverse left.right := (reverse right).(reverse left)
+
+reverse input
+\end{lstlisting}
+
+\begin{lstlisting}
+fibonacci n = fibonacci-aux (normalize n) 0 0
+
+fibonacci-aux 0 x y := 0
+fibonacci-aux 0.0 x y := y
+fibonacci-aux 0.n x y := fibonacci-aux n y (add x y)
+
+fibonacci input
+\end{lstlisting}
+
+\begin{lstlisting}
+ackermann 0 n := 0.n
+ackermann a.b 0 := ackermann (decrease a.b) 0.0
+ackermann a.b c.d :=
+  ackermann (decrease a.b) (ackermann a.b (decrease c.d))
+
+ackermann input input
+\end{lstlisting}
+
+\end{frame}
