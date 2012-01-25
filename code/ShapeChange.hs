@@ -36,7 +36,6 @@ instance Show UnaryProgram where
     (show $ upExpression unaryProgram)
     (upClauses unaryProgram)
 
-
 {- begin Call Graph Context -}
 
 data CallGraphContext
@@ -44,6 +43,7 @@ data CallGraphContext
     cgcFunctions :: Functions,
     cgcGraph :: ShapeGraph
   }
+  deriving(Show)
 
 cgcGet :: (CallGraphContext -> t) -> State CallGraphContext t
 cgcGet f = do
@@ -74,6 +74,7 @@ data ClauseContext
     ccVariablePatterns :: VariablePatterns,
     ccGraphContext :: CallGraphContext
   }
+  deriving(Show)
 
 ccGet :: (ClauseContext -> t) -> State ClauseContext t
 ccGet f = do
@@ -114,68 +115,6 @@ ccPutCall f = do
       newGraphContext = callGraphContext { cgcGraph = shapeEdge : shapeGraph }
     in
       context { ccGraphContext = newGraphContext }
-
-
-{-
-
-getContextVariables :: State ShapeContext Variables
-getContextVariables = getFromState contextVariables
-
-getCalleeName :: State ShapeContext Name
-getCalleeName = getFromState calleeName
-
-getCallerName :: State ShapeContext (Maybe Name)
-getCallerName = getFromState callerName
-
-isBoundVariable :: Name -> State ShapeContext Bool
-isBoundVariable name = do
-  variables <- getContextVariables
-  return $ Map.member name variables
-
-setCalleeName :: Name -> State ShapeContext ()
-setCalleeName name = do
-  state <- get
-  put $ state { calleeName = name }
-
-setCallerName :: Name -> State ShapeContext ()
-setCallerName name = do
-  state <- get
-  put $ state { callerName = (Just name) }
-
-setVariables :: Variables -> State ShapeContext ()
-setVariables variables = do
-  state <- get
-  put $ state { contextVariables = variables }
-
-bindVariable :: Name -> Pattern -> State ShapeContext ()
-bindVariable name pattern = do
-  state <- get
-  put $ state {
-    contextVariables = (Map.insert name pattern (contextVariables state))
-  }
-
-putCall :: SCEdge -> State ShapeContext ()
-putCall edge = do
-  state <- get
-  put $ state { shapeGraph = edge : (shapeGraph state) }
-
-putSourceTargetShape :: Name -> Change -> Name -> State ShapeContext ()
-putSourceTargetShape sourceName shape targetName = do
-  callerName <- getCallerName
-  calleeName <- getCalleeName
-  case callerName of
-    Just name -> putCall $ SCEdge name calleeName sourceName targetName shape
-    _ -> return ()
-
-putShape :: Name -> Name -> Change -> State ShapeContext ()
-putShape sourceName targetName shape = putSourceTargetShape sourceName shape targetName
-
-putTargetSourceShape :: Name -> Change -> Name -> State ShapeContext ()
-putTargetSourceShape targetName shape sourceName = putSourceTargetShape sourceName shape targetName
-
-{- end Shape Context Monad -}
-
--}
 
 {- begin Analysis Initialization -}
 
@@ -225,7 +164,7 @@ analyzeClause clauseSignature functionClause = do
       initialContext =
         ClauseContext clauseSignature variablePatterns callGraphContext
       finalContext =
-         execState (analyzeExpression expression) initialContext
+        execState (analyzeExpression expression) initialContext
     in
       ccGraphContext finalContext
 
@@ -236,9 +175,9 @@ getVariablePatterns :: VariablePatterns -> Pattern -> VariablePatterns
 getVariablePatterns variablePatterns (PNil "_") = variablePatterns
 getVariablePatterns variablePatterns (PVariable "_") = variablePatterns
 getVariablePatterns variablePatterns (PNil name) =
-  Map.insert name (PNil "_") variablePatterns
+  Map.insert name (PNil name) variablePatterns
 getVariablePatterns variablePatterns (PVariable name) =
-  Map.insert name (PNil "_") variablePatterns
+  Map.insert name (PVariable name) variablePatterns
 getVariablePatterns variablePatterns (PNode "_" p1 p2) =
   let
     vp1 = getVariablePatterns variablePatterns p1
@@ -246,7 +185,7 @@ getVariablePatterns variablePatterns (PNode "_" p1 p2) =
   in
     vp2
 getVariablePatterns variablePatterns (PNode name p1 p2) =
-  Map.insert name (PNode "_" p1 p2) variablePatterns
+  Map.insert name (PNode name p1 p2) variablePatterns
 
 {- Note: There's supposedly no need to delve deaper in the last clause. -}
 
@@ -261,7 +200,7 @@ analyzeExpression (EVariable name []) = do
   if isVariable
   then return ()
   else analyzeCall (getSignature name []) []
-analyzeExpression (EVariable name arguments) =
+analyzeExpression (EVariable name arguments) = do
   analyzeCall (getSignature name arguments) arguments
 
 analyzeCall :: FunctionSignature -> Arguments -> State ClauseContext ()
@@ -292,7 +231,7 @@ purifyExpression (EVariable name []) = do
 
 patternToExpression :: Pattern -> Expression
 patternToExpression (PNil _) = ENil
-patternToExpression (PVariable _) = EVariable "_" []
+patternToExpression (PVariable name) = EVariable name []
 patternToExpression (PNode _ p1 p2) =
   let
     e1 = patternToExpression p1
@@ -319,8 +258,11 @@ makeShapeEdge targetSignature targetVariable sourceVariable shapeChange sourceSi
 deduceRelation :: ClauseSignature -> (Pattern, Expression) -> State ClauseContext ()
 
 {-
+
 deduceRelation targetSignature (pattern, expression) = do
   ccPutCall (makeShapeEdge targetSignature "_" "_" UnknownChange)
+  error $ show (pattern, expression)
+
 -}
 
 deduceRelation _ (_, ENil)                = return ()
@@ -328,8 +270,8 @@ deduceRelation _ ((PNil _), _)            = return ()
 
 {- if pattern is Nil, then expression must be Nil as well, hence no relation. -}
 
-deduceRelation _ (_, (EVariable "_" _))   = return ()
-deduceRelation _ ((PVariable "_"), _)     = return ()
+deduceRelation _ (p, (EVariable "_" _))   = error $ show (p, "_")
+deduceRelation _ ((PVariable "_"), e)     = error $ show ("_", e)
 
 deduceRelation targetSignature (PVariable targetName, EVariable sourceName _) =
   ccPutCall (makeShapeEdge targetSignature targetName sourceName LessOrEqual)
@@ -346,6 +288,7 @@ deduceRelation targetSignature (pattern @ (PNode name _ _), EVariable sourceName
     if name /= "_"
     then ccPutCall (makeShapeEdge targetSignature name sourceName LessOrEqual)
     else return ()
+
 deduceRelation targetSignature (PNode "_" p1 p2, ENode e1 e2) = do
   deduceRelation targetSignature (p1,e1)
   deduceRelation targetSignature (p2,e2)

@@ -327,7 +327,7 @@ matchClauseToSiblings clausePattern activeSiblings =
       if matches activeSibling clausePattern
       then (clausePattern : good, (filter (matches activeSibling) clausePatternSiblings) ++ bad)
       else if matches clausePattern activeSibling
-        then ((mergeNames clausePattern activeSibling) : good, bad)
+        then ((mergeNames clausePattern (clearNames activeSibling)) : good, bad)
         else (good, activeSibling : bad))
     ([], [])
     activeSiblings
@@ -347,4 +347,15 @@ mergeNames (PNode name n1 n2) (PNode _ p1 p2) =
     m2 = mergeNames n2 p2
   in
     PNode name m1 m2
+
+
+clearNames :: Pattern -> Pattern
+clearNames (PNil _) = PNil "_"
+clearNames (PVariable _) = PVariable "_"
+clearNames (PNode _ p1 p2) =
+  let
+    c1 = clearNames p1
+    c2 = clearNames p2
+  in
+    PNode "_" c1 c2
 
