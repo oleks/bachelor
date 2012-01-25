@@ -250,6 +250,23 @@ analyzeCall functionSignature arguments = do
   clauses <- ccGetClauses functionSignature
   return ()
 
+
+purifyExpression :: Expression -> State ClauseContext Expression
+purifyExpression ENil = return ENil
+purifyExpression (ENode e1 e2) = do
+  d1 <- purifyExpression e1
+  d2 <- purifyExpression e2
+  return $ liftM (liftM $ ENode $ purifyExpression e1) d2
+
+{-
+purifyExpression (EVariable name []) = do
+  variables <- getContextVariables
+  if Map.member name variables
+  then return $ patternToExpression (variables Map.! name)
+  else return $ EVariable "_" []
+-}
+
+
 {-
   functions <- getContextFunctions
   signature <- return $ getSignature name arguments
