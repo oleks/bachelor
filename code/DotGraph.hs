@@ -1,4 +1,7 @@
-module DotGraph (getDotGraph, getSCGraph) where
+module DotGraph (
+  getDotGraph,
+  getShapeGraph
+) where
 
 import Grammar
 import Util
@@ -96,5 +99,5 @@ getDotGraphAux initialName _ =
 
 type NameMap = Map.Map Name Name
 
-getSCGraph :: SCGraph -> String
-getSCGraph shapeChangeGraph = "coming.."
+getShapeGraph :: ShapeGraph -> String
+getShapeGraph shapeGraph = "coming.."

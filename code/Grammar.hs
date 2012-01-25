@@ -4,9 +4,11 @@ import qualified Data.Map as Map
 
 type Name = String
 
+type Arguments = [Expression]
+
 data Expression
   = ENil
-  | EVariable Name [Expression]
+  | EVariable Name Arguments
   | ENode Expression Expression
 
 instance Show Expression where
@@ -85,17 +87,20 @@ instance Show FunctionProgram where
     (show $ fpExpression functionProgram)
     (fpFunctions functionProgram)
 
+type FunctionSignature = Name
+type ClauseIndex = Int
 type ClauseSignature = Name
+type VariableName = Name
 
-getClauseSignature :: Name -> Int -> ClauseSignature
+getClauseSignature :: FunctionSignature -> ClauseIndex -> ClauseSignature
 getClauseSignature functionSignature index = functionSignature ++ ('/' : (show index))
 
-data SCEdge = SCEdge ClauseSignature ClauseSignature Name Name Change
+data ShapeEdge = ShapeEdge ClauseSignature ClauseSignature Name Name ShapeChange
   deriving (Show)
-type SCGraph = [SCEdge]
+type ShapeGraph = [ShapeEdge]
 
-data Change
-  = LT
-  | LEQ
-  | UNKNOWN
+data ShapeChange
+  = Less
+  | Leq
+  | UnknownChange
   deriving(Eq,Show)

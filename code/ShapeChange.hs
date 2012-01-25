@@ -36,54 +36,82 @@ instance Show UnaryProgram where
     (show $ upExpression unaryProgram)
     (upClauses unaryProgram)
 
-analyzeFileToDot :: String -> IO String
-analyzeFileToDot fileName = do
-  shapeChangeGraph <- analyzeFile fileName
-  return $ getSCGraph shapeChangeGraph
 
-analyzeFile :: String -> IO SCGraph
-analyzeFile fileName = do
-  ast <- Parser.parseFile fileName
-  analyze ast
+{- begin Call Graph Context -}
 
-analyze :: (Either Parsec.ParseError FunctionProgram) -> IO SCGraph
-analyze ast =
-  case ast of
-    Left errorText -> error $ show errorText
-    Right program -> analyzeProgram program
-
-type Variables = Map.Map Name Pattern
-
-data ShapeContext
-  = ShapeContext {
-    callerName :: Maybe Name,
-    calleeName :: Name,
-    contextFunctions :: Functions,
-    contextVariables :: Variables,
-    shapeGraph :: SCGraph
+data CallGraphContext
+  = CallGraphContext {
+    cgcFunctions :: Functions,
+    cgcGraph :: ShapeGraph
   }
 
-getFromState :: (ShapeContext -> t) -> State ShapeContext t
-getFromState f = do
-  state <- get
-  return $ f state
+cgcGet :: (CallGraphContext -> t) -> State CallGraphContext t
+cgcGet f = do
+  context <- get
+  return $ f context
 
-getContextFunctions :: State ShapeContext Functions
-getContextFunctions = getFromState contextFunctions
+cgcGetFunctions :: State CallGraphContext Functions
+cgcGetFunctions = cgcGet cgcFunctions
+
+cgcGetGraph :: State CallGraphContext ShapeGraph
+cgcGetGraph = cgcGet cgcGraph
+
+cgcPutGraph :: ShapeGraph -> State CallGraphContext ()
+cgcPutGraph shapeGraph = do
+  context <- get
+  put $ context { cgcGraph = shapeGraph }
+
+cgcPutCall :: ShapeEdge -> State CallGraphContext ()
+cgcPutCall shapeEdge = do
+  context <- get
+  put $ context { cgcGraph = shapeEdge : (cgcGraph context) }
+
+type VariablePatterns = Map.Map Name Pattern
+
+data ClauseContext
+  = ClauseContext {
+    ccSourceSignature :: ClauseSignature,
+    ccVariablePatterns :: VariablePatterns,
+    ccGraphContext :: CallGraphContext
+  }
+
+ccGet :: (ClauseContext -> t) -> State ClauseContext t
+ccGet f = do
+  context <- get
+  return $ f context
+
+ccGetVariablePatterns :: State ClauseContext VariablePatterns
+ccGetVariablePatterns = ccGet ccVariablePatterns
+
+isBoundVariable :: Name -> State ClauseContext Bool
+isBoundVariable name = do
+  variablePatterns <- ccGetVariablePatterns
+  return $ Map.member name variablePatterns
+
+ccGetClauses :: FunctionSignature -> State ClauseContext [FunctionClause]
+ccGetClauses functionSignature = do
+  callGraphContext <- ccGet ccGraphContext
+  return $
+    let
+      functions = cgcFunctions callGraphContext
+    in
+      functions Map.! functionSignature
+
+{-
 
 getContextVariables :: State ShapeContext Variables
 getContextVariables = getFromState contextVariables
-
-hasContextVariable :: Name -> State ShapeContext Bool
-hasContextVariable name = do
-  variables <- getContextVariables
-  return $ Map.member name variables
 
 getCalleeName :: State ShapeContext Name
 getCalleeName = getFromState calleeName
 
 getCallerName :: State ShapeContext (Maybe Name)
 getCallerName = getFromState callerName
+
+isBoundVariable :: Name -> State ShapeContext Bool
+isBoundVariable name = do
+  variables <- getContextVariables
+  return $ Map.member name variables
 
 setCalleeName :: Name -> State ShapeContext ()
 setCalleeName name = do
@@ -100,10 +128,12 @@ setVariables variables = do
   state <- get
   put $ state { contextVariables = variables }
 
-setVariable :: Name -> Pattern -> State ShapeContext ()
-setVariable name pattern = do
+bindVariable :: Name -> Pattern -> State ShapeContext ()
+bindVariable name pattern = do
   state <- get
-  put $ state { contextVariables = (Map.insert name pattern (contextVariables state)) }
+  put $ state {
+    contextVariables = (Map.insert name pattern (contextVariables state))
+  }
 
 putCall :: SCEdge -> State ShapeContext ()
 putCall edge = do
@@ -124,25 +154,133 @@ putShape sourceName targetName shape = putSourceTargetShape sourceName shape tar
 putTargetSourceShape :: Name -> Change -> Name -> State ShapeContext ()
 putTargetSourceShape targetName shape sourceName = putSourceTargetShape sourceName shape targetName
 
-analyzeProgram :: FunctionProgram -> IO SCGraph
+{- end Shape Context Monad -}
+
+-}
+
+{- begin Analysis Initialization -}
+
+analyzeFileToDot :: String -> IO String
+analyzeFileToDot fileName = do
+  shapeGraph <- analyzeFile fileName
+  return $ getShapeGraph shapeGraph
+
+analyzeFile :: String -> IO ShapeGraph
+analyzeFile fileName = do
+  ast <- Parser.parseFile fileName
+  case ast of
+    Left errorText -> error $ show errorText
+    Right program -> analyzeProgram program
+
+analyzeProgram :: FunctionProgram -> IO ShapeGraph
 analyzeProgram functionProgram =
   let
     functions = Map.map (reverse) (fpFunctions functionProgram)
-    initialContext = ShapeContext Nothing "" functions Map.empty []
+    initialContext = CallGraphContext functions []
     finalContext = execState (analyzeFunctions functions) initialContext
   in
-    return (shapeGraph finalContext)
+    return (cgcGraph finalContext)
 
-analyzeFunctions :: Functions -> State ShapeContext ()
+{- end Analysis Initialization -}
+
+analyzeFunctions :: Functions -> State CallGraphContext ()
 analyzeFunctions functions = Foldable.foldlM
-  (\_ (signature, clauses) -> foldlMWithIndex
-    (\index _ clause -> do
-      setCallerName (getClauseSignature signature index)
-      analyzeClause clause)
+  (\_ (functionSignature, functionClauses) -> foldlMWithIndex
+    (\clauseIndex _ functionClause ->
+      let clauseSignature = getClauseSignature functionSignature clauseIndex
+      in  analyzeClause clauseSignature functionClause)
     ()
-    clauses)
+    functionClauses)
   ()
   (Map.toList functions)
+
+analyzeClause :: ClauseSignature -> FunctionClause -> State CallGraphContext ()
+analyzeClause clauseSignature functionClause = do
+  callGraphContext <- get
+  put $
+    let
+      patterns = fClausePatterns functionClause
+      expression = fClauseExpression functionClause
+
+      variablePatterns = getAllVariablePatterns patterns
+      initialContext =
+        ClauseContext clauseSignature variablePatterns callGraphContext
+      finalContext =
+         execState (analyzeExpression expression) initialContext
+    in
+      ccGraphContext finalContext
+
+getAllVariablePatterns :: [Pattern] -> VariablePatterns
+getAllVariablePatterns patterns = foldl (getVariablePatterns) Map.empty patterns
+
+getVariablePatterns :: VariablePatterns -> Pattern -> VariablePatterns
+getVariablePatterns variablePatterns (PNil "_") = variablePatterns
+getVariablePatterns variablePatterns (PVariable "_") = variablePatterns
+getVariablePatterns variablePatterns (PNil name) =
+  Map.insert name (PNil "_") variablePatterns
+getVariablePatterns variablePatterns (PVariable name) =
+  Map.insert name (PNil "_") variablePatterns
+getVariablePatterns variablePatterns (PNode "_" p1 p2) =
+  let
+    vp1 = getVariablePatterns variablePatterns p1
+    vp2 = getVariablePatterns variablePatterns p2
+  in
+    vp2
+getVariablePatterns variablePatterns (PNode name p1 p2) =
+  Map.insert name (PNode "_" p1 p2) variablePatterns
+
+{- Note: There's supposedly no need to delve deaper in the last clause. -}
+
+analyzeExpression :: Expression -> State ClauseContext ()
+analyzeExpression ENil = return ()
+analyzeExpression (ENode e1 e2) = do
+  analyzeExpression e1
+  analyzeExpression e2
+  return ()
+analyzeExpression (EVariable name []) = do
+  isVariable <- isBoundVariable name
+  if isVariable
+  then return ()
+  else analyzeCall (getSignature name []) []
+analyzeExpression (EVariable name arguments) =
+  analyzeCall (getSignature name arguments) arguments
+
+analyzeCall :: FunctionSignature -> Arguments -> State ClauseContext ()
+analyzeCall functionSignature arguments = do
+  clauses <- ccGetClauses functionSignature
+  return ()
+
+{-
+  functions <- getContextFunctions
+  signature <- return $ getSignature name arguments
+  if Map.member signature functions
+  then do
+    arguments <- mapM (deduceArgument) arguments
+    clauses <- return $ functions Map.! signature
+    setCalleeName signature
+    foldlMWithIndex (matchClause arguments) () clauses
+  else return ()
+-}
+
+
+{-
+
+
+{-
+analyzeClause
+  bind variables
+  analyze expression
+-}
+
+analyzeClause :: FunctionClause -> State ShapeContext ()
+analyzeClause clause =
+  let
+    patterns = fClausePatterns clause
+    expression = fClauseExpression clause
+  in do
+    setVariables Map.empty
+    mapM (bindPatternVariables) patterns
+    analyzeExpression expression
 
 analyzeExpression :: Expression -> State ShapeContext ()
 analyzeExpression ENil = return ()
@@ -208,7 +346,7 @@ deduceRelations arguments patterns clauseIndex = do
 purifyExpression :: Expression -> State ShapeContext Expression
 purifyExpression ENil = return ENil
 purifyExpression (EVariable name []) = do
-  hasVariable <- hasContextVariable name
+  hasVariable <- isBoundVariable name
   if hasVariable
   then return $ EVariable name []
   else return $ EVariable "_" []
@@ -228,7 +366,7 @@ deduceRelationsAux (_,(PVariable "_")) = return ()
 deduceRelationsAux (EVariable sourceName _, PVariable targetName) =
   putShape sourceName targetName LEQ
 deduceRelationsAux (expression, PVariable targetName) = do
-  expressionVariables <- getExpressionVariables [] expression
+  expressionVariables <- getBoundVariables [] expression
   setAll (putTargetSourceShape targetName UNKNOWN) expressionVariables
 
 deduceRelationsAux (EVariable sourceName [], pattern @ (PNode "_" p1 p2)) =
@@ -250,87 +388,16 @@ deduceRelationsAux ((ENode e1 e2),(PNode _ p1 p2)) = do
 setAll :: (Name -> State ShapeContext ()) -> [Name] -> State ShapeContext ()
 setAll f names = Foldable.foldlM (\_ name -> f name) () names
 
-getExpressionVariables :: [Name] -> Expression -> State ShapeContext [Name]
-getExpressionVariables names ENil = return names
-getExpressionVariables names (EVariable name []) = do
-  hasVariable <- hasContextVariable name
+getBoundVariables :: [Name] -> Expression -> State ShapeContext [Name]
+getBoundVariables names ENil = return names
+getBoundVariables names (EVariable name []) = do
+  hasVariable <- isBoundVariable name
   if hasVariable
   then return $ (name : names)
   else return names
-getExpressionVariables names (ENode e1 e2) = do
-  l1 <- getExpressionVariables names e1
-  getExpressionVariables l1 e2
+getBoundVariables names (ENode e1 e2) = do
+  l1 <- getBoundVariables names e1
+  getBoundVariables l1 e2
 
-
-analyzeClause :: FunctionClause -> State ShapeContext ()
-analyzeClause clause =
-  let
-    patterns = fClausePatterns clause
-    expression = fClauseExpression clause
-  in do
-    setVariables Map.empty
-    mapM (mapVariables) patterns
-    analyzeExpression expression
-    setVariables Map.empty
-
-mapVariables :: Pattern -> State ShapeContext ()
-mapVariables (PNil "_") = return ()
-mapVariables (PNil name) = setVariable name (PNil "_")
-mapVariables (PVariable "_") = return ()
-mapVariables (PVariable name) = setVariable name (PNil "_")
-mapVariables (PNode "_" p1 p2) = do
-  mapVariables p1
-  mapVariables p2
-mapVariables (PNode name p1 p2) = setVariable name (PNode "_" p1 p2)
-
-
-{-
-analyzeFunctions :: Functions -> IO ShapeChangeGraph
-analyzeFunctions functions = return $ Map.foldrWithKey
-  (\functionSignature clauses graph -> foldlWithIndex
-    (\clauseIndex graph clause ->
-      let
-        clauseSignature = getClauseSignature functionSignature clauseIndex
-        expression = fClauseExpression clause
-      in
-        getCallsInExpression functions clauseSignature graph expression)
-    graph
-    clauses)
-  []
-  functions
-
-getCallsInExpression :: Functions -> ClauseSignature -> ShapeChangeGraph -> Expression -> ShapeChangeGraph
-getCallsInExpression functions clauseSignature graph ENil = graph
-getCallsInExpression functions clauseSignature graph (EVariable name arguments) =
-  let
-    calleeSignature = getSignature name arguments
-  in
-    if Map.member calleeSignature functions
-    then
-      let
-        matchingSignatures = getMatchingSignatures (functions Map.! calleeSignature) arguments
-        calls = map
-          (\calleeIndex -> (clauseSignature, (getClauseSignature calleeSignature calleeIndex), arguments))
-          matchingSignatures
-      in
-        calls ++ graph
-    else graph
-getCallsInExpression functions clauseSignature graph (ENode e1 e2) =
-  let
-    g1 = getCallsInExpression functions clauseSignature graph e1
-  in
-    getCallsInExpression functions clauseSignature g1 e2
-
-getMatchingSignatures :: [FunctionClause] -> [Expression] -> [Int]
-getMatchingSignatures clauses arguments = foldlWithIndex
-  (\clauseIndex indices clause ->
-    let
-      patterns = fClausePatterns clause
-    in
-      if (all (\(pattern, shape) -> matchesShape pattern shape) (zip patterns arguments))
-      then (clauseIndex : indices)
-      else indices)
-  []
-  clauses
 
 -}
