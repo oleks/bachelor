@@ -32,6 +32,23 @@
 	\end{table}
 }
 
+\newcommand{\includeFigure}[4][htbp!]
+{
+	\begin{figure}[#4]
+	\centering
+	\IfDecimal{#1}
+	{
+		\includegraphics[scale=#1]{figures/#2}
+	}
+	{
+		\includegraphics[#1]{figures/#2}
+	}
+	\caption[]{#3}
+	\label{figure:#2}
+	\end{figure}
+}
+
+
 \setbeamercolor{title}{fg=shade}
 \setbeamercolor{frametitle}{fg=shade}
 \setbeamercolor{normal text}{fg=shade}
