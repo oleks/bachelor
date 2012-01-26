@@ -1,0 +1,12 @@
+digraph G {
+a[shape=circle,fillcolor=black,style=filled,label=""];
+b[shape=circle,fillcolor=black,style=filled,label=""];
+c[shape=circle,fillcolor=black,style=filled,label=""];
+d[shape=circle,fillcolor=white,label=""];
+e[shape=circle,fillcolor=white,label=""];
+f[shape=circle,fillcolor=white,label=""];
+g[shape=circle,fillcolor=white,label=""];
+a->{b;g};
+b->{c;f};
+c->{d;e};
+}
