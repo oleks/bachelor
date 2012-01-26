@@ -1,0 +1,9 @@
+digraph G {
+a[shape=circle,fillcolor=white,style=filled,label="f/1/0"];
+b[shape=circle,fillcolor=white,style=filled,label="f/1/1"];
+c[shape=circle,fillcolor=white,style=filled,label="f/1/2"];
+edge[label="<"];
+a->{a};
+edge[label="<="];
+a->{b;c};
+}
