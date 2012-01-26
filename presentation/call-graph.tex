@@ -1,12 +1,21 @@
 \begin{frame}
 
+\frametitle{Call graph for $r=\left\langle C,x\right\rangle$}
+
 \begin{center}
 
 $$G=\left\langle C,E\right\rangle$$
 
 where,
 
-$$E = $$
+$$E = \left\{ \left\langle v^c_s,v^c_t,v_s,v_t,x \right\rangle \left|
+\begin{array}{ll}
+&\left\langle v^c_s, \_, x^c_s \right\rangle, \left\langle v^c_t, p_t, \_
+\right\rangle \in C\\
+\wedge & \left\langle v^c_t, x \right\rangle\Subset x^c_s\\
+\wedge & v_s \Subset x_s\\
+\wedge & v_t \Subset p_t
+\end{array}\right.\right\}$$
 
 \end{center}
 
