@@ -1,3 +1,7 @@
 My BSc project at DIKU.
 
-You'll find the report in [https://github.com/oleks/bachelor/tree/master/opus/output opus/output]
+You'll find the report in
+[https://github.com/oleks/bachelor/tree/master/opus/output opus/output] and the
+final (shaky) Haskell prototype in
+[https://github.com/oleks/bachelor/tree/master/final-prototype
+final-prototype].
