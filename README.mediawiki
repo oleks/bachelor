@@ -1,0 +1,3 @@
+My BSc project at DIKU.
+
+You'll find the report in [https://github.com/oleks/bachelor/tree/master/opus/output opus/output]
