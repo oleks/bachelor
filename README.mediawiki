@@ -1,5 +1,9 @@
 My BSc project at DIKU.
 
+It is instructive to first glance at the slides for the BSc project defence
+under [https://github.com/oleks/bachelor/tree/master/opus/output
+presentation/output].
+
 You'll find the report in
 [https://github.com/oleks/bachelor/tree/master/opus/output opus/output] and the
 final (shaky) Haskell prototype in
