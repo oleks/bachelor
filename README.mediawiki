@@ -2,7 +2,7 @@ My BSc project at DIKU.
 
 It is instructive to first glance at the slides for my BSc project defence
 found under
-[https://github.com/oleks/bachelor/tree/master/opus/output presentation/output].
+[https://github.com/oleks/bachelor/tree/master/opus/presentation/output presentation/output].
 
 You'll find the report under
 [https://github.com/oleks/bachelor/tree/master/opus/output opus/output] and the
